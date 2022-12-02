@@ -22,7 +22,7 @@ namespace ExceptionHandler
                                 "\n" +
                                 "For Example:\n" +
                                 "\n" +
-                                ".\\InjectionAnalyzer.exe --path=.\\source\\folder\\ --scope-of-analysis=Simple --config=.\\config\\folder\\config.json --result=.\\result\\path\\ --exclude-paths=TEST,E2E --write-console\n" +
+                                ".\\SQLInjectionAnalyzer.exe --path=.\\source\\folder\\ --scope-of-analysis=Simple --config=.\\config\\folder\\config.json --result=.\\result\\path\\ --exclude-paths=TEST,E2E --write-console\n" +
                                 "\n" +
                                 "Parameters:\n" +
                                 "\n" +
