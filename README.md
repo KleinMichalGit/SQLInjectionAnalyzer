@@ -44,3 +44,11 @@ SQL Injection Analyzer is a Roslyn-based static source code analyzer which focus
 Analyzer should produce results in two formats into pre-defined directory (--result argument). 
 ### .html result
 ### .txt result
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
