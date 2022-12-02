@@ -1,0 +1,353 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Model.CSProject;
+using Model.Method;
+using Model.Rules;
+using Model.SyntaxTree;
+using Model;
+
+namespace SQLInjectionAnalyzer
+{
+    public class SimpleAnalyzer : Analyzer
+    {
+        private TaintPropagationRules taintPropagationRules;
+        private string targetFileType = "*.cs";
+        private bool writeOnConsole = false;
+        private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
+
+        public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
+        {
+            this.taintPropagationRules = taintPropagationRules;
+            this.writeOnConsole = writeOnConsole;
+
+            Diagnostics diagnostics = InitialiseDiagnostics(ScopeOfAnalysis.Simple);
+
+            int numberOfCSFilesUnderThisDirectory = commonSyntaxHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
+            int numberOfProcessedFiles = 0;
+
+            CSProjectScanResult scanResult = InitialiseScanResult(directoryPath);
+
+            foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
+            {
+                scanResult.NamesOfAllCSFilesInsideThisCSProject.Add(filePath);
+
+                // skip scanning blacklisted files
+                if (!excludeSubpaths.Any(subPath => filePath.Contains(subPath)))
+                {
+                    Console.WriteLine("currently scanned file: " + filePath);
+                    Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
+                    scanResult.SyntaxTreeScanResults.Add(ScanFile(filePath));
+                }
+                numberOfProcessedFiles++;
+            }
+
+            Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
+
+            scanResult.CSProjectScanResultEndTime = DateTime.Now;
+
+            if (scanResult.SyntaxTreeScanResults.Count() > 0)
+            {
+                diagnostics.CSProjectScanResults.Add(scanResult);
+            }
+            diagnostics.DiagnosticsEndTime = DateTime.Now;
+            return diagnostics;
+        }
+
+        private SyntaxTreeScanResult ScanFile(string filePath)
+        {
+            string file = File.ReadAllText(filePath);
+            SyntaxTreeScanResult syntaxTreeScanResult = InitialiseSyntaxTreeScanResult(filePath);
+
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(file);
+            SemanticModel semanticModel = GetSemanticModelFromSyntaxTree(syntaxTree);
+
+            foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
+            {
+
+                if (!MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult)) continue;
+
+                MethodScanResult methodScanResult = ScanMethod(methodSyntax, semanticModel);
+                if (methodScanResult.Hits > 0)
+                {
+                    methodScanResult.MethodName = semanticModel.GetDeclaredSymbol(methodSyntax).Name;
+                    methodScanResult.MethodBody = methodSyntax.ToString();
+                    FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
+                    methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
+                    methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
+
+                    if (writeOnConsole)
+                    {
+                        WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
+                    }
+                }
+
+                syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
+            }
+
+            syntaxTreeScanResult.SyntaxTreeScanResultEndTime = DateTime.Now;
+            return syntaxTreeScanResult;
+        }
+
+        private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax, SemanticModel semanticModel)
+        {
+            MethodScanResult methodScanResult = InitialiseMethodScanResult();
+
+            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            methodScanResult.Sinks = (short)invocations.Count();
+
+            // follows data flow inside method for each sink invocation from sink invocation to source
+            foreach (var invocation in invocations)
+            {
+                FollowDataFlow(methodSyntax, invocation, methodScanResult);
+            }
+
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            return methodScanResult;
+        }
+
+        private void FollowDataFlow(SyntaxNode rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
+        {
+            if (visitedNodes == null)
+            {
+                visitedNodes = new List<SyntaxNode>();
+            }
+            else if (visitedNodes.Contains(currentNode))
+            {
+                result.AppendEvidence(new string(' ', level * 2) + "HALT (Node already visited)");
+                return;
+            }
+
+            visitedNodes.Add(currentNode);
+            result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
+            level += 1;
+
+
+            if (currentNode is InvocationExpressionSyntax)
+                SolveInvocationExpression(rootNode, (InvocationExpressionSyntax)currentNode, result, visitedNodes, level);
+            else if (currentNode is ObjectCreationExpressionSyntax)
+                SolveObjectCreationExpression(rootNode, (ObjectCreationExpressionSyntax)currentNode, result, visitedNodes, level);
+            else if (currentNode is AssignmentExpressionSyntax)
+                SolveAssignmentExpression(rootNode, (AssignmentExpressionSyntax)currentNode, result, visitedNodes, level);
+            else if (currentNode is VariableDeclaratorSyntax)
+                SolveVariableDeclarator(rootNode, (VariableDeclaratorSyntax)currentNode, result, visitedNodes, level);
+            else if (currentNode is ArgumentSyntax)
+                FindOrigin(rootNode, currentNode, result, visitedNodes, level);
+            else if (currentNode is IdentifierNameSyntax)
+                FindOrigin(rootNode, currentNode, result, visitedNodes, level);
+            else if (currentNode is ConditionalExpressionSyntax)
+                SolveConditionalExpression(rootNode, currentNode, result, visitedNodes, level);
+            else if (currentNode is LiteralExpressionSyntax)
+                SolveLiteralExpression(result, level);
+            else
+                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE" + currentNode.ToString());
+        }
+
+        private void SolveInvocationExpression(SyntaxNode rootNode, InvocationExpressionSyntax invocationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            if (taintPropagationRules.CleaningMethods.Any(cleaningMethod => invocationNode.ToString().Contains(cleaningMethod)))
+            {
+                result.AppendEvidence(new string(' ', level * 2) + "OK (Cleaning method)");
+                return;
+            }
+            if (invocationNode.ArgumentList == null)
+                return;
+            foreach (ArgumentSyntax argumentNode in invocationNode.ArgumentList.Arguments)
+                FollowDataFlow(rootNode, argumentNode, result, visitedNodes, level + 1);
+        }
+
+        private void SolveObjectCreationExpression(SyntaxNode rootNode, ObjectCreationExpressionSyntax objectCreationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            if (objectCreationNode.ArgumentList == null)
+                return;
+            foreach (ArgumentSyntax argNode in objectCreationNode.ArgumentList.Arguments)
+                FollowDataFlow(rootNode, argNode, result, visitedNodes, level + 1);
+        }
+
+        // follow what is behind = (everything except the first identifier)
+        private void SolveAssignmentExpression(SyntaxNode rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            var firstIdent = assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
+
+            foreach (var identifier in assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>())
+            {
+                if (identifier != firstIdent)
+                    FollowDataFlow(rootNode, identifier, result, visitedNodes, level + 1);
+            }
+        }
+
+        // nemozem to riesit rovnako ako solve assignment expr?
+        private void SolveVariableDeclarator(SyntaxNode rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
+
+            if (eq != null)
+                foreach (var dec in eq.ChildNodes())
+                    FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
+        }
+
+        private void FindOrigin(SyntaxNode rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            string arg = currentNode.ToString();
+
+            if (currentNode is ArgumentSyntax)
+            {
+                if (currentNode.ChildNodes().First() is MemberAccessExpressionSyntax)
+                    arg = currentNode.ChildNodes().First().ChildNodes().OfType<IdentifierNameSyntax>().First().Identifier.Text;
+            }
+
+            InvocationExpressionSyntax invocation = currentNode.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
+            if (invocation != null)
+            {
+                SolveInvocationExpression(rootNode, invocation, result, visitedNodes, level + 1);
+                return;
+            }
+
+            ConditionalExpressionSyntax conditional = currentNode.DescendantNodes().OfType<ConditionalExpressionSyntax>().FirstOrDefault();
+            if (conditional != null)
+            {
+                SolveConditionalExpression(rootNode, conditional, result, visitedNodes, level + 1);
+                return;
+            }
+
+            ObjectCreationExpressionSyntax objectCreation = currentNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>().FirstOrDefault();
+            if (objectCreation != null)
+            {
+                SolveObjectCreationExpression(rootNode, objectCreation, result, visitedNodes, level + 1);
+                return;
+            }
+
+            bool isAssigned = false;
+            foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
+            {
+                if (!visitedNodes.Contains(assignment))
+                {
+                    isAssigned = true;
+                    FollowDataFlow(rootNode, assignment, result, visitedNodes, level + 1);
+                    visitedNodes.Add(assignment);
+                    break;
+                }
+            }
+
+            if (!isAssigned)
+            {
+                foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
+                {
+                    if (!visitedNodes.Contains(dec))
+                    {
+                        FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
+                        visitedNodes.Add(dec);
+                        return;
+                    }
+                }
+            }
+
+            // only after no assignment, declaration,... was found, only after that test for presence among parameters
+            foreach (var param in rootNode.DescendantNodes().OfType<ParameterSyntax>())
+            {
+                if (arg == param.Identifier.Text)
+                {
+                    result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
+                    result.Hits++;
+                }
+            }
+        }
+
+        private void SolveConditionalExpression(SyntaxNode rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        {
+            foreach (IdentifierNameSyntax identifier in currentNode.ChildNodes().OfType<IdentifierNameSyntax>())
+            {
+                result.AppendEvidence(new string(' ', level * 2) + identifier.ToString());
+                FindOrigin(rootNode, identifier, result, visitedNodes, level + 1);
+            }
+        }
+
+        private void SolveLiteralExpression(MethodScanResult result, int level)
+        {
+            result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
+        }
+
+        private SemanticModel GetSemanticModelFromSyntaxTree(SyntaxTree syntaxTree)
+        {
+            PortableExecutableReference mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            CSharpCompilation compilation = CSharpCompilation.Create("comp", syntaxTrees: new[] { syntaxTree }, references: new[] { mscorlib });
+            return compilation.GetSemanticModel(syntaxTree);
+        }
+
+        private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
+        {
+            Diagnostics diagnostics = new Diagnostics();
+            diagnostics.ScopeOfAnalysis = scopeOfAnalysis;
+            diagnostics.DiagnosticsStartTime = DateTime.Now;
+            return diagnostics;
+        }
+
+        private CSProjectScanResult InitialiseScanResult(string directoryPath)
+        {
+            CSProjectScanResult scanResult = new CSProjectScanResult();
+            scanResult.CSProjectScanResultStartTime = DateTime.Now;
+            scanResult.Path = directoryPath;
+
+            return scanResult;
+        }
+
+        private SyntaxTreeScanResult InitialiseSyntaxTreeScanResult(string filePath)
+        {
+            SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
+            syntaxTreeScanResult.SyntaxTreeScanResultStartTime = DateTime.Now;
+            syntaxTreeScanResult.Path = filePath;
+
+            return syntaxTreeScanResult;
+        }
+
+        private MethodScanResult InitialiseMethodScanResult()
+        {
+            MethodScanResult methodScanResult = new MethodScanResult();
+            methodScanResult.MethodScanResultStartTime = DateTime.Now;
+
+            return methodScanResult;
+        }
+
+        private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
+        {
+            //scan public methods only (will be removed)
+            if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+
+            //skontrolovat aj objekty, ktore môžu mať zanorene stringy
+            if (!methodSyntax.ParameterList.ToString().Contains("string"))
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+
+            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+
+            if (!invocations.Any())
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+            return true;
+        }
+
+        private void WriteEvidenceOnConsole(string methodName, string evidence)
+        {
+            Console.WriteLine("-----------------------");
+            Console.WriteLine("Vulnerable method found");
+            Console.WriteLine("Method name: " + methodName);
+            Console.WriteLine("Evidence:");
+            Console.WriteLine(evidence);
+            Console.WriteLine("-----------------------");
+        }
+    }
+}
