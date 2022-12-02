@@ -41,10 +41,9 @@ SQL Injection Analyzer is a Roslyn-based static source code analyzer which focus
      informs about results in real-time
 ```
 ## Results
-Analyzer should produce results in two formats into pre-defined directory (--result argument). 
-### .html result
-### .txt result
+Analyzer should produce .html, and .txt result into pre-defined directory (--result argument).
 
+## Flow chart
 ```mermaid
 flowchart LR;
     J[Start]-->A[Process input]
