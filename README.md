@@ -47,15 +47,17 @@ Analyzer should produce results in two formats into pre-defined directory (--res
 
 ```mermaid
 flowchart LR;
-    A[Process input]-->B[Process config];
-    B-->C[Scope];
-    C-->D[SimpleAnalyzer];
-    C-->E[OneMethodAnalyzer];
-    C-->F[InterproceduralAnalyzer];
-    C-->G[InterproceduralReachabilityAnalyzer];
+    J[Start]-->A[Process input]
+    A-->B[Process config];
+    B-->C{Scope};
+    C-->|Simple|D[SimpleAnalyzer];
+    C-->|OneMethod|E[OneMethodAnalyzer];
+    C-->|Interprocedural|F[InterproceduralAnalyzer];
+    C-->|InterproceduralReachability|G[InterproceduralReachabilityAnalyzer];
     D-->H[Process diagnostics];
     E-->H;
     F-->H;
     G-->H;
     H-->I[Generate report];
+    I-->K[End]
 ```
