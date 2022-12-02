@@ -3,4 +3,3 @@
 *.vs*
 SQLInjectionAnalyzer/packages/
 SQLInjectionAnalyzer/TestResults/
-SQLInjectionAnalyzer/Properties/
