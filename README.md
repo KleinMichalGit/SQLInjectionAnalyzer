@@ -47,8 +47,15 @@ Analyzer should produce results in two formats into pre-defined directory (--res
 
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    Process input-->Process config;
+    Process config-->Scope;
+    Scope-->SimpleAnalyzer;
+    Scope-->OneMethodAnalyzer;
+    Scope-->InterproceduralAnalyzer;
+    Scope-->InterproceduralReachabilityAnalyzer;
+    SimpleAnalyzer-->Process diagnostics;
+    OneMethodAnalyzer-->Process diagnostics;
+    InterproceduralAnalyzer-->Process diagnostics;
+    InterproceduralReachabilityAnalyzer-->Process diagnostics;
+    Process diagnostics-->Generate report;
 ```
