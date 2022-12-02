@@ -5,6 +5,10 @@ VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLInjectionAnalyzer", "SQLInjectionAnalyzer\SQLInjectionAnalyzer.csproj", "{4CCA4842-29BA-4A89-B72A-06A11A9B1497}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExceptionHandler", "ExceptionHandler\ExceptionHandler.csproj", "{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{536B46B7-7816-4273-932F-11CBE4155D38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{4CCA4842-29BA-4A89-B72A-06A11A9B1497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CCA4842-29BA-4A89-B72A-06A11A9B1497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CCA4842-29BA-4A89-B72A-06A11A9B1497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{536B46B7-7816-4273-932F-11CBE4155D38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{536B46B7-7816-4273-932F-11CBE4155D38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{536B46B7-7816-4273-932F-11CBE4155D38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{536B46B7-7816-4273-932F-11CBE4155D38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

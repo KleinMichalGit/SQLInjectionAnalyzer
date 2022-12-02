@@ -1,5 +1,5 @@
 *bin*
 *obj*
 *.vs*
-SQLInjectionAnalyzer/packages/
-SQLInjectionAnalyzer/TestResults/
+packages/
+TestResults/
