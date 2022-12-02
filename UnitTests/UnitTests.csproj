@@ -53,6 +53,9 @@
     <Compile Include="CodeToBeAnalysed\AssignmentRules\SafeAssignment\SafeAssignment1.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment2.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment1.cs" />
+    <Compile Include="CodeToBeAnalysed\CleaningRules\AllArgumentsAreCleaned\ArgumentsAreCleaned1.cs" />
+    <Compile Include="CodeToBeAnalysed\CleaningRules\AllArgumentsAreCleaned\ArgumentsAreCleaned2.cs" />
+    <Compile Include="CodeToBeAnalysed\CleaningRules\NotAllArgumentsAreCleaned\NotAllArgumentsAreCleanedClass.cs" />
     <Compile Include="CodeToBeAnalysed\Complex\ComplexAnalysis1.cs" />
     <Compile Include="CodeToBeAnalysed\ConditionalExpressionRules\SafeConditionalExpression\SafeConditionalExpressionClass.cs" />
     <Compile Include="CodeToBeAnalysed\ConditionalExpressionRules\VulnerableConditionalExpression\VulnerableConditionalExpressionClass.cs" />

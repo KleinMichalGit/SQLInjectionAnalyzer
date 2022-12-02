@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace UnitTests.CodeToBeAnalysed.CleaningRules.AllArgumentsAreCleaned
+{
+    internal class ArgumentsAreCleaned1
+    {
+        public void ThisIsSafeMethod(string args)
+        {
+            SinkMethodOne(string.Empty);
+        }
+
+        public void SinkMethodOne(string args)
+        {
+
+        }
+    }
+}
