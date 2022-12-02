@@ -46,16 +46,16 @@ Analyzer should produce results in two formats into pre-defined directory (--res
 ### .txt result
 
 ```mermaid
-graph TD;
-    Process input-->Process config;
-    Process config-->Scope;
-    Scope-->SimpleAnalyzer;
-    Scope-->OneMethodAnalyzer;
-    Scope-->InterproceduralAnalyzer;
-    Scope-->InterproceduralReachabilityAnalyzer;
-    SimpleAnalyzer-->Process diagnostics;
-    OneMethodAnalyzer-->Process diagnostics;
-    InterproceduralAnalyzer-->Process diagnostics;
-    InterproceduralReachabilityAnalyzer-->Process diagnostics;
-    Process diagnostics-->Generate report;
+flowchart LR;
+    A[Process input]-->B[Process config];
+    B-->C[Scope];
+    C-->D[SimpleAnalyzer];
+    C-->E[OneMethodAnalyzer];
+    C-->F[InterproceduralAnalyzer];
+    C-->G[InterproceduralReachabilityAnalyzer];
+    D-->H[Process diagnostics];
+    E-->H;
+    F-->H;
+    G-->H;
+    H-->I[Generate report];
 ```
