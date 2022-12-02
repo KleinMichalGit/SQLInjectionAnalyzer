@@ -1,0 +1,20 @@
+﻿{
+    "sinkMethodNames": [
+        "ExecuteReader",
+        "ExecuteDataSet",
+        "ExecuteDataTable",
+        "ExecuteExists",
+        "ExecuteScalar",
+        "ExecuteNonQuery"
+    ],
+    "sourceAreas": [
+        {
+            "label": "DangerousLabel",
+            "path": "./X/Y/Z/"
+        },
+        {
+            "label": "LowPriority",
+            "path": "./A/B/C/"
+        }
+    ]
+}

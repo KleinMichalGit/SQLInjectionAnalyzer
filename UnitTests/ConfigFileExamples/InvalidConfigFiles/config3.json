@@ -1,0 +1,13 @@
+﻿{
+    "level": 5,
+    "sourceAreas": [
+        {
+            "label": "DangerousLabel",
+            "path": "./X/Y/Z/"
+        },
+        {
+            "label": "LowPriority",
+            "path": "./A/B/C/"
+        }
+    ]
+}

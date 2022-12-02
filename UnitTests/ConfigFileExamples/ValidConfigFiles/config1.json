@@ -1,0 +1,24 @@
+﻿{
+    "level": 5,
+    "sourceAreas": [
+        {
+            "label": "X",
+            "path": "./X/Y/Z/"
+        },
+        {
+            "label": "A",
+            "path": "./A/B/C/"
+        }
+    ],
+    "sinkMethods": [
+        "ExecuteReader",
+        "ExecuteDataSet",
+        "ExecuteDataTable",
+        "ExecuteExists",
+        "ExecuteScalar",
+        "ExecuteNonQuery"
+    ],
+    "cleaningMethods": [
+        "KeyValuePair"
+    ]
+}

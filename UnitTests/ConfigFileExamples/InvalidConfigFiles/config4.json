@@ -1,0 +1,11 @@
+﻿{
+    "level": 5,
+    "sinkMethodNames": [
+        "ExecuteReader",
+        "ExecuteDataSet",
+        "ExecuteDataTable",
+        "ExecuteExists",
+        "ExecuteScalar",
+        "ExecuteNonQuery"
+    ]
+}

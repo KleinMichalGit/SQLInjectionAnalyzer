@@ -1,0 +1,2 @@
+﻿This folder is empty for testing purposes.
+There is UNIT test testing the received Diagnostics after analysing empty folder.
