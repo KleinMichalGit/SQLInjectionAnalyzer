@@ -7,7 +7,25 @@ using Model;
 namespace SQLInjectionAnalyzer.OutputManager
 {
     /// <summary>
+    /// SQLInjectionAnalyzer.OutputManager <c>DataExtractor</c> class.
     /// 
+    /// <para>
+    /// Class for extracting, and/or observing data from Diagnostics.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>DataExtractor</c> constructor.
+    /// Contains <c>GetNumberOfAllCSProjFiles</c> method.
+    /// Contains <c>GetNumberOfScannedCSProjFiles</c> method.
+    /// Contains <c>GetNumberOfSkippedCSProjFiles</c> method.
+    /// Contains <c>GetNumberOfAllCSFiles</c> method.
+    /// Contains <c>GetNumberOfScannedMethods</c> method.
+    /// Contains <c>GetNumberOfSkippedMethods</c> method.
+    /// Contains <c>GetNumberOfAllSinks</c> method.
+    /// Contains <c>GetNumberOfVulnerableMethods</c> method.
+    /// Contains <c>GetNumberOfVulnerableMethodsInFile</c> method.
+    /// Contains <c>GetNumberOfVulnerableMethodsInCSProj</c> method.
+    /// </para>
     /// </summary>
     public class DataExtractor
     {
@@ -153,7 +171,7 @@ namespace SQLInjectionAnalyzer.OutputManager
 
             return result;
         }
-
+        
         /// <summary>
         /// Gets the number of vulnerable methods in file.
         /// </summary>
@@ -173,7 +191,7 @@ namespace SQLInjectionAnalyzer.OutputManager
 
             return result;
         }
-
+        
         /// <summary>
         /// Gets the number of vulnerable methods in cs proj.
         /// </summary>

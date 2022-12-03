@@ -8,7 +8,15 @@ using Newtonsoft.Json;
 namespace SQLInjectionAnalyzer.InputManager
 {
     /// <summary>
+    /// SQLInjectionAnalyzer.InputManager <c>ConfigFileReader</c> class.
     /// 
+    /// <para>
+    /// Reads and validates .json config files which contain TaintPropagationRules.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>ProcessConfig</c> method.
+    /// </para>
     /// </summary>
     public class ConfigFileReader
     {

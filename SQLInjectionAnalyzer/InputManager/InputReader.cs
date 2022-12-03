@@ -7,7 +7,15 @@ using Model;
 namespace SQLInjectionAnalyzer.InputManager
 {
     /// <summary>
+    /// SQLInjectionAnalyzer.InputManager <c>InputReader</c> class.
     /// 
+    /// <para>
+    /// Reads and validates user-provided console input.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>ProcessInput</c> method.
+    /// </para>
     /// </summary>
     public class InputReader
     {

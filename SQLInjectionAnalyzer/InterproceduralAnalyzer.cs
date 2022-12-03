@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,7 +17,14 @@ using Model;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
+    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
     /// 
+    /// <para>
+    /// Compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable.
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class InterproceduralAnalyzer : Analyzer

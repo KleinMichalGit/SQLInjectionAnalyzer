@@ -7,7 +7,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
+    /// SQLInjectionAnalyzer <c>CommonSyntaxHelper</c> class.
     /// 
+    /// <para>
+    /// Provides helpful methods for working with syntax. Its methods are used by individual analyzers.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory</c> method.
+    /// Contains <c>FindSinkInvocations</c> method.
+    /// </para>
     /// </summary>
     public class CommonSyntaxHelper
     {

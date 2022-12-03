@@ -13,7 +13,17 @@ using RazorEngineCore;
 namespace SQLInjectionAnalyzer.OutputManager
 {
     /// <summary>
+    /// SQLInjectionAnalyzer.OutputManager <c>OutputGenerator</c> class.
     /// 
+    /// <para>
+    /// Class for generating .html and .txt output files according to Scope of analysis.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>OutputGenerator</c> constructor.
+    /// Contains <c>CreateOutput</c> method.
+    /// Contains <c>CreateConsoleOutput</c> method.
+    /// </para>
     /// </summary>
     public class OutputGenerator
     {

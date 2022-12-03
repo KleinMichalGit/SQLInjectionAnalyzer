@@ -5,7 +5,17 @@ using Model.Rules;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
+    /// SQLInjectionAnalyzer <c>Analyzer</c> class.
     /// 
+    /// <para>
+    /// Public abstract class which has to be inherited by every single analyzer.
+    /// It contains only one ScanDirectory method, which takes information received on input and in config file, and returns Diagnostics object.
+    /// The way how each analyzer implements this method is completely up to a derived class.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains abstract <c>ScanDirectory</c> method.
+    /// </para>
     /// </summary>
     public abstract class Analyzer
     {

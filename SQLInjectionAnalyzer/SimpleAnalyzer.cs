@@ -14,7 +14,14 @@ using System.Collections.Generic;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
+    /// SQLInjectionAnalyzer <c>SimpleAnalyzer</c> class.
     /// 
+    /// <para>
+    /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural analysis, every block of code is considered as reachable (very fast but very imprecise).
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class SimpleAnalyzer : Analyzer
