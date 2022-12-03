@@ -2,11 +2,31 @@
 ## About
 SQL Injection Analyzer is a Roslyn-based static source code analyzer which focuses on finding non parametric queries in C# source code.
 
-## Interprocedural analysis
 
-## Reachability
+## Flow chart
+```mermaid
+flowchart LR;
+    J[Start]-->A[Process input]
+    A-->B[Process config];
+    B-->C{Scope};
+    C-->|Simple|D[SimpleAnalyzer];
+    C-->|OneMethod|E[OneMethodAnalyzer];
+    C-->|Interprocedural|F[InterproceduralAnalyzer];
+    C-->|InterproceduralReachability|G[InterproceduralReachabilityAnalyzer];
+    D-->H[Process diagnostics];
+    E-->H;
+    F-->H;
+    G-->H;
+    H-->I[Generate report];
+    I-->K[End]
+```
 
-## Multiple scopes of analysis
+## Directory structure
+- ExceptionHandler - custom exception types and exception writer used across entire repository
+- Model - data models for diagnostics, taint propagation rules and input.
+- SQLInjectionAnalyzer - main folder for analyzer platform, contains Program.cs with main method
+- UnitTests - tests for all types of analyzers, config file reader and input reader.
+
 ## Usage manual
 ### Arguments
 ```
@@ -43,20 +63,10 @@ SQL Injection Analyzer is a Roslyn-based static source code analyzer which focus
 ## Results
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument).
 
-## Flow chart
-```mermaid
-flowchart LR;
-    J[Start]-->A[Process input]
-    A-->B[Process config];
-    B-->C{Scope};
-    C-->|Simple|D[SimpleAnalyzer];
-    C-->|OneMethod|E[OneMethodAnalyzer];
-    C-->|Interprocedural|F[InterproceduralAnalyzer];
-    C-->|InterproceduralReachability|G[InterproceduralReachabilityAnalyzer];
-    D-->H[Process diagnostics];
-    E-->H;
-    F-->H;
-    G-->H;
-    H-->I[Generate report];
-    I-->K[End]
-```
+## Multiple scopes of analysis
+TODO
+## Interprocedural analysis
+TODO
+## Reachability
+TODO
+
