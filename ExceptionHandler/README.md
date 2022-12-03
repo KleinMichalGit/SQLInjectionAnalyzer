@@ -1,6 +1,6 @@
 # Exception Handler
 Custom exception types and ExceptionWriter.
-## Exception types
-### Analysis exception
-### Invalid input exception
-### Output generator exception
+
+## Directory structure
+- `ExceptionType/` - analysis exception, invalid input exception, output generator exception.
+- `ExceptionHandler.cs` - writes helpful messages on console after detection of thrown unrecoverable exception 
