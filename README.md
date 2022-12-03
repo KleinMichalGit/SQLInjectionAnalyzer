@@ -24,7 +24,7 @@ flowchart LR;
 ## Directory structure
 - ExceptionHandler - custom exception types and exception writer used across entire repository
 - Model - data models for diagnostics, taint propagation rules and input.
-- SQLInjectionAnalyzer - main package for analyzer platform, contains Program.cs with main method
+- SQLInjectionAnalyzer - main folder for analyzer platform, contains Program.cs with main method
 - UnitTests - tests for all types of analyzers, config file reader and input reader.
 
 ## Usage manual
