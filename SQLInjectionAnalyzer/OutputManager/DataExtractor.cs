@@ -10,31 +10,57 @@ using Model;
 
 namespace SQLInjectionAnalyzer.OutputManager
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DataExtractor
     {
 
+        /// <summary>
+        /// The diagnostics
+        /// </summary>
         private Diagnostics diagnostics;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataExtractor"/> class.
+        /// </summary>
+        /// <param name="diag">The diag.</param>
         public DataExtractor(Diagnostics diag)
         {
             diagnostics = diag;
         }
 
+        /// <summary>
+        /// Gets the number of all cs proj files.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfAllCSProjFiles()
         {
             return diagnostics.NumberOfCSProjFiles;
         }
 
+        /// <summary>
+        /// Gets the number of scanned cs proj files.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfScannedCSProjFiles()
         {
             return diagnostics.CSProjectScanResults.Count();
         }
 
+        /// <summary>
+        /// Gets the number of skipped cs proj files.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfSkippedCSProjFiles()
         {
             return diagnostics.PathsOfSkippedCSProjects.Count();
         }
 
+        /// <summary>
+        /// Gets the number of all cs files.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfAllCSFiles()
         {
             int result = 0;
@@ -47,6 +73,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of scanned methods.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfScannedMethods()
         {
             int result = 0;
@@ -62,6 +92,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of skipped methods.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfSkippedMethods()
         {
             int result = 0;
@@ -77,6 +111,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of all sinks.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfAllSinks()
         {
             int result = 0;
@@ -95,6 +133,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of vulnerable methods.
+        /// </summary>
+        /// <returns></returns>
         public int GetNumberOfVulnerableMethods()
         {
             int result = 0;
@@ -116,6 +158,11 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of vulnerable methods in file.
+        /// </summary>
+        /// <param name="syntaxTreeScanResult">The syntax tree scan result.</param>
+        /// <returns></returns>
         public int GetNumberOfVulnerableMethodsInFile(SyntaxTreeScanResult syntaxTreeScanResult)
         {
             int result = 0;
@@ -131,6 +178,11 @@ namespace SQLInjectionAnalyzer.OutputManager
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of vulnerable methods in cs proj.
+        /// </summary>
+        /// <param name="csprojScanResult">The csproj scan result.</param>
+        /// <returns></returns>
         public int GetNumberOfVulnerableMethodsInCSProj(CSProjectScanResult csprojScanResult)
         {
             int result = 0;

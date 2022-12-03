@@ -7,13 +7,24 @@ using Model.Rules;
 
 namespace UnitTests.TaintPropagationRulesExamples
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class TaintPropagationRulesCreator
     {
+        /// <summary>
+        /// Gets the empty rules.
+        /// </summary>
+        /// <returns></returns>
         public TaintPropagationRules GetEmptyRules()
         {
             return new TaintPropagationRules();
         }
 
+        /// <summary>
+        /// Gets the rules with sink method names.
+        /// </summary>
+        /// <returns></returns>
         public TaintPropagationRules GetRulesWithSinkMethodNames()
         {
             return new TaintPropagationRules()

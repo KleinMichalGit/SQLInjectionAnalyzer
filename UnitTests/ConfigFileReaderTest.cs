@@ -11,11 +11,20 @@ using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [TestClass]
     public class ConfigFileReaderTest
     {
+        /// <summary>
+        /// The configuration file reader
+        /// </summary>
         ConfigFileReader configFileReader = new ConfigFileReader();
 
+        /// <summary>
+        /// Ruleses the are valid.
+        /// </summary>
         [TestMethod]
         public void RulesAreValid()
         {
@@ -41,6 +50,9 @@ namespace UnitTests
             areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
             Assert.IsTrue(areValid);
         }
+        /// <summary>
+        /// Alls the source areas are valid.
+        /// </summary>
         [TestMethod]
         public void AllSourceAreasAreValid()
         {
@@ -56,6 +68,9 @@ namespace UnitTests
             areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { sourceAreas });
             Assert.IsFalse(areValid);
         }
+        /// <summary>
+        /// Processes the configuration.
+        /// </summary>
         [TestMethod]
         public void ProcessConfig()
         {
@@ -133,6 +148,12 @@ namespace UnitTests
         }
 
 
+        /// <summary>
+        /// Ruleses the are equal.
+        /// </summary>
+        /// <param name="receivedRules">The received rules.</param>
+        /// <param name="expectedRules">The expected rules.</param>
+        /// <returns></returns>
         private bool RulesAreEqual(TaintPropagationRules receivedRules, TaintPropagationRules expectedRules)
         {
             if (receivedRules.Level != expectedRules.Level) return false;

@@ -10,13 +10,24 @@ using Model;
 
 namespace UnitTests.ExpectedDiagnostics
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ExpectedDiagnosticsSimpleAnalysis
     {
+        /// <summary>
+        /// Gets the simple empty diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetSimpleEmptyDiagnostics()
         {
             return new Diagnostics();
         }
 
+        /// <summary>
+        /// Gets the simple diagnostics with one cs file scaned.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetSimpleDiagnosticsWithOneCSFileScaned()
         {
             return new Diagnostics()
@@ -38,6 +49,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the one vulnerable method diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetOneVulnerableMethodDiagnostics()
         {
             return new Diagnostics()
@@ -71,6 +86,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets all arguments are cleaned diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetAllArgumentsAreCleanedDiagnostics()
         {
             return new Diagnostics()
@@ -115,6 +134,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the not all arguments are cleaned diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetNotAllArgumentsAreCleanedDiagnostics()
         {
             return new Diagnostics()
@@ -150,6 +173,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the invocation rules diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetInvocationRulesDiagnostics()
         {
             return new Diagnostics()
@@ -211,6 +238,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the excluding paths diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetExcludingPathsDiagnostics()
         {
             return new Diagnostics()
@@ -247,6 +278,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the safe assignments diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetSafeAssignmentsDiagnostics()
         {
             return new Diagnostics()
@@ -278,6 +313,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the vulnerable assignments diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetVulnerableAssignmentsDiagnostics()
         {
             return new Diagnostics()
@@ -330,6 +369,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the safe conditional expression diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetSafeConditionalExpressionDiagnostics()
         {
             return new Diagnostics()
@@ -361,6 +404,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the vulnerable conditional expression diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetVulnerableConditionalExpressionDiagnostics()
         {
             return new Diagnostics()
@@ -396,6 +443,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the safe object creation diagnostics.
+        /// </summary>
+        /// <returns></returns>
         internal Diagnostics GetSafeObjectCreationDiagnostics()
         {
             return new Diagnostics()
@@ -427,6 +478,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the vulnerable object creation diagnostics.
+        /// </summary>
+        /// <returns></returns>
         public Diagnostics GetVulnerableObjectCreationDiagnostics()
         {
             return new Diagnostics()
@@ -462,6 +517,10 @@ namespace UnitTests.ExpectedDiagnostics
             };
         }
 
+        /// <summary>
+        /// Gets the complex test diagnostics.
+        /// </summary>
+        /// <returns></returns>
         internal Diagnostics GetComplexTestDiagnostics()
         {
             return new Diagnostics()

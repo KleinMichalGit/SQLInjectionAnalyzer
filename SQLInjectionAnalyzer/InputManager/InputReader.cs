@@ -8,8 +8,16 @@ using Model;
 
 namespace SQLInjectionAnalyzer.InputManager
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class InputReader
     {
+        /// <summary>
+        /// Inputs the arguments are valid.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool InputArgumentsAreValid(string[] args)
         {
             return InputArgumentsAreUnique(args) &&
@@ -19,6 +27,11 @@ namespace SQLInjectionAnalyzer.InputManager
                    ConfigPathIsDefinedCorrectly(args);
         }
 
+        /// <summary>
+        /// Inputs the arguments are unique.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool InputArgumentsAreUnique(string[] args)
         {
             HashSet<string> usedArguments = new HashSet<string>();
@@ -35,6 +48,11 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Inputs the arguments are recognizable.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool InputArgumentsAreRecognizable(string[] args)
         {
             HashSet<string> recognizableArguments = new HashSet<string> { "--help", "--path", "--scope-of-analysis", "--exclude-paths", "--config", "--result", "--write-console" };
@@ -51,6 +69,11 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
 
+        /// <summary>
+        /// Mandatories the arguments are present.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool MandatoryArgumentsArePresent(string[] args)
         {
             if (args.Length == 1 && args[0] == "--help") return true;
@@ -86,6 +109,11 @@ namespace SQLInjectionAnalyzer.InputManager
             }
         }
 
+        /// <summary>
+        /// Scopes the is defined correctly.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool ScopeIsDefinedCorrectly(string[] args)
         {
             foreach (string argument in args)
@@ -110,6 +138,11 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Configurations the path is defined correctly.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private bool ConfigPathIsDefinedCorrectly(string[] args)
         {
             foreach (string argument in args)
@@ -131,6 +164,11 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Processes the exclude substrings.
+        /// </summary>
+        /// <param name="substrings">The substrings.</param>
+        /// <returns></returns>
         private List<string> ProcessExcludeSubstrings(string substrings)
         {
             if (substrings == "") return new List<string>();
@@ -140,12 +178,22 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
 
+        /// <summary>
+        /// Gets the value from argument.
+        /// </summary>
+        /// <param name="argument">The argument.</param>
+        /// <returns></returns>
         private string GetValueFromArgument(string argument)
         {
             // get what is behind first assignment
             return argument.Split('=')[1];
         }
 
+        /// <summary>
+        /// Gets the scope from argument.
+        /// </summary>
+        /// <param name="argumentValue">The argument value.</param>
+        /// <returns></returns>
         private ScopeOfAnalysis GetScopeFromArgument(string argumentValue)
         {
             if (argumentValue == "Simple") return ScopeOfAnalysis.Simple;
@@ -155,6 +203,11 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
         //creates input from valid array of arguments (array of arguments has to be validated before)
+        /// <summary>
+        /// Creates the input.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         private Input CreateInput(string[] args)
         {
             Input input = new Input();
@@ -174,6 +227,12 @@ namespace SQLInjectionAnalyzer.InputManager
             return input;
         }
 
+        /// <summary>
+        /// Processes the input.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        /// <exception cref="ExceptionHandler.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
         public Input ProcessInput(string[] args)
         {
             if (!InputArgumentsAreValid(args))

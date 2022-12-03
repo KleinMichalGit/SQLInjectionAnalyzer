@@ -11,12 +11,27 @@ using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [TestClass]
     public class InputReaderTest
     {
+        /// <summary>
+        /// The input reader
+        /// </summary>
         InputReader inputReader = new InputReader();
+        /// <summary>
+        /// The mandatory arguments example
+        /// </summary>
         string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/" };
+        /// <summary>
+        /// All arguments presented in usage manual
+        /// </summary>
         string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
+        /// <summary>
+        /// Inputs the arguments are unique.
+        /// </summary>
         [TestMethod]
         public void InputArgumentsAreUnique()
         {
@@ -48,6 +63,9 @@ namespace UnitTests
             Assert.IsFalse(isUnique);
         }
 
+        /// <summary>
+        /// Inputs the arguments are recognizable.
+        /// </summary>
         [TestMethod]
         public void InputArgumentsAreRecognizable()
         {
@@ -76,6 +94,9 @@ namespace UnitTests
 
         }
 
+        /// <summary>
+        /// Mandatories the arguments are present.
+        /// </summary>
         [TestMethod]
         public void MandatoryArgumentsArePresent()
         {
@@ -117,6 +138,9 @@ namespace UnitTests
             Assert.IsFalse(mandatoryArgumentsArePresent);
         }
 
+        /// <summary>
+        /// Scopes the is defined correctly.
+        /// </summary>
         [TestMethod]
         public void ScopeIsDefinedCorrectly()
         {
@@ -154,6 +178,9 @@ namespace UnitTests
 
         }
 
+        /// <summary>
+        /// Configurations the path is defined correctly.
+        /// </summary>
         [TestMethod]
         public void ConfigPathIsDefinedCorrectly()
         {
@@ -175,6 +202,9 @@ namespace UnitTests
             Assert.IsFalse(configPathIsDefinedCorrectly);
         }
 
+        /// <summary>
+        /// Processes the exclude substrings.
+        /// </summary>
         [TestMethod]
         public void ProcessExcludeSubstrings()
         {
@@ -206,6 +236,9 @@ namespace UnitTests
 
         }
 
+        /// <summary>
+        /// Gets the value from argument.
+        /// </summary>
         [TestMethod]
         public void GetValueFromArgument()
         {
@@ -224,6 +257,9 @@ namespace UnitTests
             Assert.AreEqual(expected, receivedValue);
         }
 
+        /// <summary>
+        /// Gets the scope from argument.
+        /// </summary>
         [TestMethod]
         public void GetScopeFromArgument()
         {
@@ -254,6 +290,9 @@ namespace UnitTests
             Assert.AreEqual(expected, receivedValue);
         }
 
+        /// <summary>
+        /// Creates the input.
+        /// </summary>
         [TestMethod]
         public void CreateInput()
         {
@@ -304,6 +343,9 @@ namespace UnitTests
             Assert.IsFalse(TwoInputsAreEqual(expected, input));
 
         }
+        /// <summary>
+        /// Inputs the arguments are valid.
+        /// </summary>
         [TestMethod]
         public void InputArgumentsAreValid()
         {
@@ -325,6 +367,9 @@ namespace UnitTests
             Assert.IsFalse(isValid);
         }
 
+        /// <summary>
+        /// Processes the input.
+        /// </summary>
         [TestMethod]
         public void ProcessInput()
         {
@@ -354,6 +399,12 @@ namespace UnitTests
             }
         }
 
+        /// <summary>
+        /// Twoes the inputs are equal.
+        /// </summary>
+        /// <param name="receivedInput">The received input.</param>
+        /// <param name="expectedInput">The expected input.</param>
+        /// <returns></returns>
         private bool TwoInputsAreEqual(Input receivedInput, Input expectedInput)
         {
             if (receivedInput.SourceFolderPath != expectedInput.SourceFolderPath) return false;

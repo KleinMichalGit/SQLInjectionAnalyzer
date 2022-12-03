@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace ExceptionHandler
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ExceptionWriter
     {
+        /// <summary>
+        /// Writes the usage tutorial.
+        /// </summary>
         public void WriteUsageTutorial()
         {
             Console.WriteLine("Usage:\n" +
@@ -44,11 +50,17 @@ namespace ExceptionHandler
                                 );
         }
 
+        /// <summary>
+        /// Writes the output generator exception message.
+        /// </summary>
         public void WriteOutputGeneratorExceptionMessage()
         {
             Console.WriteLine("Something went wrong while generating output files.");
         }
 
+        /// <summary>
+        /// Writes the analysis exception message.
+        /// </summary>
         public void WriteAnalysisExceptionMessage()
         {
             Console.WriteLine("Something went wrong while performing analysis.");

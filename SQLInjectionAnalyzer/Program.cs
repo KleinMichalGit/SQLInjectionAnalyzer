@@ -12,8 +12,16 @@ using SQLInjectionAnalyzer.OutputManager;
 
 namespace SQLInjectionAnalyzer
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Defines the entry point of the application.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <exception cref="ExceptionHandler.ExceptionType.AnalysisException">not implemented yet</exception>
         public static void Main(string[] args)
         {
             InputReader inputReader = new InputReader();

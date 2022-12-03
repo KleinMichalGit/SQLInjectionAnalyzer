@@ -14,22 +14,40 @@ using RazorEngineCore;
 
 namespace SQLInjectionAnalyzer.OutputManager
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class OutputGenerator
     {
+        /// <summary>
+        /// The export path
+        /// </summary>
         private string exportPath;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OutputGenerator"/> class.
+        /// </summary>
+        /// <param name="exportPath">The export path.</param>
         public OutputGenerator(string exportPath)
         {
             this.exportPath = exportPath;
         }
 
         // create output based on scope od analysis
+        /// <summary>
+        /// Creates the output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics.</param>
         public void CreateOutput(Diagnostics diagnostics)
         {
             CreateConsoleOutput(diagnostics);
             CreateHTMLOutput(diagnostics);
             CreateTxtFileOutput(diagnostics);
         }
+        /// <summary>
+        /// Creates the console output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics.</param>
         public void CreateConsoleOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -58,6 +76,11 @@ namespace SQLInjectionAnalyzer.OutputManager
             Console.WriteLine("Detailed report: " + exportPath);
         }
 
+        /// <summary>
+        /// Creates the HTML output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics.</param>
+        /// <exception cref="ExceptionHandler.ExceptionType.OutputGeneratorException">not implemented yet</exception>
         private void CreateHTMLOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -99,6 +122,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             File.WriteAllText(exportPath + "\\report.html", result);
         }
 
+        /// <summary>
+        /// Creates the text file output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics.</param>
         private void CreateTxtFileOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
