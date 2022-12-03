@@ -26,7 +26,6 @@ flowchart LR;
 - Model - data models for diagnostics, taint propagation rules and input.
 - SQLInjectionAnalyzer - main package for analyzer platform, contains Program.cs with main method
 - UnitTests - tests for all types of analyzers, config file reader and input reader.
-## Interprocedural analysis
 
 ## Usage manual
 ### Arguments
@@ -65,6 +64,8 @@ flowchart LR;
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument).
 
 ## Multiple scopes of analysis
+TODO
+## Interprocedural analysis
 TODO
 ## Reachability
 TODO
