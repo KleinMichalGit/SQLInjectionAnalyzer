@@ -6,6 +6,23 @@ In comparison to OneMethod analyzer, Interprocedural analyzer is able to search 
 among every single C# file mentioned in the currently analysed .csproj file. It does so by creating BFS tree of callers-callees
 with the maximal height of `n`. The number `n` is defined in the `config.json` file.
 
+## Interprocedural Analysis
+By far, the most interesting functionality of this analyzer is how callers-callees are found on
+Interprocedural scope. The following list describes the methods used during this process.
+
+- `SolveInterproceduralAnalysis` - `n`-times iterates through each `SyntaxTree` of `Compilation`. On each level, finds all method invocations of the currently analysed method inside all SyntaxTrees.
+For each invocation find out if it is located inside the body of the method. If yes, solve the invocation as if it is the invocation of the
+method from the set of sinkMethods. However, only those invocation arguments should be solved which were considered as tainted on previous level.
+    - for each level of BFS tree, we append "INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString() into the evidence.
+    - if all taint variables are cleaned in the branch, we append "ALL TAINTED VARIABLES CLEANED IN THIS BRANCH." into the evidence.
+    - if there is a method which has tainted parameters but there are no callers of this method in any C# file in the current .csproj, we add "ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE." into the evidence. Since the parameters are uncleanable, this method must be included among the final results.
+    - if all taint variables are cleaned on the entire level of BFS tree (in all branches), we append "ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED. THEREFORE, THIS MESSAGE SHOULD NOT BE INCLUDED AMONG RESULTS." into the evidence.
+    - if there is a caller of the method, but it has a different number of arguments, we append "THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)" 
+- `CurrentLevelContainsTaintedBlocksWithoutCallers` - decides whether the current level of BFS tree contains methods with tainted parameters without callers.
+- `AllTaintVariablesAreCleanedInThisBranch` - decides whether in this branch on this level of BFS tree all tainted variables are cleaned.
+- `FindAllCallersOfCurrentBlock` - finds all callers of the method with the same number of arguments as the method's parameters. 
+- `SolveSourceAreas` - handles adding the batches specified in the config file.
+- `FindMethodParent` - tries to figure out if the current `SyntaxTree` node has `MethodDeclarationSyntax` parent or not.
 
 ## Taint propagation rules
 
