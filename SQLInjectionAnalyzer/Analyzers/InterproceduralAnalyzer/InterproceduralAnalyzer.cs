@@ -539,7 +539,7 @@ namespace SQLInjectionAnalyzer
                 Console.WriteLine("Source areas labels: " + String.Join(", ", result.SourceAreasLabels));
             }
             Console.WriteLine("-----------------------");
-            Console.WriteLine("Inreprocedural callers tree:");
+            Console.WriteLine("Interprocedural callers tree:");
             Console.WriteLine(result.CallersTree);
             Console.WriteLine("-----------------------");
             Console.WriteLine("Evidence:");
