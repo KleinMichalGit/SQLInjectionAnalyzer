@@ -142,3 +142,72 @@ Also, consider the following config file:
     "cleaningMethods": []
 }
 ```
+Interprocedural analysis of these two files using the config.json above would produce the following evidence:
+```
+currently scanned .csproj: .\path\InterproceduralCodeToBeAnalysed.csproj
+0 / 1 .csproj files scanned
+-----------------------
+Vulnerable method found
+Method name: A
+-----------------------
+Inreprocedural callers tree:
+level | method
+1   InterproceduralCodeToBeAnalysed.C1.A(string, string)
+2     InterproceduralCodeToBeAnalysed.C2.B(string)
+2     InterproceduralCodeToBeAnalysed.C2.C(string)
+2     InterproceduralCodeToBeAnalysed.C3.X(string)
+3       InterproceduralCodeToBeAnalysed.C2.E()
+3       InterproceduralCodeToBeAnalysed.C3.V(string)
+
+-----------------------
+Evidence:
+INTERPROCEDURAL LEVEL: 1
+SinkMethod(arg1, arg2)
+    arg1
+        arg1 = CreateStringValue(1 < 2 ? arg1 : "string literal")
+          CreateStringValue(1 < 2 ? arg1 : "string literal")
+              1 < 2 ? arg1 : "string literal"
+                  1 < 2
+                    UNRECOGNIZED NODE1 < 2
+                  arg1
+                      arg1 = s
+                          s
+------------------------> ^^^ BAD (Parameter)
+                  "string literal"
+                    OK (Literal)
+    arg2
+        arg2 = 2
+          2
+INTERPROCEDURAL LEVEL: 2 InterproceduralCodeToBeAnalysed.C2.B(string)
+new C1().A("", s)
+    ""
+ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.
+INTERPROCEDURAL LEVEL: 2 InterproceduralCodeToBeAnalysed.C2.C(string)
+new C1().A(s, "")
+    s
+--> ^^^ BAD (Parameter)
+INTERPROCEDURAL LEVEL: 2 InterproceduralCodeToBeAnalysed.C3.X(string)
+new C1().A(s, "")
+    s
+--> ^^^ BAD (Parameter)
+INTERPROCEDURAL LEVEL: 3 InterproceduralCodeToBeAnalysed.C2.E()
+C("")
+    ""
+ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.
+INTERPROCEDURAL LEVEL: 3 InterproceduralCodeToBeAnalysed.C3.V(string)
+X(s)
+    s
+--> ^^^ BAD (Parameter)
+
+-----------------------
+1 / 1 .csproj files scanned
+-----------------------------
+Analysis start time: 4. 12. 2022 22:55:11
+Analysis end time: 4. 12. 2022 22:55:16
+Analysis total time: 00:00:04.9897972
+Scanned methods: 1
+Skipped methods: 7
+Number of all sink invocations: 1
+Vulnerable methods: 1
+-----------------------------
+```
