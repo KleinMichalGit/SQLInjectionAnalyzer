@@ -181,8 +181,8 @@
     <Compile Include="CommonSyntaxHelper.cs" />
     <Compile Include="InputManager\ConfigFileReader.cs" />
     <Compile Include="InputManager\InputReader.cs" />
-    <Compile Include="InterproceduralAnalyzer.cs" />
-    <Compile Include="OneMethodAnalyzer.cs" />
+    <Compile Include="Analyzers\InterproceduralAnalyzer\InterproceduralAnalyzer.cs" />
+    <Compile Include="Analyzers\OneMethodAnalyzer\OneMethodAnalyzer.cs" />
     <Compile Include="OutputManager\DataExtractor.cs" />
     <Compile Include="OutputManager\OutputGenerator.cs" />
     <Compile Include="OutputManager\RazorOutput\ReportInterprocedural.cs" />
@@ -190,7 +190,7 @@
     <Compile Include="OutputManager\RazorOutput\ReportSimple.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleAnalyzer.cs" />
+    <Compile Include="Analyzers\SimpleAnalyzer\SimpleAnalyzer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
