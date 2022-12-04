@@ -56,3 +56,89 @@ method from the set of sinkMethods. However, only those invocation arguments sho
 - `SolveConditionalExpression` - find origin one-by-one from left to right for each identifier `IdentifierNameSyntax`.
 - `SolveLiteralExpression` - append "OK (Literal)" to the evidence and stop solving the current node.
 - else - append "UNRECOGNIZED NODE" to the evidence and stop solving the current node.
+
+## Example
+Consider the two following C# files. The first one:
+```cs
+using System;
+
+namespace InterproceduralCodeToBeAnalysed
+{
+    class C1
+    {
+        public void A(string s, string q)
+        {
+            string arg1 = s;
+            int arg2;
+
+            arg1 = CreateStringValue(1 < 2 ? arg1 : "string literal");
+            arg2 = 0;
+            arg2 = 1;
+            arg2 = 2;
+
+            SinkMethod(arg1, arg2);
+        }
+
+        private string CreateStringValue(string a)
+        {
+            return a;
+        }
+        
+        private void SinkMethod(string a, int b)
+        {
+        }
+    }
+
+    class C2
+    {
+        string myString = new C1().A("", "");
+
+        public void B(string s)
+        {
+            new C1().A("", s);
+        }
+
+        public void C(string s)
+        {
+            new C1().A(s, "");
+        }
+
+        void E()
+        {
+            C("");
+        }
+
+    }
+}
+
+```
+The second one:
+```cs
+namespace InterproceduralCodeToBeAnalysed
+{
+    public class C3
+    {
+
+        public void X(string s)
+        {
+            new C1().A(s, "");
+        }
+
+        private void V(string s)
+        {
+            X(s);
+        }
+    }
+}
+```
+Also, consider the following config file:
+```json
+{
+    "level": 3,
+    "sourceAreas": [],
+    "sinkMethods": [
+        "SinkMethod"
+    ],
+    "cleaningMethods": []
+}
+```

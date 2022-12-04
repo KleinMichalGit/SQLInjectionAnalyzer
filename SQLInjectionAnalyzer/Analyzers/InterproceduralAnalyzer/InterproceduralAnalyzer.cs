@@ -342,11 +342,11 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is ConditionalExpressionSyntax)
-                SolveConditionalExpression(rootNode, currentNode, result, visitedNodes, level, tainted);
+                SolveConditionalExpression(rootNode, (ConditionalExpressionSyntax)currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is LiteralExpressionSyntax)
                 SolveLiteralExpression(result, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE" + currentNode.ToString());
+                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
         }
 
         private void SolveInvocationExpression(MethodDeclarationSyntax rootNode, InvocationExpressionSyntax invocationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted, int[] taintedMethodParameters = null)
@@ -387,19 +387,13 @@ namespace SQLInjectionAnalyzer
                 FollowDataFlow(rootNode, argNode, result, tainted, null, visitedNodes, level + 1);
         }
 
-        // follow what is behind = (everything except the first identifier)
+        // follow what is positioned right to the equal sign
         private void SolveAssignmentExpression(MethodDeclarationSyntax rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            var firstIdent = assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
-
-            foreach (var identifier in assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>())
-            {
-                if (identifier != firstIdent)
-                    FollowDataFlow(rootNode, identifier, result, tainted, null, visitedNodes, level + 1);
-            }
+            result.AppendEvidence(new string(' ', level * 2) + assignmentNode.Right.ToString());
+            FindOrigin(rootNode, assignmentNode.Right, result, visitedNodes, level + 1, tainted);
         }
 
-        // nemozem to riesit rovnako ako solve assignment expr?
         private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
@@ -422,21 +416,21 @@ namespace SQLInjectionAnalyzer
             InvocationExpressionSyntax invocation = currentNode.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
             if (invocation != null)
             {
-                SolveInvocationExpression(rootNode, invocation, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, invocation, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
             ConditionalExpressionSyntax conditional = currentNode.DescendantNodes().OfType<ConditionalExpressionSyntax>().FirstOrDefault();
             if (conditional != null)
             {
-                SolveConditionalExpression(rootNode, conditional, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, conditional, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
             ObjectCreationExpressionSyntax objectCreation = currentNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>().FirstOrDefault();
             if (objectCreation != null)
             {
-                SolveObjectCreationExpression(rootNode, objectCreation, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, objectCreation, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
@@ -472,13 +466,11 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
+        private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, ConditionalExpressionSyntax currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            foreach (IdentifierNameSyntax identifier in currentNode.ChildNodes().OfType<IdentifierNameSyntax>())
-            {
-                result.AppendEvidence(new string(' ', level * 2) + identifier.ToString());
-                FindOrigin(rootNode, identifier, result, visitedNodes, level + 1, tainted);
-            }
+            FollowDataFlow(rootNode, currentNode.Condition, result, tainted, null, visitedNodes, level + 1);
+            FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
+            FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);            
         }
 
         private void SolveLiteralExpression(MethodScanResult result, int level)
