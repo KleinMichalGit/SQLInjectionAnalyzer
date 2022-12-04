@@ -150,7 +150,7 @@ currently scanned .csproj: .\path\InterproceduralCodeToBeAnalysed.csproj
 Vulnerable method found
 Method name: A
 -----------------------
-Inreprocedural callers tree:
+Interprocedural callers tree:
 level | method
 1   InterproceduralCodeToBeAnalysed.C1.A(string, string)
 2     InterproceduralCodeToBeAnalysed.C2.B(string)
@@ -168,7 +168,7 @@ SinkMethod(arg1, arg2)
           CreateStringValue(1 < 2 ? arg1 : "string literal")
               1 < 2 ? arg1 : "string literal"
                   1 < 2
-                    UNRECOGNIZED NODE1 < 2
+                    UNRECOGNIZED NODE 1 < 2
                   arg1
                       arg1 = s
                           s
