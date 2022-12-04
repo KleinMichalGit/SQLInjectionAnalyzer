@@ -19,3 +19,11 @@ TODO
 | else                             | Unrecognized node                              |
 
 #### Description of rules
+- `SolveInvocationExpression` -
+- `SolveObjectCreationExpression` -
+- `SolveAssignmentExpression` -
+- `SolveVariableDeclarator` -
+- `FindOrigin` -
+- `SolveConditionalExpression` -
+- `SolveLiteralExpression` -
+- else -
