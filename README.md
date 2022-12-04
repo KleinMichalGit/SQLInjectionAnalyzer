@@ -22,6 +22,7 @@ flowchart LR;
 ```
 
 ## Directory structure
+- Documentation - please read carefully all documents inside the Documentation folder. It contains information about initial setup, naming conventions, programming style, dependencies, etc... 
 - ExceptionHandler - custom exception types and exception writer used across entire repository
 - Model - data models for diagnostics, taint propagation rules and input.
 - SQLInjectionAnalyzer - main folder for analyzer platform, contains Program.cs with main method
@@ -39,7 +40,7 @@ flowchart LR;
 --help                                   show this usage tutorial and exit
 ```
 ### Exemplary usage
-```
+``` shell
 .\SQLInjectionAnalyzer.exe --path=.\source\folder\ --scope-of-analysis=Interprocedural --config=.\config\folder\config.json --result=.\result\path\ --exclude-paths=TEST,E2E --write-console
 ```
 ### About arguments
