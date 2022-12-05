@@ -3,6 +3,7 @@ The folder which contains all analyzers.
 
 ## Directory structure
 - InterproceduralAnalyzer
+- InterproceduralReachabilityAnalyzer
 - OneMethodAnalyzer
 - SimpleAnalyzer
 
