@@ -22,6 +22,7 @@ flowchart LR;
 ```
 
 ## Directory structure
+- Documentation - please read carefully all documents inside the Documentation folder. It contains information about initial setup, naming conventions, programming style, dependencies, etc... 
 - ExceptionHandler - custom exception types and exception writer used across entire repository
 - Model - data models for diagnostics, taint propagation rules and input.
 - SQLInjectionAnalyzer - main folder for analyzer platform, contains Program.cs with main method
@@ -39,7 +40,7 @@ flowchart LR;
 --help                                   show this usage tutorial and exit
 ```
 ### Exemplary usage
-```
+``` shell
 .\SQLInjectionAnalyzer.exe --path=.\source\folder\ --scope-of-analysis=Interprocedural --config=.\config\folder\config.json --result=.\result\path\ --exclude-paths=TEST,E2E --write-console
 ```
 ### About arguments
@@ -60,6 +61,42 @@ flowchart LR;
 --write-console:
      informs about results in real-time
 ```
+## Configuration
+The file which specifies configuration rules for solving taint propagation problems is expected to have the following format.
+It must be *.json file.
+- level - maximal allowed height of BFS tree during Interprocedural analysis
+- sourceAreas - batches for method findings which should be added to the .html result file. label defines the batch which should be added, path defines the path of the file containing at least one method analysed during analysis.
+- sinkMethods - the names of the methods considered to be potentially dangerous when any not parametrised parameter is passed to them.
+- cleaningMethods - the names of the methods considered to be clear. Therefore, if any tainted variable is passed to the calling of such method, it will automatically clean the tainted variable.
+```json
+{
+  "level": 5,
+  "sourceAreas": [
+    {
+      "label": "WEB",
+      "path": "orion\\src\\web\\"
+    },
+    {
+      "label": "DATABASE",
+      "path": "orion\\src\\database\\"
+    }
+  ],
+  "sinkMethods": [
+    "ExecuteReader",
+    "ExecuteDataSet",
+    "ExecuteDataTable",
+    "ExecuteExists",
+    "ExecuteScalar",
+    "ExecuteNonQuery"
+  ],
+  "cleaningMethods": [
+    "CreateConnection",
+    "SqlParameter",
+    "String.Format"
+  ]
+}
+```
+
 ## Results
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument).
 

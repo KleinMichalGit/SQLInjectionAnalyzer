@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,48 +17,14 @@ using Model;
 
 namespace SQLInjectionAnalyzer
 {
-    /// <summary>
-    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
-    /// 
-    /// <para>
-    /// Compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable.
-    /// </para>
-    /// <para>
-    /// Contains <c>ScanDirectory</c> method.
-    /// </para>
-    /// </summary>
-    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class InterproceduralAnalyzer : Analyzer
     {
-        /// <summary>
-        /// The taint propagation rules
-        /// </summary>
         private TaintPropagationRules taintPropagationRules;
-        /// <summary>
-        /// The target file type
-        /// </summary>
         private string targetFileType = "*.csproj";
-        /// <summary>
-        /// The csproj scan result
-        /// </summary>
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
-        /// <summary>
-        /// The write on console
-        /// </summary>
         private bool writeOnConsole = false;
-        /// <summary>
-        /// The common syntax helper
-        /// </summary>
         private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
 
-        /// <summary>
-        /// Scans the directory.
-        /// </summary>
-        /// <param name="directoryPath">The directory path.</param>
-        /// <param name="excludeSubpaths">The exclude subpaths.</param>
-        /// <param name="taintPropagationRules">The taint propagation rules.</param>
-        /// <param name="writeOnConsole">if set to <c>true</c> [write on console].</param>
-        /// <returns></returns>
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
@@ -94,10 +61,6 @@ namespace SQLInjectionAnalyzer
             return diagnostics;
         }
 
-        /// <summary>
-        /// Scans the cs proj.
-        /// </summary>
-        /// <param name="csprojPath">The csproj path.</param>
         private async Task ScanCSProj(string csprojPath)
         {
             csprojScanResult = InitialiseScanResult(csprojPath);
@@ -121,12 +84,6 @@ namespace SQLInjectionAnalyzer
             csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
         }
 
-        /// <summary>
-        /// Scans the syntax tree.
-        /// </summary>
-        /// <param name="syntaxTree">The syntax tree.</param>
-        /// <param name="compilation">The compilation.</param>
-        /// <returns></returns>
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Compilation compilation)
         {
             SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
@@ -170,13 +127,6 @@ namespace SQLInjectionAnalyzer
             return syntaxTreeScanResult;
         }
 
-        /// <summary>
-        /// Solves the interprocedural analysis.
-        /// </summary>
-        /// <param name="methodSyntax">The method syntax.</param>
-        /// <param name="compilation">The compilation.</param>
-        /// <param name="syntaxTree">The syntax tree.</param>
-        /// <param name="methodScanResult">The method scan result.</param>
         private void SolveInterproceduralAnalysis(MethodDeclarationSyntax methodSyntax, Compilation compilation, SyntaxTree syntaxTree, MethodScanResult methodScanResult)
         {
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
@@ -255,11 +205,6 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        /// <summary>
-        /// Currents the level contains tainted blocks without callers.
-        /// </summary>
-        /// <param name="currentLevelBlocks">The current level blocks.</param>
-        /// <returns></returns>
         private bool CurrentLevelContainsTaintedBlocksWithoutCallers(List<LevelBlock> currentLevelBlocks)
         {
             foreach (LevelBlock levelBlock in currentLevelBlocks)
@@ -269,13 +214,6 @@ namespace SQLInjectionAnalyzer
             return false;
         }
 
-        /// <summary>
-        /// Alls the taint variables are cleaned in this branch.
-        /// </summary>
-        /// <param name="parentMethodTainted">The parent method tainted.</param>
-        /// <param name="invocationTainted">The invocation tainted.</param>
-        /// <returns></returns>
-        /// <exception cref="ExceptionHandler.ExceptionType.AnalysisException">number of tainted method parameters and invocation arguments is incorrect!</exception>
         private bool AllTaintVariablesAreCleanedInThisBranch(int[] parentMethodTainted, int[] invocationTainted)
         {
             if (parentMethodTainted.Length != invocationTainted.Length)
@@ -291,14 +229,6 @@ namespace SQLInjectionAnalyzer
             return true;
         }
 
-        /// <summary>
-        /// Finds all callers of current block.
-        /// </summary>
-        /// <param name="currentSyntaxTree">The current syntax tree.</param>
-        /// <param name="currentLevelBlocks">The current level blocks.</param>
-        /// <param name="semanticModel">The semantic model.</param>
-        /// <param name="methodScanResult">The method scan result.</param>
-        /// <returns></returns>
         private List<InvocationAndParentsTaintedParameters> FindAllCallersOfCurrentBlock(SyntaxTree currentSyntaxTree, List<LevelBlock> currentLevelBlocks, SemanticModel semanticModel, MethodScanResult methodScanResult)
         {
             IEnumerable<InvocationExpressionSyntax> allInvocations = currentSyntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
@@ -327,11 +257,6 @@ namespace SQLInjectionAnalyzer
             return allMethodInvocations;
         }
 
-        /// <summary>
-        /// Solves the source areas.
-        /// </summary>
-        /// <param name="syntaxTree">The syntax tree.</param>
-        /// <param name="methodScanResult">The method scan result.</param>
         private void SolveSourceAreas(SyntaxTree syntaxTree, MethodScanResult methodScanResult)
         {
             foreach (SourceArea source in taintPropagationRules.SourceAreas)
@@ -339,11 +264,6 @@ namespace SQLInjectionAnalyzer
                     methodScanResult.SourceAreasLabels.Add(source.Label);
         }
 
-        /// <summary>
-        /// Finds the method parent.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <returns></returns>
         private MethodDeclarationSyntax FindMethodParent(SyntaxNode parent)
         {
             while (parent != null)
@@ -357,11 +277,6 @@ namespace SQLInjectionAnalyzer
             return null;
         }
 
-        /// <summary>
-        /// Scans the method.
-        /// </summary>
-        /// <param name="methodSyntax">The method syntax.</param>
-        /// <returns></returns>
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
             MethodScanResult methodScanResult = InitialiseMethodScanResult();
@@ -398,16 +313,6 @@ namespace SQLInjectionAnalyzer
             return methodScanResult;
         }
 
-        /// <summary>
-        /// Follows the data flow.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="currentNode">The current node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="tainted">The tainted.</param>
-        /// <param name="taintedMethodParameters">The tainted method parameters.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
         private void FollowDataFlow(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, Tainted tainted, int[] taintedMethodParameters = null, List<SyntaxNode> visitedNodes = null, int level = 0)
         {
             if (visitedNodes == null)
@@ -437,23 +342,13 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is ConditionalExpressionSyntax)
-                SolveConditionalExpression(rootNode, currentNode, result, visitedNodes, level, tainted);
+                SolveConditionalExpression(rootNode, (ConditionalExpressionSyntax)currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is LiteralExpressionSyntax)
                 SolveLiteralExpression(result, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE" + currentNode.ToString());
+                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
         }
 
-        /// <summary>
-        /// Solves the invocation expression.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="invocationNode">The invocation node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
-        /// <param name="taintedMethodParameters">The tainted method parameters.</param>
         private void SolveInvocationExpression(MethodDeclarationSyntax rootNode, InvocationExpressionSyntax invocationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted, int[] taintedMethodParameters = null)
         {
             if (taintPropagationRules.CleaningMethods.Any(cleaningMethod => invocationNode.ToString().Contains(cleaningMethod)))
@@ -484,15 +379,6 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        /// <summary>
-        /// Solves the object creation expression.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="objectCreationNode">The object creation node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
         private void SolveObjectCreationExpression(MethodDeclarationSyntax rootNode, ObjectCreationExpressionSyntax objectCreationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             if (objectCreationNode.ArgumentList == null)
@@ -502,36 +388,13 @@ namespace SQLInjectionAnalyzer
         }
 
         // follow what is behind = (everything except the first identifier)
-        /// <summary>
-        /// Solves the assignment expression.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="assignmentNode">The assignment node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
         private void SolveAssignmentExpression(MethodDeclarationSyntax rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            var firstIdent = assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
-
-            foreach (var identifier in assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>())
-            {
-                if (identifier != firstIdent)
-                    FollowDataFlow(rootNode, identifier, result, tainted, null, visitedNodes, level + 1);
-            }
+            result.AppendEvidence(new string(' ', level * 2) + assignmentNode.Right.ToString());
+            FindOrigin(rootNode, assignmentNode.Right, result, visitedNodes, level + 1, tainted);
         }
 
         // nemozem to riesit rovnako ako solve assignment expr?
-        /// <summary>
-        /// Solves the variable declarator.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="variableDeclaratorNode">The variable declarator node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
         private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
@@ -541,15 +404,6 @@ namespace SQLInjectionAnalyzer
                     FollowDataFlow(rootNode, dec, result, tainted, null, visitedNodes, level + 1);
         }
 
-        /// <summary>
-        /// Finds the origin.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="currentNode">The current node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
         private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             string arg = currentNode.ToString();
@@ -563,21 +417,21 @@ namespace SQLInjectionAnalyzer
             InvocationExpressionSyntax invocation = currentNode.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
             if (invocation != null)
             {
-                SolveInvocationExpression(rootNode, invocation, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, invocation, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
             ConditionalExpressionSyntax conditional = currentNode.DescendantNodes().OfType<ConditionalExpressionSyntax>().FirstOrDefault();
             if (conditional != null)
             {
-                SolveConditionalExpression(rootNode, conditional, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, conditional, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
             ObjectCreationExpressionSyntax objectCreation = currentNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>().FirstOrDefault();
             if (objectCreation != null)
             {
-                SolveObjectCreationExpression(rootNode, objectCreation, result, visitedNodes, level + 1, tainted);
+                FollowDataFlow(rootNode, objectCreation, result, tainted, null, visitedNodes, level + 1);
                 return;
             }
 
@@ -613,39 +467,18 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        /// <summary>
-        /// Solves the conditional expression.
-        /// </summary>
-        /// <param name="rootNode">The root node.</param>
-        /// <param name="currentNode">The current node.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="visitedNodes">The visited nodes.</param>
-        /// <param name="level">The level.</param>
-        /// <param name="tainted">The tainted.</param>
         private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            foreach (IdentifierNameSyntax identifier in currentNode.ChildNodes().OfType<IdentifierNameSyntax>())
-            {
-                result.AppendEvidence(new string(' ', level * 2) + identifier.ToString());
-                FindOrigin(rootNode, identifier, result, visitedNodes, level + 1, tainted);
-            }
+            FollowDataFlow(rootNode, currentNode.Condition, result, tainted, null, visitedNodes, level + 1);
+            FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
+            FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
         }
 
-        /// <summary>
-        /// Solves the literal expression.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <param name="level">The level.</param>
         private void SolveLiteralExpression(MethodScanResult result, int level)
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
         }
 
-        /// <summary>
-        /// Initialises the diagnostics.
-        /// </summary>
-        /// <param name="scopeOfAnalysis">The scope of analysis.</param>
-        /// <returns></returns>
         private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
         {
             Diagnostics diagnostics = new Diagnostics();
@@ -654,11 +487,6 @@ namespace SQLInjectionAnalyzer
             return diagnostics;
         }
 
-        /// <summary>
-        /// Initialises the scan result.
-        /// </summary>
-        /// <param name="directoryPath">The directory path.</param>
-        /// <returns></returns>
         private CSProjectScanResult InitialiseScanResult(string directoryPath)
         {
             CSProjectScanResult scanResult = new CSProjectScanResult();
@@ -668,10 +496,6 @@ namespace SQLInjectionAnalyzer
             return scanResult;
         }
 
-        /// <summary>
-        /// Initialises the method scan result.
-        /// </summary>
-        /// <returns></returns>
         private MethodScanResult InitialiseMethodScanResult()
         {
             MethodScanResult methodScanResult = new MethodScanResult();
@@ -680,12 +504,6 @@ namespace SQLInjectionAnalyzer
             return methodScanResult;
         }
 
-        /// <summary>
-        /// Methods the should be analysed.
-        /// </summary>
-        /// <param name="methodSyntax">The method syntax.</param>
-        /// <param name="syntaxTreeScanResult">The syntax tree scan result.</param>
-        /// <returns></returns>
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
             //scan public methods only (will be removed)
@@ -712,10 +530,6 @@ namespace SQLInjectionAnalyzer
             return true;
         }
 
-        /// <summary>
-        /// Writes the evidence on console.
-        /// </summary>
-        /// <param name="result">The result.</param>
         private void WriteEvidenceOnConsole(MethodScanResult result)
         {
             Console.WriteLine("-----------------------");
@@ -726,7 +540,7 @@ namespace SQLInjectionAnalyzer
                 Console.WriteLine("Source areas labels: " + String.Join(", ", result.SourceAreasLabels));
             }
             Console.WriteLine("-----------------------");
-            Console.WriteLine("Inreprocedural callers tree:");
+            Console.WriteLine("Interprocedural callers tree:");
             Console.WriteLine(result.CallersTree);
             Console.WriteLine("-----------------------");
             Console.WriteLine("Evidence:");
