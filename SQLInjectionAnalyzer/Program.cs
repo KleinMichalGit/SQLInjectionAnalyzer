@@ -24,7 +24,7 @@ namespace SQLInjectionAnalyzer
         /// 
         /// <para>
         /// Uses <c>InputReader</c> to process user-given input.
-        /// Uses <c>ConfigFileReader</c> to process user-given config file
+        /// Uses <c>ConfigFileReader</c> to process user-given config file.
         /// Uses <c>ExceptionWriter</c> to write helpful messages on console after detection of thrown unrecoverable exception.
         /// Uses <c>Analyzer</c> to analyse .csproj files under given directory and to create <c>Diagnostics</c> based on analysis results.
         /// Uses <c>OutputGenerator</c> to create report.html and report.txt files based on Scope of analysis.

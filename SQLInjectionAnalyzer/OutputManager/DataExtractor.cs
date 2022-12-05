@@ -29,50 +29,43 @@ namespace SQLInjectionAnalyzer.OutputManager
     /// </summary>
     public class DataExtractor
     {
-
-        /// <summary>
-        /// The diagnostics
-        /// </summary>
         private Diagnostics diagnostics;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataExtractor"/> class.
         /// </summary>
-        /// <param name="diag">The diag.</param>
+        /// <param name="diag">The diagnostics from which the output should be created.</param>
         public DataExtractor(Diagnostics diag)
         {
             diagnostics = diag;
         }
 
         /// <summary>
-        /// Gets the number of all cs proj files.
+        /// Gets the number of all csproj files.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfAllCSProjFiles()
         {
             return diagnostics.NumberOfCSProjFiles;
         }
 
         /// <summary>
-        /// Gets the number of scanned cs proj files.
+        /// Gets the number of all scanned csproj files.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfScannedCSProjFiles()
         {
             return diagnostics.CSProjectScanResults.Count();
         }
 
         /// <summary>
-        /// Gets the number of skipped cs proj files.
+        /// Gets the number of all skipped csproj files.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfSkippedCSProjFiles()
         {
             return diagnostics.PathsOfSkippedCSProjects.Count();
         }
 
         /// <summary>
-        /// Gets the number of all cs files.
+        /// Gets the number of all C# files.
         /// </summary>
         /// <returns></returns>
         public int GetNumberOfAllCSFiles()
@@ -90,7 +83,6 @@ namespace SQLInjectionAnalyzer.OutputManager
         /// <summary>
         /// Gets the number of scanned methods.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfScannedMethods()
         {
             int result = 0;
@@ -107,9 +99,8 @@ namespace SQLInjectionAnalyzer.OutputManager
         }
 
         /// <summary>
-        /// Gets the number of skipped methods.
+        /// Gets the number of all skipped methods.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfSkippedMethods()
         {
             int result = 0;
@@ -128,7 +119,6 @@ namespace SQLInjectionAnalyzer.OutputManager
         /// <summary>
         /// Gets the number of all sinks.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfAllSinks()
         {
             int result = 0;
@@ -148,9 +138,8 @@ namespace SQLInjectionAnalyzer.OutputManager
         }
 
         /// <summary>
-        /// Gets the number of vulnerable methods.
+        /// Gets the number of all vulnerable methods.
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfVulnerableMethods()
         {
             int result = 0;
@@ -173,10 +162,9 @@ namespace SQLInjectionAnalyzer.OutputManager
         }
         
         /// <summary>
-        /// Gets the number of vulnerable methods in file.
+        /// Gets the number of vulnerable methods in one particular file.
         /// </summary>
-        /// <param name="syntaxTreeScanResult">The syntax tree scan result.</param>
-        /// <returns></returns>
+        /// <param name="syntaxTreeScanResult">The syntax tree scan result from which the number of vulnerable methods will be counted.</param>
         public int GetNumberOfVulnerableMethodsInFile(SyntaxTreeScanResult syntaxTreeScanResult)
         {
             int result = 0;
@@ -193,10 +181,9 @@ namespace SQLInjectionAnalyzer.OutputManager
         }
         
         /// <summary>
-        /// Gets the number of vulnerable methods in cs proj.
+        /// Gets the number of vulnerable methods in one particular csproj.
         /// </summary>
-        /// <param name="csprojScanResult">The csproj scan result.</param>
-        /// <returns></returns>
+        /// <param name="csprojScanResult">The csproj scan result from which the number of vulnerable methods will be counted.</param>
         public int GetNumberOfVulnerableMethodsInCSProj(CSProjectScanResult csprojScanResult)
         {
             int result = 0;
