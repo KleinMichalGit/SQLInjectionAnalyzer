@@ -22,10 +22,10 @@ namespace SQLInjectionAnalyzer
         /// <summary>
         /// Scans the directory.
         /// </summary>
-        /// <param name="directoryPath">The directory path.</param>
-        /// <param name="excludeSubpaths">The exclude subpaths.</param>
+        /// <param name="directoryPath">The directory path to be analysed.</param>
+        /// <param name="excludeSubpaths">The list of sub-paths to be skipped during the analysis.</param>
         /// <param name="taintPropagationRules">The taint propagation rules.</param>
-        /// <param name="writeOnConsole">if set to <c>true</c> [write on console].</param>
+        /// <param name="writeOnConsole">If set to true, write progress and results on console in real-time.</param>
         /// <returns></returns>
         public abstract Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole);
     }
