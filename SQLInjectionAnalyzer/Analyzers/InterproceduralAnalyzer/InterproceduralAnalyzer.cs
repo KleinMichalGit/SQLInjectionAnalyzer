@@ -467,7 +467,7 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
+        private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, ConditionalExpressionSyntax currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             FollowDataFlow(rootNode, currentNode.Condition, result, tainted, null, visitedNodes, level + 1);
             FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
