@@ -28,6 +28,9 @@ Consider the following config.json (namely the sourceAreas):
 }
 ```
 If the code structure looks like the following tree:
+ 
 ![img.png](images/codeStructure.png)
-Than, the .html result should contain these informative batches to display the areas met during the interprocedural analysis.
+
+Then, the .html result should contain these informative batches to display the areas met during the interprocedural analysis.
+
 ![img_1.png](images/batches.png)
