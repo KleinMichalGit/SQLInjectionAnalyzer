@@ -96,6 +96,7 @@ It must be *.json file.
   ]
 }
 ```
+
 ## Results
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument).
 

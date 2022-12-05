@@ -20,7 +20,7 @@ gh repo clone KleinMichalGit/SQLInjectionAnalyzer
 Make sure you have Visual Studio 2019, version 16.8.3 or higher installed on your machine.
 
 ## One click/line build
-![img.png](build.png)
+![img.png](images/build.png)
 
 Run either `Build Solution` in your Visual Studio, or
 ```
