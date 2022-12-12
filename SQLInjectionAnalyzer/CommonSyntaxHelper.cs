@@ -44,7 +44,7 @@ namespace SQLInjectionAnalyzer
         /// <param name="sinkMethodNames">The sink method names.</param>
         public IEnumerable<InvocationExpressionSyntax> FindSinkInvocations(SyntaxNode root, List<string> sinkMethodNames)
         {
-            // TODO: replace simple string comparison with more robust approach 
+            // TODO: replace simple string comparison with more robust approach using semantic model
             IEnumerable<InvocationExpressionSyntax> invocations = root.DescendantNodes().OfType<InvocationExpressionSyntax>();
 
             return invocations.Where(invocation =>

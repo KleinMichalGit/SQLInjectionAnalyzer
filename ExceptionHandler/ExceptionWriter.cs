@@ -3,7 +3,13 @@
 namespace ExceptionHandler
 {
     /// <summary>
+    /// ExceptionHandler <c>ExceptionWriter</c> class.
     /// 
+    /// <para>
+    /// Contains <c>WriteUsageTutorial</c> method.
+    /// Contains <c>WriteOutputGeneratorExceptionMessage</c> method.
+    /// Contains <c>WriteAnalysisExceptionMessage</c> method.
+    /// </para>
     /// </summary>
     public class ExceptionWriter
     {

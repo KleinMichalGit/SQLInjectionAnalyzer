@@ -3,64 +3,72 @@
 namespace Model
 {
     /// <summary>
+    /// Model <c>Input</c> class.
     /// 
+    /// <para>
+    /// Contains all the information specified via console at the beginning of the program.
+    /// Namely, information about what should be analysed and which method should be used. Also,
+    /// where the results should be generated, what parts of code should be skipped, where the config
+    /// file is located, etc.
+    /// </para>
     /// </summary>
     public class Input
     {
-        //mandatory
         /// <summary>
-        /// Gets or sets the source folder path.
+        /// Mandatory.
         /// </summary>
         /// <value>
-        /// The source folder path.
+        /// The path of the C# source folder which should be analysed.
         /// </value>
         public string SourceFolderPath { get; set; }
-        //mandatory
+
         /// <summary>
-        /// Gets or sets the scope.
+        /// Mandatory.
         /// </summary>
         /// <value>
-        /// The scope.
+        /// The scope refers to the philosophy used during analysis, the type of compiled files, the time and memory
+        /// requirements of the analysis, the accuracy of the received diagnostics, etc. All of these decisions are
+        /// hidden under the simplicity of the <see cref="ScopeOfAnalysis"/>.
         /// </value>
         public ScopeOfAnalysis Scope { get; set; }
-        //mandatory
+
         /// <summary>
-        /// Gets or sets the export path.
+        /// Mandatory.
         /// </summary>
         /// <value>
-        /// The export path.
+        /// The path where the final results should be generated.
         /// </value>
         public string ExportPath { get; set; }
-        //mandatory
+        
         /// <summary>
-        /// Gets or sets the configuration file path.
+        /// Mandatory.
         /// </summary>
         /// <value>
-        /// The configuration file path.
+        /// The path to the .json configuration file.
         /// </value>
         public string ConfigFilePath { get; set; }
-        //optional
+        
         /// <summary>
-        /// Gets or sets the exclude subpaths.
+        /// Optional.
         /// </summary>
         /// <value>
-        /// The exclude subpaths.
+        /// The list of subpaths of files which should be omitted during analysis.
         /// </value>
         public List<string> ExcludeSubpaths { get; set; } = new List<string>();
-        //optional
+        
         /// <summary>
-        /// Gets or sets a value indicating whether [write on console].
+        /// Optional.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [write on console]; otherwise, <c>false</c>.
+        ///   <c>true</c> if results should be writen on console in real-time, otherwise <c>false</c>.
         /// </value>
         public bool WriteOnConsole { get; set; }
-        //optional
+        
         /// <summary>
-        /// Gets or sets a value indicating whether [write tutorial and exit].
+        /// Optional.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [write tutorial and exit]; otherwise, <c>false</c>.
+        ///   <c>true</c> if only tutorial should be writen on console without performing analysis, otherwise <c>false</c>.
         /// </value>
         public bool WriteTutorialAndExit { get; set; }
     }

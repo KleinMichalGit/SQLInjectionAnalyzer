@@ -5,52 +5,29 @@ using Model.SyntaxTree;
 namespace Model.CSProject
 {
     /// <summary>
+    /// Model.CSProject <c>CSProjectScanResult</c> class.
     /// 
+    /// <para>
+    /// Contains all the information gained during the analysis of the specific .csproj file.
+    /// </para>
     /// </summary>
     public class CSProjectScanResult
     {
-        /// <summary>
-        /// Gets or sets the cs project scan result start time.
-        /// </summary>
-        /// <value>
-        /// The cs project scan result start time.
-        /// </value>
         public DateTime CSProjectScanResultStartTime { get; set; }
-        /// <summary>
-        /// Gets or sets the cs project scan result end time.
-        /// </summary>
-        /// <value>
-        /// The cs project scan result end time.
-        /// </value>
         public DateTime CSProjectScanResultEndTime { get; set; }
-        /// <summary>
-        /// Gets the cs project scan result total time.
-        /// </summary>
-        /// <value>
-        /// The cs project scan result total time.
-        /// </value>
         public TimeSpan CSProjectScanResultTotalTime { get { return CSProjectScanResultEndTime - CSProjectScanResultStartTime; } }
 
         /// <summary>
-        /// Gets or sets the path.
+        /// Gets or sets the path of the analysed .csproj file.
         /// </summary>
-        /// <value>
-        /// The path.
-        /// </value>
         public string Path { get; set; }
+
         /// <summary>
-        /// Gets or sets the syntax tree scan results.
+        /// Gets or sets the list of the separate syntax tree scan results. Every single dependency mentioned in the .csproj
+        /// has its own results stored here. The result of the analysis of C# file is stored as a <see cref="SyntaxTreeScanResult"/>.
         /// </summary>
-        /// <value>
-        /// The syntax tree scan results.
-        /// </value>
         public List<SyntaxTreeScanResult> SyntaxTreeScanResults { get; set; } = new List<SyntaxTreeScanResult>();
-        /// <summary>
-        /// Gets or sets the names of all cs files inside this cs project.
-        /// </summary>
-        /// <value>
-        /// The names of all cs files inside this cs project.
-        /// </value>
+        
         public List<string> NamesOfAllCSFilesInsideThisCSProject { get; set; } = new List<string>();
     }
 }
