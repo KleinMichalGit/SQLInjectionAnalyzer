@@ -17,6 +17,18 @@ using Model;
 
 namespace SQLInjectionAnalyzer
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
+    /// 
+    /// <para>
+    /// Compiles *.csproj files, performs n-level interprocedural analysis,
+    /// every block of code is considered as reachable
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
+    /// </summary>
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class InterproceduralAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
@@ -506,14 +518,13 @@ namespace SQLInjectionAnalyzer
 
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
-            //scan public methods only (will be removed)
+            //scan public methods only
             if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
                 return false;
             }
 
-            //skontrolovat aj objekty, ktore môžu mať zanorene stringy
             if (!methodSyntax.ParameterList.ToString().Contains("string"))
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
