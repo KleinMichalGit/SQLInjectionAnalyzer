@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model;
@@ -11,12 +9,16 @@ using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// UnitTests TestClass for testing InputReader
+    /// </summary>
     [TestClass]
     public class InputReaderTest
     {
         InputReader inputReader = new InputReader();
         string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/" };
         string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
+      
         [TestMethod]
         public void InputArgumentsAreUnique()
         {
@@ -304,6 +306,7 @@ namespace UnitTests
             Assert.IsFalse(TwoInputsAreEqual(expected, input));
 
         }
+
         [TestMethod]
         public void InputArgumentsAreValid()
         {

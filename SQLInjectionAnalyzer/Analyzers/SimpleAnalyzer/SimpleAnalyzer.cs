@@ -13,11 +13,26 @@ using System.Collections.Generic;
 
 namespace SQLInjectionAnalyzer
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer <c>SimpleAnalyzer</c> class.
+    /// 
+    /// <para>
+    /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural
+    /// analysis, every block of code is considered as reachable (very fast but very imprecise).
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
+    /// </summary>
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class SimpleAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
+     
         private string targetFileType = "*.cs";
+        
         private bool writeOnConsole = false;
+        
         private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
@@ -168,7 +183,6 @@ namespace SQLInjectionAnalyzer
                 FollowDataFlow(rootNode, argNode, result, visitedNodes, level + 1);
         }
 
-        // follow what is behind = (everything except the first identifier)
         private void SolveAssignmentExpression(SyntaxNode rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             var firstIdent = assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
@@ -179,8 +193,6 @@ namespace SQLInjectionAnalyzer
                     FollowDataFlow(rootNode, identifier, result, visitedNodes, level + 1);
             }
         }
-
-        // nemozem to riesit rovnako ako solve assignment expr?
         private void SolveVariableDeclarator(SyntaxNode rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
@@ -278,6 +290,7 @@ namespace SQLInjectionAnalyzer
             return compilation.GetSemanticModel(syntaxTree);
         }
 
+  
         private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
         {
             Diagnostics diagnostics = new Diagnostics();
@@ -312,6 +325,7 @@ namespace SQLInjectionAnalyzer
             return methodScanResult;
         }
 
+      
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
             //scan public methods only (will be removed)
@@ -321,7 +335,6 @@ namespace SQLInjectionAnalyzer
                 return false;
             }
 
-            //skontrolovat aj objekty, ktore môžu mať zanorene stringy
             if (!methodSyntax.ParameterList.ToString().Contains("string"))
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;

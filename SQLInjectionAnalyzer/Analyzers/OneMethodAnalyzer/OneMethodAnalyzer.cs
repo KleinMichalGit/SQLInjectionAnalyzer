@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,6 +15,17 @@ using Microsoft.CodeAnalysis.MSBuild;
 
 namespace SQLInjectionAnalyzer
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer <c>OneMethodAnalyzer</c> class.
+    /// 
+    /// <para>
+    /// Compiles *.csproj files, without performing interprocedural analysis.
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
+    /// </summary>
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class OneMethodAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
@@ -115,7 +125,6 @@ namespace SQLInjectionAnalyzer
             return syntaxTreeScanResult;
         }
 
-
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
             MethodScanResult methodScanResult = InitialiseMethodScanResult();
@@ -191,7 +200,6 @@ namespace SQLInjectionAnalyzer
                 FollowDataFlow(rootNode, argNode, result, visitedNodes, level + 1);
         }
 
-        // follow what is behind = (everything except the first identifier)
         private void SolveAssignmentExpression(SyntaxNode rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             var firstIdent = assignmentNode.DescendantNodes().OfType<IdentifierNameSyntax>().FirstOrDefault();
@@ -320,14 +328,13 @@ namespace SQLInjectionAnalyzer
 
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
-            //scan public methods only (will be removed)
+            //scan public methods only
             if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
                 return false;
             }
 
-            //skontrolovat aj objekty, ktore môžu mať zanorene stringy
             if (!methodSyntax.ParameterList.ToString().Contains("string"))
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;

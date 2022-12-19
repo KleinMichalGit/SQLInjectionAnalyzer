@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
@@ -10,8 +6,13 @@ using Model;
 
 namespace UnitTests.ExpectedDiagnostics
 {
+    /// <summary>
+    /// common helper for creating custom expected diagnostics <see cref="Diagnostics"/>
+    /// for Simple scope of analysis <see cref="ScopeOfAnalysis"/>.
+    /// </summary>
     public class ExpectedDiagnosticsSimpleAnalysis
     {
+        
         public Diagnostics GetSimpleEmptyDiagnostics()
         {
             return new Diagnostics();

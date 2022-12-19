@@ -17,6 +17,18 @@ using Model;
 
 namespace SQLInjectionAnalyzer
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
+    /// 
+    /// <para>
+    /// Compiles *.csproj files, performs n-level interprocedural analysis,
+    /// every block of code is considered as reachable
+    /// </para>
+    /// <para>
+    /// Contains <c>ScanDirectory</c> method.
+    /// </para>
+    /// </summary>
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
     public class InterproceduralAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
@@ -387,13 +399,14 @@ namespace SQLInjectionAnalyzer
                 FollowDataFlow(rootNode, argNode, result, tainted, null, visitedNodes, level + 1);
         }
 
-        // follow what is positioned right to the equal sign
+        // follow what is behind = (everything except the first identifier)
         private void SolveAssignmentExpression(MethodDeclarationSyntax rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             result.AppendEvidence(new string(' ', level * 2) + assignmentNode.Right.ToString());
             FindOrigin(rootNode, assignmentNode.Right, result, visitedNodes, level + 1, tainted);
         }
 
+        // nemozem to riesit rovnako ako solve assignment expr?
         private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
@@ -470,7 +483,7 @@ namespace SQLInjectionAnalyzer
         {
             FollowDataFlow(rootNode, currentNode.Condition, result, tainted, null, visitedNodes, level + 1);
             FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
-            FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);            
+            FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
         }
 
         private void SolveLiteralExpression(MethodScanResult result, int level)
@@ -505,14 +518,13 @@ namespace SQLInjectionAnalyzer
 
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
-            //scan public methods only (will be removed)
+            //scan public methods only
             if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
                 return false;
             }
 
-            //skontrolovat aj objekty, ktore môžu mať zanorene stringy
             if (!methodSyntax.ParameterList.ToString().Contains("string"))
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;

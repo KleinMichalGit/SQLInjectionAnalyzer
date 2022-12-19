@@ -1,15 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Model;
 
 namespace SQLInjectionAnalyzer.InputManager
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer.InputManager <c>InputReader</c> class.
+    /// 
+    /// <para>
+    /// Reads and validates user-provided console input.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>ProcessInput</c> method.
+    /// </para>
+    /// </summary>
     public class InputReader
     {
+        /// <summary>
+        /// Input arguments are valid if all of the belong are true:
+        /// <list type="bullet">
+        ///     <term>Input Arguments Are Unique</term>
+        ///     <term>Input Arguments Are Recognizable</term>
+        ///     <term>Mandatory Arguments Are Present</term>
+        ///     <term>Scope Is Defined Correctly</term>
+        ///     <term>Config Path Is Defined Correctly</term>
+        /// </list>
+        /// </summary>
+        /// <param name="args">The arguments to be validated.</param>
+        /// <returns>true if the arguments are valid. Otherwise, returns false.</returns>
         private bool InputArgumentsAreValid(string[] args)
         {
             return InputArgumentsAreUnique(args) &&
@@ -19,6 +40,9 @@ namespace SQLInjectionAnalyzer.InputManager
                    ConfigPathIsDefinedCorrectly(args);
         }
 
+        /// <summary>
+        /// Inputs the arguments are unique if there is no argument specified more than once.
+        /// </summary>
         private bool InputArgumentsAreUnique(string[] args)
         {
             HashSet<string> usedArguments = new HashSet<string>();
@@ -35,6 +59,9 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Input arguments are recognizable if all arguments belong to the set of recognizableArguments.
+        /// </summary>
         private bool InputArgumentsAreRecognizable(string[] args)
         {
             HashSet<string> recognizableArguments = new HashSet<string> { "--help", "--path", "--scope-of-analysis", "--exclude-paths", "--config", "--result", "--write-console" };
@@ -51,6 +78,9 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
 
+        /// <summary>
+        /// Decides if all mandatory arguments are present.
+        /// </summary>
         private bool MandatoryArgumentsArePresent(string[] args)
         {
             if (args.Length == 1 && args[0] == "--help") return true;
@@ -86,6 +116,9 @@ namespace SQLInjectionAnalyzer.InputManager
             }
         }
 
+        /// <summary>
+        /// Defines if the scope of the analysis is defined correctly. The scope is defined correctly if it belongs to the set of possible scopes.
+        /// </summary>
         private bool ScopeIsDefinedCorrectly(string[] args)
         {
             foreach (string argument in args)
@@ -110,6 +143,10 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Decides if the path to the config file is defined correctly.The path to the config file
+        /// is defined correctly if the file located on the specified path exists, and ends with ".json".
+        /// </summary>
         private bool ConfigPathIsDefinedCorrectly(string[] args)
         {
             foreach (string argument in args)
@@ -131,6 +168,12 @@ namespace SQLInjectionAnalyzer.InputManager
             return true;
         }
 
+        /// <summary>
+        /// Creates the list of strings from the string of substrings delimited by comma.
+        /// The list of strings received serves as the list of strings which contains the subpaths
+        /// to be skipped during the later phase of the analysis.
+        /// 
+        /// </summary>
         private List<string> ProcessExcludeSubstrings(string substrings)
         {
             if (substrings == "") return new List<string>();
@@ -138,7 +181,6 @@ namespace SQLInjectionAnalyzer.InputManager
             //create a list from comma-delimited subpaths
             return substrings.Split(',').ToList();
         }
-
 
         private string GetValueFromArgument(string argument)
         {
@@ -154,7 +196,11 @@ namespace SQLInjectionAnalyzer.InputManager
             return ScopeOfAnalysis.InterproceduralReachability;
         }
 
-        //creates input from valid array of arguments (array of arguments has to be validated before)
+        /// <summary>
+        /// Creates Input object from valid array of arguments (array of arguments has to be validated before creating Input).
+        /// </summary>
+        /// <param name="args">The valid array of arguments.</param>
+        /// <returns>valid Input object which contains all information received on input.</returns>
         private Input CreateInput(string[] args)
         {
             Input input = new Input();
@@ -174,6 +220,13 @@ namespace SQLInjectionAnalyzer.InputManager
             return input;
         }
 
+        /// <summary>
+        /// Converts the array of string arguments into Input object which contains all information received on input.
+        /// Information received on input are used during all phases of the analysis, and also when generating output.
+        /// </summary>
+        /// <param name="args">The array of string arguments received on input.</param>
+        /// <returns>Input object.</returns>
+        /// <exception cref="ExceptionHandler.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
         public Input ProcessInput(string[] args)
         {
             if (!InputArgumentsAreValid(args))

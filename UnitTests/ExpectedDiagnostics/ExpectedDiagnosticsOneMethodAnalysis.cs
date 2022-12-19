@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Model;
+﻿using Model;
 
 namespace UnitTests.ExpectedDiagnostics
 {
+    /// <summary>
+    /// common helper for creating custom expected diagnostics <see cref="Diagnostics"/>
+    /// for OneMethod scope of analysis <see cref="ScopeOfAnalysis"/>.
+    /// </summary>
     public class ExpectedDiagnosticsOneMethodAnalysis
     {
         public Diagnostics GetOneMethodEmptyDiagnostics()

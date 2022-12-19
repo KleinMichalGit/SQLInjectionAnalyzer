@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Model.CSProject;
 using Model.Method;
@@ -14,22 +12,47 @@ using RazorEngineCore;
 
 namespace SQLInjectionAnalyzer.OutputManager
 {
+    /// <summary>
+    /// SQLInjectionAnalyzer.OutputManager <c>OutputGenerator</c> class.
+    /// 
+    /// <para>
+    /// Class for generating .html and .txt output files according to Scope of analysis.
+    /// 
+    /// </para>
+    /// <para>
+    /// Contains <c>OutputGenerator</c> constructor.
+    /// Contains <c>CreateOutput</c> method.
+    /// Contains <c>CreateConsoleOutput</c> method.
+    /// </para>
+    /// </summary>
     public class OutputGenerator
     {
         private string exportPath;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OutputGenerator"/> class.
+        /// </summary>
+        /// <param name="exportPath">The export path where all results of the analysis should be created.</param>
         public OutputGenerator(string exportPath)
         {
             this.exportPath = exportPath;
         }
 
-        // create output based on scope od analysis
+        /// <summary>
+        /// Creates Console, HTML, and TXT output based on the Scope of analysis
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
         public void CreateOutput(Diagnostics diagnostics)
         {
             CreateConsoleOutput(diagnostics);
             CreateHTMLOutput(diagnostics);
             CreateTxtFileOutput(diagnostics);
         }
+
+        /// <summary>
+        /// Creates the console output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
         public void CreateConsoleOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -58,6 +81,11 @@ namespace SQLInjectionAnalyzer.OutputManager
             Console.WriteLine("Detailed report: " + exportPath);
         }
 
+        /// <summary>
+        /// Creates the HTML output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
+        /// <exception cref="ExceptionHandler.ExceptionType.OutputGeneratorException">not implemented yet</exception>
         private void CreateHTMLOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -99,6 +127,10 @@ namespace SQLInjectionAnalyzer.OutputManager
             File.WriteAllText(exportPath + "\\report.html", result);
         }
 
+        /// <summary>
+        /// Creates the text file output.
+        /// </summary>
+        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
         private void CreateTxtFileOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);

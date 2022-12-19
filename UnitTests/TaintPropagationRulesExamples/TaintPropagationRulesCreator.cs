@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Model.Rules;
 
 namespace UnitTests.TaintPropagationRulesExamples
 {
+    /// <summary>
+    /// common unit test helper for creating custom Taint variable propagation
+    /// rules <see cref="TaintPropagationRules"/>.
+    /// </summary>
     public class TaintPropagationRulesCreator
     {
+        
         public TaintPropagationRules GetEmptyRules()
         {
             return new TaintPropagationRules();

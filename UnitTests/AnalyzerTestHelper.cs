@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model;
@@ -12,15 +11,30 @@ using SQLInjectionAnalyzer.OutputManager;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// Common test helper. Contains common methods for creating test scenarios,
+    /// and for testing if the received results are equal.
+    /// </summary>
     public class AnalyzerTestHelper
     {
         Analyzer analyzer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyzerTestHelper"/> class.
+        /// </summary>
+        /// <param name="analyzer">The analyzer.</param>
         public AnalyzerTestHelper(Analyzer analyzer)
         {
             this.analyzer = analyzer;
         }
 
+        /// <summary>
+        /// Creates a new unit test scenario.
+        /// </summary>
+        /// <param name="rules">The rules which should be used during the scenario.</param>
+        /// <param name="directoryPath">The directory path to be analysed.</param>
+        /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+        /// <param name="excludeSubpaths">The exclude subpaths.</param>
         public void CreateScenario(TaintPropagationRules rules, string directoryPath, Diagnostics expectedDiagnostics, List<string> excludeSubpaths)
         {
             Diagnostics diagnostics = analyzer.ScanDirectory(directoryPath, excludeSubpaths, rules, true);

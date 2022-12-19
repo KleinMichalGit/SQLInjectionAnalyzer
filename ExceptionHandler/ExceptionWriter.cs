@@ -1,13 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExceptionHandler
 {
+    /// <summary>
+    /// ExceptionHandler <c>ExceptionWriter</c> class.
+    /// 
+    /// <para>
+    /// Contains <c>WriteUsageTutorial</c> method.
+    /// Contains <c>WriteOutputGeneratorExceptionMessage</c> method.
+    /// Contains <c>WriteAnalysisExceptionMessage</c> method.
+    /// </para>
+    /// </summary>
     public class ExceptionWriter
     {
+        /// <summary>
+        /// Writes the usage tutorial.
+        /// </summary>
         public void WriteUsageTutorial()
         {
             Console.WriteLine("Usage:\n" +
@@ -44,11 +52,17 @@ namespace ExceptionHandler
                                 );
         }
 
+        /// <summary>
+        /// Writes the output generator exception message.
+        /// </summary>
         public void WriteOutputGeneratorExceptionMessage()
         {
             Console.WriteLine("Something went wrong while generating output files.");
         }
 
+        /// <summary>
+        /// Writes the analysis exception message.
+        /// </summary>
         public void WriteAnalysisExceptionMessage()
         {
             Console.WriteLine("Something went wrong while performing analysis.");

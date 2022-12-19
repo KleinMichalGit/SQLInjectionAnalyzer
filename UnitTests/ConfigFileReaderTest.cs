@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using ExceptionHandler.ExceptionType;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model.Rules;
@@ -11,6 +8,9 @@ using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// UnitTests TestClass for testing ConfigFileReader
+    /// </summary>
     [TestClass]
     public class ConfigFileReaderTest
     {
@@ -41,6 +41,7 @@ namespace UnitTests
             areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
             Assert.IsTrue(areValid);
         }
+
         [TestMethod]
         public void AllSourceAreasAreValid()
         {
@@ -56,6 +57,7 @@ namespace UnitTests
             areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { sourceAreas });
             Assert.IsFalse(areValid);
         }
+
         [TestMethod]
         public void ProcessConfig()
         {
@@ -131,7 +133,6 @@ namespace UnitTests
                 Assert.AreEqual("Can't read the config file.", e.Message);
             }
         }
-
 
         private bool RulesAreEqual(TaintPropagationRules receivedRules, TaintPropagationRules expectedRules)
         {

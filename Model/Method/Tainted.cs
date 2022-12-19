@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Model.Method
+﻿namespace Model.Method
 {
     public class Tainted
     {
-        //for each tainted parameter and argument remember how many times it is tainted
+
+        /// <summary>
+        /// for each tainted parameter and argument remember how many times it is tainted
+        /// </summary>
         public int[] TaintedMethodParameters;
+
         public int[] TaintedInvocationArguments;
     }
 }

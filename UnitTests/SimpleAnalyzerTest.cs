@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SQLInjectionAnalyzer;
 using UnitTests.ExpectedDiagnostics;
@@ -10,6 +6,9 @@ using UnitTests.TaintPropagationRulesExamples;
 
 namespace UnitTests
 {
+    /// <summary>
+    /// UnitTests TestClass for testing Simple scope of analysis via SimpleAnalyzer.
+    /// </summary>
     [TestClass]
     public class SimpleAnalyzerTest
     {
@@ -18,6 +17,9 @@ namespace UnitTests
         private TaintPropagationRulesCreator taintPropagationRulesCreator;
         private AnalyzerTestHelper testHelper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SimpleAnalyzerTest"/> class.
+        /// </summary>
         public SimpleAnalyzerTest()
         {
             simpleAnalyzer = new SimpleAnalyzer();
@@ -25,8 +27,6 @@ namespace UnitTests
             taintPropagationRulesCreator = new TaintPropagationRulesCreator();
             testHelper = new AnalyzerTestHelper(simpleAnalyzer);
         }
-
-        // SCENARIOS for taint propagation rules:
 
         [TestMethod]
         public void TestCleaningRules()
@@ -48,7 +48,9 @@ namespace UnitTests
                 );
         }
 
-        // scenario for assignment rule (multiple assignments in a row)
+        /// <summary>
+        /// scenario for assignment rule (multiple assignments in a row)
+        /// </summary>
         [TestMethod]
         public void TestAssignmentRules()
         {
@@ -69,7 +71,10 @@ namespace UnitTests
                );
         }
 
-        // scenario where arguments of sink method are return values of another methods (we follow the arguments of these another methods)
+        /// <summary>
+        /// scenario where arguments of sink method are return values of
+        /// another methods (we follow the arguments of these another methods)
+        /// </summary>
         [TestMethod]
         public void TestInvocationRules()
         {
@@ -81,7 +86,9 @@ namespace UnitTests
                 );
         }
 
-        // object creation rules
+        /// <summary>
+        /// object creation rules
+        /// </summary>
         [TestMethod]
         public void TestObjectCreationRules()
         {
@@ -102,7 +109,9 @@ namespace UnitTests
                );
         }
 
-        // conditional expression rules
+        /// <summary>
+        /// conditional expression rules
+        /// </summary>
         [TestMethod]
         public void TestConditionalExpressionRules()
         {
@@ -123,7 +132,9 @@ namespace UnitTests
                );
         }
 
-        // lambda expression rule
+        /// <summary>
+        /// lambda expression rule TODO
+        /// </summary>
         [TestMethod]
         public void TestLambdaExpressionRules()
         {
@@ -131,10 +142,12 @@ namespace UnitTests
 
         }
 
+        /// <summary>
+        /// scenario for testing excludeSubpaths (that it really excludes these subpaths)
+        /// </summary>
         [TestMethod]
         public void TestExcludingPaths()
         {
-            // scenario for testing excludeSubpaths (that it really excludes these subpaths)
             testHelper.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/ExcludingPaths/",
@@ -145,8 +158,6 @@ namespace UnitTests
                 }
                 );
         }
-
-        // basic corner case tests
 
         [TestMethod]
         public void TestScanningEmptyFolder()
