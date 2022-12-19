@@ -7,26 +7,14 @@ using UnitTests.TaintPropagationRulesExamples;
 namespace UnitTests
 {
     /// <summary>
-    /// 
+    /// UnitTests TestClass for testing Simple scope of analysis via SimpleAnalyzer.
     /// </summary>
     [TestClass]
     public class SimpleAnalyzerTest
     {
-        /// <summary>
-        /// The simple analyzer
-        /// </summary>
         private SimpleAnalyzer simpleAnalyzer;
-        /// <summary>
-        /// The expected diagnostics creator
-        /// </summary>
         private ExpectedDiagnosticsSimpleAnalysis expectedDiagnosticsCreator;
-        /// <summary>
-        /// The taint propagation rules creator
-        /// </summary>
         private TaintPropagationRulesCreator taintPropagationRulesCreator;
-        /// <summary>
-        /// The test helper
-        /// </summary>
         private AnalyzerTestHelper testHelper;
 
         /// <summary>
@@ -40,11 +28,6 @@ namespace UnitTests
             testHelper = new AnalyzerTestHelper(simpleAnalyzer);
         }
 
-        // SCENARIOS for taint propagation rules:
-
-        /// <summary>
-        /// Tests the cleaning rules.
-        /// </summary>
         [TestMethod]
         public void TestCleaningRules()
         {
@@ -65,9 +48,8 @@ namespace UnitTests
                 );
         }
 
-        // scenario for assignment rule (multiple assignments in a row)
         /// <summary>
-        /// Tests the assignment rules.
+        /// scenario for assignment rule (multiple assignments in a row)
         /// </summary>
         [TestMethod]
         public void TestAssignmentRules()
@@ -89,9 +71,9 @@ namespace UnitTests
                );
         }
 
-        // scenario where arguments of sink method are return values of another methods (we follow the arguments of these another methods)
         /// <summary>
-        /// Tests the invocation rules.
+        /// scenario where arguments of sink method are return values of
+        /// another methods (we follow the arguments of these another methods)
         /// </summary>
         [TestMethod]
         public void TestInvocationRules()
@@ -104,9 +86,8 @@ namespace UnitTests
                 );
         }
 
-        // object creation rules
         /// <summary>
-        /// Tests the object creation rules.
+        /// object creation rules
         /// </summary>
         [TestMethod]
         public void TestObjectCreationRules()
@@ -128,9 +109,8 @@ namespace UnitTests
                );
         }
 
-        // conditional expression rules
         /// <summary>
-        /// Tests the conditional expression rules.
+        /// conditional expression rules
         /// </summary>
         [TestMethod]
         public void TestConditionalExpressionRules()
@@ -152,9 +132,8 @@ namespace UnitTests
                );
         }
 
-        // lambda expression rule
         /// <summary>
-        /// Tests the lambda expression rules.
+        /// lambda expression rule TODO
         /// </summary>
         [TestMethod]
         public void TestLambdaExpressionRules()
@@ -164,12 +143,11 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// Tests the excluding paths.
+        /// scenario for testing excludeSubpaths (that it really excludes these subpaths)
         /// </summary>
         [TestMethod]
         public void TestExcludingPaths()
         {
-            // scenario for testing excludeSubpaths (that it really excludes these subpaths)
             testHelper.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/ExcludingPaths/",
@@ -181,11 +159,6 @@ namespace UnitTests
                 );
         }
 
-        // basic corner case tests
-
-        /// <summary>
-        /// Tests the scanning empty folder.
-        /// </summary>
         [TestMethod]
         public void TestScanningEmptyFolder()
         {
@@ -197,9 +170,6 @@ namespace UnitTests
                 );
         }
 
-        /// <summary>
-        /// Tests the scanning file with one safe method.
-        /// </summary>
         [TestMethod]
         public void TestScanningFileWithOneSafeMethod()
         {
@@ -211,9 +181,6 @@ namespace UnitTests
                 );
         }
 
-        /// <summary>
-        /// Tests the scanning file with one vulnerable method.
-        /// </summary>
         [TestMethod]
         public void TestScanningFileWithOneVulnerableMethod()
         {
@@ -225,9 +192,6 @@ namespace UnitTests
                 );
         }
 
-        /// <summary>
-        /// Tests the complex test.
-        /// </summary>
         [TestMethod]
         public void TestComplexTest()
         {

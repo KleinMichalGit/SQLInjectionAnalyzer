@@ -12,13 +12,11 @@ using SQLInjectionAnalyzer.OutputManager;
 namespace UnitTests
 {
     /// <summary>
-    /// 
+    /// Common test helper. Contains common methods for creating test scenarios,
+    /// and for testing if the received results are equal.
     /// </summary>
     public class AnalyzerTestHelper
     {
-        /// <summary>
-        /// The analyzer
-        /// </summary>
         Analyzer analyzer;
 
         /// <summary>
@@ -31,10 +29,10 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// Creates the scenario.
+        /// Creates a new unit test scenario.
         /// </summary>
-        /// <param name="rules">The rules.</param>
-        /// <param name="directoryPath">The directory path.</param>
+        /// <param name="rules">The rules which should be used during the scenario.</param>
+        /// <param name="directoryPath">The directory path to be analysed.</param>
         /// <param name="expectedDiagnostics">The expected diagnostics.</param>
         /// <param name="excludeSubpaths">The exclude subpaths.</param>
         public void CreateScenario(TaintPropagationRules rules, string directoryPath, Diagnostics expectedDiagnostics, List<string> excludeSubpaths)
@@ -45,11 +43,6 @@ namespace UnitTests
             TwoDiagnosticFilesShouldBeEqual(expectedDiagnostics, diagnostics);
         }
 
-        /// <summary>
-        /// Twoes the diagnostic files should be equal.
-        /// </summary>
-        /// <param name="expected">The expected.</param>
-        /// <param name="actual">The actual.</param>
         private void TwoDiagnosticFilesShouldBeEqual(Diagnostics expected, Diagnostics actual)
         {
             Assert.AreEqual(expected.ScopeOfAnalysis, actual.ScopeOfAnalysis);
@@ -64,11 +57,6 @@ namespace UnitTests
             }
         }
 
-        /// <summary>
-        /// Twoes the cs project scan results should be equal.
-        /// </summary>
-        /// <param name="expected">The expected.</param>
-        /// <param name="actual">The actual.</param>
         private void TwoCSProjectScanResultsShouldBeEqual(CSProjectScanResult expected, CSProjectScanResult actual)
         {
             for (int i = 0; i < expected.NamesOfAllCSFilesInsideThisCSProject.Count(); i++)
@@ -86,11 +74,6 @@ namespace UnitTests
             }
         }
 
-        /// <summary>
-        /// Twoes the syntax tree scan results should be equal.
-        /// </summary>
-        /// <param name="expected">The expected.</param>
-        /// <param name="actual">The actual.</param>
         private void TwoSyntaxTreeScanResultsShouldBeEqual(SyntaxTreeScanResult expected, SyntaxTreeScanResult actual)
         {
             Assert.AreEqual(expected.NumberOfSkippedMethods, actual.NumberOfSkippedMethods);
@@ -102,11 +85,6 @@ namespace UnitTests
             }
         }
 
-        /// <summary>
-        /// Twoes the method scan results should be equal.
-        /// </summary>
-        /// <param name="expected">The expected.</param>
-        /// <param name="actual">The actual.</param>
         private void TwoMethodScanResultsShouldBeEqual(MethodScanResult expected, MethodScanResult actual)
         {
 
