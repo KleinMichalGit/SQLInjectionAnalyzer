@@ -6,8 +6,8 @@ using Model.CSProject;
 using Model.Method;
 using Model.Rules;
 using Model.SyntaxTree;
+using OutputService;
 using SQLInjectionAnalyzer;
-using SQLInjectionAnalyzer.OutputManager;
 
 namespace UnitTests
 {

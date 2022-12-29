@@ -6,14 +6,16 @@ using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
 using Model;
-using SQLInjectionAnalyzer.OutputManager.RazorOutput;
 using System.IO;
 using RazorEngineCore;
+using Microsoft.AspNetCore.Razor.Language;
+using OutputService.RazorOutput;
+using RazorEngine = RazorEngineCore.RazorEngine;
 
-namespace SQLInjectionAnalyzer.OutputManager
+namespace OutputService
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.OutputManager <c>OutputGenerator</c> class.
+    /// OutputService <c>OutputGenerator</c> class.
     /// 
     /// <para>
     /// Class for generating .html and .txt output files according to Scope of analysis.

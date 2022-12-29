@@ -97,6 +97,10 @@
       <Project>{536B46B7-7816-4273-932F-11CBE4155D38}</Project>
       <Name>Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OutputService\OutputService.csproj">
+      <Project>{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}</Project>
+      <Name>OutputService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SQLInjectionAnalyzer\SQLInjectionAnalyzer.csproj">
       <Project>{4CCA4842-29BA-4A89-B72A-06A11A9B1497}</Project>
       <Name>SQLInjectionAnalyzer</Name>

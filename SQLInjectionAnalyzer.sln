@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InputService", "InputService\InputService.csproj", "{79B7DA22-E418-40AB-A305-98FEC865147D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutputService", "OutputService\OutputService.csproj", "{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{79B7DA22-E418-40AB-A305-98FEC865147D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79B7DA22-E418-40AB-A305-98FEC865147D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79B7DA22-E418-40AB-A305-98FEC865147D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0A275CC-F0CB-4C9F-816A-7649981D5F8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

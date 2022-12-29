@@ -1,7 +1,7 @@
-﻿namespace SQLInjectionAnalyzer.OutputManager.RazorOutput
+﻿namespace OutputService.RazorOutput
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.OutputManager.RazorOutput <c>ReportInterprocedural</c> class.
+    /// OutputService.RazorOutput <c>ReportInterprocedural</c> class.
     /// 
     /// <para>
     /// Template for Interprocedural scope of analysis.
