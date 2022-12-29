@@ -5,10 +5,10 @@ using ExceptionHandler.ExceptionType;
 using Model.Rules;
 using Newtonsoft.Json;
 
-namespace SQLInjectionAnalyzer.InputManager
+namespace InputService
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.InputManager <c>ConfigFileReader</c> class.
+    /// InputService <c>ConfigFileReader</c> class.
     /// 
     /// <para>
     /// Reads and validates .json config files which contain TaintPropagationRules.

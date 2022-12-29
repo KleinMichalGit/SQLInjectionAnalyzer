@@ -85,9 +85,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExceptionHandler\ExceptionHandler.csproj">
+    <ProjectReference Include="..\ExceptionHandler\ExceptionService.csproj">
       <Project>{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}</Project>
-      <Name>ExceptionHandler</Name>
+      <Name>ExceptionService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\InputService\InputService.csproj">
+      <Project>{79B7DA22-E418-40AB-A305-98FEC865147D}</Project>
+      <Name>InputService</Name>
     </ProjectReference>
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{536B46B7-7816-4273-932F-11CBE4155D38}</Project>

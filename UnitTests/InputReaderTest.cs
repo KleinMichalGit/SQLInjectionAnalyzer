@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExceptionHandler.ExceptionType;
+using InputService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model;
-using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {
@@ -260,7 +260,7 @@ namespace UnitTests
         public void CreateInput()
         {
             //creates input from valid array of arguments
-            MethodInfo methodInfo = typeof(InputReader).GetMethod("CreateInput", BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo methodInfo = typeof(InputReader).GetMethod("CreateInputFromValidArguments", BindingFlags.NonPublic | BindingFlags.Instance);
 
             //--help
             string[] args = new string[] { "--help" };
