@@ -1,7 +1,7 @@
-﻿namespace SQLInjectionAnalyzer.OutputManager.RazorOutput
+﻿namespace OutputService.RazorOutput
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.OutputManager.RazorOutput <c>ReportOneMethod</c> class.
+    /// OutputService.RazorOutput <c>ReportOneMethod</c> class.
     /// 
     /// <para>
     /// Template for OneMethod scope of analysis.

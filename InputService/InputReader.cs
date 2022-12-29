@@ -4,10 +4,10 @@ using System.Linq;
 using ExceptionHandler.ExceptionType;
 using Model;
 
-namespace SQLInjectionAnalyzer.InputManager
+namespace InputService
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.InputManager <c>InputReader</c> class.
+    /// InputService <c>InputReader</c> class.
     /// 
     /// <para>
     /// Reads and validates user-provided console input.
@@ -41,7 +41,7 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
         /// <summary>
-        /// Inputs the arguments are unique if there is no argument specified more than once.
+        /// Input arguments are unique if there is no argument specified more than once.
         /// </summary>
         private bool InputArgumentsAreUnique(string[] args)
         {
@@ -54,7 +54,6 @@ namespace SQLInjectionAnalyzer.InputManager
                     Console.WriteLine("Input arguments are not unique.");
                     return false;
                 }
-
             }
             return true;
         }
@@ -117,7 +116,7 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
         /// <summary>
-        /// Defines if the scope of the analysis is defined correctly. The scope is defined correctly if it belongs to the set of possible scopes.
+        /// Decides if the scope of the analysis is defined correctly. The scope is defined correctly if it belongs to the set of possible scopes.
         /// </summary>
         private bool ScopeIsDefinedCorrectly(string[] args)
         {
@@ -144,7 +143,7 @@ namespace SQLInjectionAnalyzer.InputManager
         }
 
         /// <summary>
-        /// Decides if the path to the config file is defined correctly.The path to the config file
+        /// Decides if the path to the config file is defined correctly. The path to the config file
         /// is defined correctly if the file located on the specified path exists, and ends with ".json".
         /// </summary>
         private bool ConfigPathIsDefinedCorrectly(string[] args)
@@ -201,7 +200,7 @@ namespace SQLInjectionAnalyzer.InputManager
         /// </summary>
         /// <param name="args">The valid array of arguments.</param>
         /// <returns>valid Input object which contains all information received on input.</returns>
-        private Input CreateInput(string[] args)
+        private Input CreateInputFromValidArguments(string[] args)
         {
             Input input = new Input();
 
@@ -229,12 +228,11 @@ namespace SQLInjectionAnalyzer.InputManager
         /// <exception cref="ExceptionHandler.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
         public Input ProcessInput(string[] args)
         {
-            if (!InputArgumentsAreValid(args))
+            if (InputArgumentsAreValid(args))
             {
-                throw new InvalidInputException("Input arguments are invalid.");
+                return CreateInputFromValidArguments(args);
             }
-
-            return CreateInput(args);
+            throw new InvalidInputException("Input arguments are invalid.");
         }
     }
 }

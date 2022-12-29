@@ -1,10 +1,10 @@
 ﻿using System;
 using ExceptionHandler;
 using ExceptionHandler.ExceptionType;
+using InputService;
 using Model;
 using Model.Rules;
-using SQLInjectionAnalyzer.InputManager;
-using SQLInjectionAnalyzer.OutputManager;
+using OutputService;
 
 namespace SQLInjectionAnalyzer
 {

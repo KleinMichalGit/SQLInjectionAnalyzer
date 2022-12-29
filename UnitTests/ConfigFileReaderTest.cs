@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using ExceptionHandler.ExceptionType;
+using InputService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model.Rules;
-using SQLInjectionAnalyzer.InputManager;
 
 namespace UnitTests
 {

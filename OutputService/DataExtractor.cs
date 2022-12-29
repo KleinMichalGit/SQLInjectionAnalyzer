@@ -4,10 +4,10 @@ using Model.Method;
 using Model.SyntaxTree;
 using Model;
 
-namespace SQLInjectionAnalyzer.OutputManager
+namespace OutputService
 {
     /// <summary>
-    /// SQLInjectionAnalyzer.OutputManager <c>DataExtractor</c> class.
+    /// OutputService <c>DataExtractor</c> class.
     /// 
     /// <para>
     /// Class for extracting, and/or observing data from Diagnostics.
