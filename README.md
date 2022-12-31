@@ -85,6 +85,8 @@ It must be `*.json` file.
 - sourceAreas - batches for method findings which should be added to the `.html` result file. label defines the batch which should be added, path defines the path of the file containing at least one method analysed during analysis.
 - sinkMethods - the names of the methods considered to be potentially dangerous when any non-parametrised parameter is passed to them.
 - cleaningMethods - the names of the methods considered to be clear. Therefore, if any tainted variable is passed to the calling of such method, it will automatically clean the tainted variable.
+
+#### Exemplary `config.json` file:
 ```json
 {
   "level": 3,
