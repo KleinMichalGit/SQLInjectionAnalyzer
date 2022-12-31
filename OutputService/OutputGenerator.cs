@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using ExceptionHandler.ExceptionType;
 using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
@@ -11,6 +10,7 @@ using RazorEngineCore;
 using Microsoft.AspNetCore.Razor.Language;
 using OutputService.RazorOutput;
 using RazorEngine = RazorEngineCore.RazorEngine;
+using ExceptionService.ExceptionType;
 
 namespace OutputService
 {

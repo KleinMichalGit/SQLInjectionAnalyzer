@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace ExceptionHandler.ExceptionType
+namespace ExceptionService.ExceptionType
 {
     /// <summary>
-    /// ExceptionHandler.ExceptionType <c>OutputGeneratorException</c> class.
+    /// ExceptionService.ExceptionType <c>OutputGeneratorException</c> class.
     /// 
     /// </summary>
     /// <seealso cref="System.Exception" />

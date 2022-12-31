@@ -1,6 +1,6 @@
 ﻿using System;
-using ExceptionHandler;
-using ExceptionHandler.ExceptionType;
+using ExceptionService;
+using ExceptionService.ExceptionType;
 using InputService;
 using Model;
 using Model.Rules;
@@ -43,7 +43,7 @@ namespace SQLInjectionAnalyzer
         ///     <item>--help                                   show this usage tutorial and exit</item>
         /// </list>
         /// </param>
-        /// <exception cref="ExceptionHandler.ExceptionType.AnalysisException">not implemented yet</exception>
+        /// <exception cref="ExceptionService.ExceptionType.AnalysisException">not implemented yet</exception>
         public static void Main(string[] args)
         {
             InputReader inputReader = new InputReader();

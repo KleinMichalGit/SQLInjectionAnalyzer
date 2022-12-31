@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ExceptionHandler.ExceptionType;
+using ExceptionService.ExceptionType;
 using InputService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Model.Rules;

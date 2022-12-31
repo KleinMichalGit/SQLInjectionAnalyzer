@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace ExceptionHandler
+namespace ExceptionService
 {
     /// <summary>
-    /// ExceptionHandler <c>ExceptionWriter</c> class.
+    /// ExceptionService <c>ExceptionWriter</c> class.
     /// 
     /// <para>
     /// Contains <c>WriteUsageTutorial</c> method.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExceptionHandler.ExceptionType;
+using ExceptionService.ExceptionType;
 using Model;
 
 namespace InputService
@@ -225,7 +225,7 @@ namespace InputService
         /// </summary>
         /// <param name="args">The array of string arguments received on input.</param>
         /// <returns>Input object.</returns>
-        /// <exception cref="ExceptionHandler.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
+        /// <exception cref="ExceptionService.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
         public Input ProcessInput(string[] args)
         {
             if (InputArgumentsAreValid(args))
