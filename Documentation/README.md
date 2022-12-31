@@ -8,6 +8,8 @@ These design guidelines are not law. Be pragmatic, and when there is a good reas
 [HERE](naming-conventions.md) you can find information about which terms to use and which terms to avoid for cleaner understanding of the broad community.
 ## Programming style
 [HERE](programming-style.md) you can find recommended tips for programming style when contributing into this repository.
+## Documentation
+[HERE](documentation.md) you can read about how to correctly document your code, and how to write `markdown` (README) files. 
 ## Source areas
 [HERE](source-areas.md) you can find an explanation of what exactly the `source areas` are.
 ## Text of my Bachelor's thesis
