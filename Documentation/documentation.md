@@ -2,6 +2,11 @@
 ## Basic writing and formatting syntax
 Here you can find a [basic writing and formatting syntax of Github markdown files](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax "Basic writing and formatting syntax").
 
+## Documenting Analyzers
+Notice that folder SQLInjectionAnalyzer/Analyzers/ contains separate analyzers and each of them is briefly described in its own `README.md`. Please, follow the practice of documenting
+your own analyzers. Always create your own separate folder for your own implementation of an analyzer and document the philosophy of why this implementation is needed and how it works.
+You can find more about how to document your own analyzers [HERE](../SQLInjectionAnalyzer/Analyzers/README.md).
+
 ## Mermaid
 Please feel free to use Mermaid library for creating diagrams and visualizations in `Markdown` files. Here is a brief introduction
 to [Mermaid library](https://mermaid.js.org/intro/ "Mermaid").
