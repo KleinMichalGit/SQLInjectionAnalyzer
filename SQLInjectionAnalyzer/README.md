@@ -1,5 +1,6 @@
 # SQL Injection Analyzer
-Main folder for analyzer platform, contains `Program.cs` with main method.
+Main folder for analyzer platform, contains `Program.cs` with `Main` method.
+To add your own implementations of an analyzer, go to `Analyzers/`.
 
 ## Directory structure
 - [Analyzer.cs](Analyzer.cs) - public abstract class which has to be inherited by every single analyzer. It contains only one ScanDirectory method, which takes information received on input and in config file, and returns Diagnostics object. The way how each analyzer implements this method is completely up to a derived class.
