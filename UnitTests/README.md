@@ -1,6 +1,6 @@
 # Unit Tests
 Unit tests for all types of analyzers, config file reader and input reader.
-In this folder, there are also helpful tool for creating own unit tests.
+In this folder, there are also helpful tools for creating own unit tests.
 
 ## What are Unit Tests
 "In computer programming, `unit testing` is a software testing method by 
@@ -21,9 +21,9 @@ whether they are fit for use."[^1]
 ## How to run the tests
 #### Test Explorer
 Please use Test Explorer in Visual Studio for running Unit Tests.
-![img_1.png](img_1.png)
+![img_1.png](Images/img_1.png)
 The good practice is to always attach the evidence/output of the test into Test Detail Summary.
-![img.png](img.png)
+![img.png](Images/img.png)
 
 ## Directory structure
 - `CodeToBeAnalysed/` - the code which serves as a source code which should be analysed during unit tests. Contains all examples and use cases covered by unit tests. Mainly every single taint propagation rule contains source code designed specifically to test the functionality of that rule. Contains both safe and vulnerable cases.  
