@@ -9,6 +9,13 @@ program modules together with associated control data, usage
 procedures, and operating procedures are tested to determine 
 whether they are fit for use."[^1]
 ## How to add your own Unit Tests
+After creating your own implementation of an analyzer, or after modifying the existing
+functionality, please make sure the additional or changed functionality is
+fully covered by `unit tests`. To inspire yourself, look at [SimpleAnalyzerTest.cs](SimpleAnalyzerTest.cs)
+which covers the functionality of the implementation of the analyzer for Simple scope of analysis.
+Another examples are [ConfigFileReaderTest.cs](ConfigFileReaderTest.cs) or [InputReaderTest.cs](InputReaderTest.cs)
+which test [ConfigFileReader](../InputService/ConfigFileReader.cs) and [InputReader](../InputService/InputReader.cs)
+in InputService. You can add additional tests right here into this folder.
 
 ### AnalyzerTestHelper.cs
 
