@@ -18,8 +18,16 @@ which test [ConfigFileReader](../InputService/ConfigFileReader.cs) and [InputRea
 in InputService. You can add additional tests right here into this folder.
 
 ### AnalyzerTestHelper.cs
-
+[AnalyzerTestHelper.cs](AnalyzerTestHelper.cs) contains useful methods for creating `Test Scenarios`, and for comparing
+expected and actual `Diagnostics`. For example `TwoDiagnosticFilesShouldBeEqual(Diagnostics expected, Diagnostics actual)`.
+Since `Diagnostics` contain `time information` it would be impossible (and it would make no sense) to compare time values because
+every time they can be different (it depends on the environment where tests are run). Therefore, only values which `do not`
+depend on the environment are tested for equality. For example `ScopeOfAnalysis`, `NumberOfCSProjFiles`, or `CSProjectScanResults` should be equal. 
 #### Create scenario
+To create your own `Test Scenario`, call `CreateScenario(TaintPropagationRules rules, string directoryPath, Diagnostics expectedDiagnostics, List<string> excludeSubpaths)`,
+where `rules` are the rules you want to use for solving the taint variable propagation equations, `directoryPath` is a directory path to code which should be analysed, `expectedDiagnostics` are `Diagnostics` which
+you expect to receive from the analysis, and `excludeSubpaths` are the sub-paths which you want to skip during the analysis. The `Scenario`
+compares by `asserting` actual results, and expected results. The test scenario is successful if actual results are equal to expected results, otherwise it fails.
 ### Config file examples
 ### Code to be analysed
 ### Expected diagnostics
