@@ -1,0 +1,9 @@
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Klein"
+  given-names: "Michal"
+title: "SQLInjectionAnalyzer"
+version: 1.0.0
+date-released: 2022-12-29
+url: "https://github.com/KleinMichalGit/SQLInjectionAnalyzer"

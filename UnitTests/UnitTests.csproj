@@ -85,7 +85,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExceptionHandler\ExceptionService.csproj">
+    <ProjectReference Include="..\ExceptionService\ExceptionService.csproj">
       <Project>{527248C1-BB1E-4ED3-8FAA-1E3469E025DD}</Project>
       <Name>ExceptionService</Name>
     </ProjectReference>

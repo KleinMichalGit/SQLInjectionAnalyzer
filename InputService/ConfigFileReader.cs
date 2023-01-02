@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using ExceptionHandler.ExceptionType;
+using ExceptionService.ExceptionType;
 using Model.Rules;
 using Newtonsoft.Json;
 
@@ -46,7 +46,7 @@ namespace InputService
         /// </summary>
         /// <param name="pathToConfigFile">The path to .json configuration file.</param>
         /// <returns>If the rules received from the valid .json are valid, returns the rules. Otherwise, throws InvalidInputException.</returns>
-        /// <exception cref="ExceptionHandler.ExceptionType.InvalidInputException">
+        /// <exception cref="ExceptionService.ExceptionType.InvalidInputException">
         /// Can't read the config file.
         /// or
         /// Taint propagation rules are invalid.

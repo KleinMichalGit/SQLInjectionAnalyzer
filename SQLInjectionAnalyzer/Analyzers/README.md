@@ -1,14 +1,12 @@
 # Analyzers
-The folder which contains all analyzers.
+The folder which contains all analyzer implementations.
 
 ## Directory structure
-- InterproceduralAnalyzer
-- InterproceduralReachabilityAnalyzer
-- OneMethodAnalyzer
-- SimpleAnalyzer
+- [InterproceduralAnalyzer](InterproceduralAnalyzer/InterproceduralAnalyzer.cs).
+- [OneMethodAnalyzer](OneMethodAnalyzer/OneMethodAnalyzer.cs).
+- [SimpleAnalyzer](SimpleAnalyzer/SimpleAnalyzer.cs).
 
-
-## Table of available analyzers
+## (THIS WILL CHANGE IN THE FUTURE DUE TO SOLUTON AND ONESOLUTION ANALYZERS) Table of available analyzers
 | Analyzer                      | Description                                                                                                                                                                                                                                                         |
 |-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Simple`                      | Reads *.cs files separately, without compiling .csproj files, without performing interprocedural analysis, every block of code is considered as reachable (very fast but very imprecise). Able to analyse 100 thousand+ C# files repository in a couple of minutes. |
@@ -16,8 +14,7 @@ The folder which contains all analyzers.
 | `Interprocedural`             | Compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable.                                                                                                                                                 |
 | `InterproceduralReachability` | Compiles *.csproj files, performs n-level interprocedural analysis, able to decide trivial problems when solving reachability problems (requires the most resources, the most precise type of analysis).                                                            |
 
-
-## How to create your own analyzer
+## (THIS DOES NOT WORK YET) How to create your own analyzer 
 1. go to SQLInjectionAnalyzer/Model/Scope.cs and add your own unique Scope value.
 2. go to SQLInjectionAnalyzer/SQLInjectionAnalyzer/Analyzers/ and create your own folder. The folder must contain exactly two files. 1 C# file for the analyzer and one readme file where you briefly describe the philosophy of your tool.
 3. go to SQLInjectionAnalyzer/SQLInjectionAnalyzer/Program.cs and add the case for your analyzer into the switch.

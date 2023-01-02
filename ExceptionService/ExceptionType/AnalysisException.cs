@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace ExceptionHandler.ExceptionType
+namespace ExceptionService.ExceptionType
 {
     /// <summary>
-    /// ExceptionHandler.ExceptionType <c>AnalysisException</c> class.
+    /// ExceptionService.ExceptionType <c>AnalysisException</c> class.
     /// 
     /// </summary>
     /// <seealso cref="System.Exception" />
