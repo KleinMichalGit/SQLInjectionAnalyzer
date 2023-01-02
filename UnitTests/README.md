@@ -28,10 +28,19 @@ To create your own `Test Scenario`, call `CreateScenario(TaintPropagationRules r
 where `rules` are the rules you want to use for solving the taint variable propagation equations, `directoryPath` is a directory path to code which should be analysed, `expectedDiagnostics` are `Diagnostics` which
 you expect to receive from the analysis, and `excludeSubpaths` are the sub-paths which you want to skip during the analysis. The `Scenario`
 compares by `asserting` actual results, and expected results. The test scenario is successful if actual results are equal to expected results, otherwise it fails.
+
 ### Config file examples
+`ConfigFileExamples/` folder contains both valid and invalid config files for testing. Feel free to use them, or create your own.
+
 ### Code to be analysed
+`CodeToBeAnalysed/` folder contains the code for analysis for `unit testing`. Since this repository is a `static source code analyzer`, to test such
+code we need some code which will serve as a material for unit tests.
+
 ### Expected diagnostics
+`ExpectedDiagnostics/` folder contains many `Diagnostics` which are used as `expectedDiagnostics` for `Test Scenario`.
 ### Taint propagation rules examples
+`TaintPropagationRulesExamples` folder contains a taint propagation rules creator which creates custom rules for solving 
+taint variable propagation equations.
 
 ## How to run the tests
 #### Test Explorer
