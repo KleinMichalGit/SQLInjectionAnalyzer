@@ -106,14 +106,12 @@ namespace SQLInjectionAnalyzer
             {
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
-                SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
-
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);
 
                 // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
                 if (methodScanResult.Hits > 0)
                 {
-                    methodScanResult.MethodName = semanticModel.GetDeclaredSymbol(methodSyntax).Name;
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
                     methodScanResult.MethodBody = methodSyntax.ToString();
                     FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
