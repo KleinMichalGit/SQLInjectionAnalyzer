@@ -41,7 +41,7 @@ namespace SQLInjectionAnalyzer
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = InitialiseDiagnostics(ScopeOfAnalysis.Interprocedural);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.Interprocedural);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
@@ -75,7 +75,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = InitialiseScanResult(csprojPath);
+            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -104,7 +104,7 @@ namespace SQLInjectionAnalyzer
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-                if (!MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult)) continue;
+                if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
 
@@ -124,12 +124,12 @@ namespace SQLInjectionAnalyzer
 
                     if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
                     {
-                        methodScanResult = InitialiseMethodScanResult();
+                        methodScanResult = globalHelper.InitialiseMethodScanResult();
                     }
 
                     if (methodScanResult.Hits > 0 && writeOnConsole)
                     {
-                        WriteEvidenceOnConsole(methodScanResult);
+                        globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
                     }
                 }
 
@@ -291,7 +291,7 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
             methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
@@ -486,49 +486,6 @@ namespace SQLInjectionAnalyzer
         private void SolveLiteralExpression(MethodScanResult result, int level)
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
-        }
-
-        private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
-        {
-            Diagnostics diagnostics = new Diagnostics();
-            diagnostics.ScopeOfAnalysis = scopeOfAnalysis;
-            diagnostics.DiagnosticsStartTime = DateTime.Now;
-            return diagnostics;
-        }
-
-        private CSProjectScanResult InitialiseScanResult(string directoryPath)
-        {
-            CSProjectScanResult scanResult = new CSProjectScanResult();
-            scanResult.CSProjectScanResultStartTime = DateTime.Now;
-            scanResult.Path = directoryPath;
-
-            return scanResult;
-        }
-
-        private MethodScanResult InitialiseMethodScanResult()
-        {
-            MethodScanResult methodScanResult = new MethodScanResult();
-            methodScanResult.MethodScanResultStartTime = DateTime.Now;
-
-            return methodScanResult;
-        }
-
-        private void WriteEvidenceOnConsole(MethodScanResult result)
-        {
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Vulnerable method found");
-            Console.WriteLine("Method name: " + result.MethodName);
-            if (result.SourceAreasLabels.Count() > 0)
-            {
-                Console.WriteLine("Source areas labels: " + String.Join(", ", result.SourceAreasLabels));
-            }
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Interprocedural callers tree:");
-            Console.WriteLine(result.CallersTree);
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Evidence:");
-            Console.WriteLine(result.Evidence);
-            Console.WriteLine("-----------------------");
         }
     }
 }

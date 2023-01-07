@@ -118,11 +118,22 @@ namespace SQLInjectionAnalyzer
         }
 
 
-        public void WriteEvidenceOnConsole(string methodName, string evidence)
+        public void WriteEvidenceOnConsole(string methodName, string evidence, MethodScanResult result=null)
         {
             Console.WriteLine("-----------------------");
             Console.WriteLine("Vulnerable method found");
             Console.WriteLine("Method name: " + methodName);
+            if (result != null)
+            {
+                if (result.SourceAreasLabels.Count() > 0)
+                {
+                    Console.WriteLine("Source areas labels: " + String.Join(", ", result.SourceAreasLabels));
+                }
+                Console.WriteLine("-----------------------");
+                Console.WriteLine("Interprocedural callers tree:");
+                Console.WriteLine(result.CallersTree);
+                Console.WriteLine("-----------------------");
+            }
             Console.WriteLine("Evidence:");
             Console.WriteLine(evidence);
             Console.WriteLine("-----------------------");
