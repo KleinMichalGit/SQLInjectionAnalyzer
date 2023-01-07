@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="ReportInterprocedural.cshtml" />
     <None Include="ReportOneMethod.cshtml" />
     <None Include="ReportSimple.cshtml" />
   </ItemGroup>
