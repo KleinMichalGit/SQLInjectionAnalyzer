@@ -35,15 +35,15 @@ namespace SQLInjectionAnalyzer
         private string targetFileType = "*.csproj";
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
-        private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
+        private GlobalHelper globalHelper = new GlobalHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = InitialiseDiagnostics(ScopeOfAnalysis.Interprocedural);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.Interprocedural);
 
-            int numberOfCSProjFilesUnderThisRepository = commonSyntaxHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
+            int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
@@ -75,7 +75,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = InitialiseScanResult(csprojPath);
+            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -104,16 +104,14 @@ namespace SQLInjectionAnalyzer
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-                if (!MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult)) continue;
-
-                SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
+                if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);
 
                 // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
                 if (methodScanResult.Hits > 0)
                 {
-                    methodScanResult.MethodName = semanticModel.GetDeclaredSymbol(methodSyntax).Name;
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
                     methodScanResult.MethodBody = methodSyntax.ToString();
                     FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
@@ -124,12 +122,12 @@ namespace SQLInjectionAnalyzer
 
                     if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
                     {
-                        methodScanResult = InitialiseMethodScanResult();
+                        methodScanResult = globalHelper.InitialiseMethodScanResult();
                     }
 
                     if (methodScanResult.Hits > 0 && writeOnConsole)
                     {
-                        WriteEvidenceOnConsole(methodScanResult);
+                        globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
                     }
                 }
 
@@ -291,10 +289,10 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
             methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
 
-            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
             methodScanResult.Sinks = (short)invocations.Count();
 
             Tainted taintedMethod = new Tainted()
@@ -486,74 +484,6 @@ namespace SQLInjectionAnalyzer
         private void SolveLiteralExpression(MethodScanResult result, int level)
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
-        }
-
-        private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
-        {
-            Diagnostics diagnostics = new Diagnostics();
-            diagnostics.ScopeOfAnalysis = scopeOfAnalysis;
-            diagnostics.DiagnosticsStartTime = DateTime.Now;
-            return diagnostics;
-        }
-
-        private CSProjectScanResult InitialiseScanResult(string directoryPath)
-        {
-            CSProjectScanResult scanResult = new CSProjectScanResult();
-            scanResult.CSProjectScanResultStartTime = DateTime.Now;
-            scanResult.Path = directoryPath;
-
-            return scanResult;
-        }
-
-        private MethodScanResult InitialiseMethodScanResult()
-        {
-            MethodScanResult methodScanResult = new MethodScanResult();
-            methodScanResult.MethodScanResultStartTime = DateTime.Now;
-
-            return methodScanResult;
-        }
-
-        private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
-        {
-            //scan public methods only
-            if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-
-            if (!methodSyntax.ParameterList.ToString().Contains("string"))
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-
-            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
-
-            if (!invocations.Any())
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-            return true;
-        }
-
-        private void WriteEvidenceOnConsole(MethodScanResult result)
-        {
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Vulnerable method found");
-            Console.WriteLine("Method name: " + result.MethodName);
-            if (result.SourceAreasLabels.Count() > 0)
-            {
-                Console.WriteLine("Source areas labels: " + String.Join(", ", result.SourceAreasLabels));
-            }
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Interprocedural callers tree:");
-            Console.WriteLine(result.CallersTree);
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Evidence:");
-            Console.WriteLine(result.Evidence);
-            Console.WriteLine("-----------------------");
         }
     }
 }

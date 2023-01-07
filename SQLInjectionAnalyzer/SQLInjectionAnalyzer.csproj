@@ -178,7 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
-    <Compile Include="CommonSyntaxHelper.cs" />
+    <Compile Include="GlobalHelper.cs" />
     <Compile Include="Analyzers\InterproceduralAnalyzer\InterproceduralAnalyzer.cs" />
     <Compile Include="Analyzers\OneMethodAnalyzer\OneMethodAnalyzer.cs" />
     <Compile Include="Program.cs" />
