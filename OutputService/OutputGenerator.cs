@@ -109,8 +109,7 @@ namespace OutputService
                     throw new OutputGeneratorException("not implemented yet");
             }
 
-            IRazorEngine razorEngine = new RazorEngine();
-            IRazorEngineCompiledTemplate template = razorEngine.Compile(content);
+            IRazorEngineCompiledTemplate template = new RazorEngine().Compile(content);
 
             string result = template.Run(new
             {
