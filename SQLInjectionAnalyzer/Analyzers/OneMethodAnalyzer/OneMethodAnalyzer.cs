@@ -32,16 +32,16 @@ namespace SQLInjectionAnalyzer
         private string targetFileType = "*.csproj";
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
-        private GlobalHelper commonSyntaxHelper = new GlobalHelper();
+        private GlobalHelper globalHelper = new GlobalHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = InitialiseDiagnostics(ScopeOfAnalysis.OneMethod);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethod);
 
-            int numberOfCSProjFilesUnderThisRepository = commonSyntaxHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
+            int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
@@ -72,7 +72,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = InitialiseScanResult(csprojPath);
+            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -92,13 +92,11 @@ namespace SQLInjectionAnalyzer
 
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
         {
-            SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
-            syntaxTreeScanResult.SyntaxTreeScanResultStartTime = DateTime.Now;
-            syntaxTreeScanResult.Path = syntaxTree.FilePath;
+            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-                if (!MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult)) continue;
+                if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);
 
@@ -112,7 +110,7 @@ namespace SQLInjectionAnalyzer
 
                     if (writeOnConsole)
                     {
-                        WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
+                        globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
                     }
                 }
                 syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
@@ -123,9 +121,9 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
 
-            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
             methodScanResult.Sinks = (short)invocations.Count();
 
             // follows data flow inside method for each sink invocation from sink invocation to source
@@ -282,66 +280,6 @@ namespace SQLInjectionAnalyzer
         private void SolveLiteralExpression(MethodScanResult result, int level)
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
-        }
-
-        private Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
-        {
-            Diagnostics diagnostics = new Diagnostics();
-            diagnostics.ScopeOfAnalysis = scopeOfAnalysis;
-            diagnostics.DiagnosticsStartTime = DateTime.Now;
-            return diagnostics;
-        }
-
-        private CSProjectScanResult InitialiseScanResult(string directoryPath)
-        {
-            CSProjectScanResult scanResult = new CSProjectScanResult();
-            scanResult.CSProjectScanResultStartTime = DateTime.Now;
-            scanResult.Path = directoryPath;
-
-            return scanResult;
-        }
-
-        private MethodScanResult InitialiseMethodScanResult()
-        {
-            MethodScanResult methodScanResult = new MethodScanResult();
-            methodScanResult.MethodScanResultStartTime = DateTime.Now;
-
-            return methodScanResult;
-        }
-
-        private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
-        {
-            //scan public methods only
-            if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-
-            if (!methodSyntax.ParameterList.ToString().Contains("string"))
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-
-            IEnumerable<InvocationExpressionSyntax> invocations = commonSyntaxHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
-
-            if (!invocations.Any())
-            {
-                syntaxTreeScanResult.NumberOfSkippedMethods++;
-                return false;
-            }
-            return true;
-        }
-
-        private void WriteEvidenceOnConsole(string methodName, string evidence)
-        {
-            Console.WriteLine("-----------------------");
-            Console.WriteLine("Vulnerable method found");
-            Console.WriteLine("Method name: " + methodName);
-            Console.WriteLine("Evidence:");
-            Console.WriteLine(evidence);
-            Console.WriteLine("-----------------------");
         }
     }
 }
