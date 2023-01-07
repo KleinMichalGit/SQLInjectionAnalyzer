@@ -316,7 +316,6 @@ namespace SQLInjectionAnalyzer
       
         private bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult)
         {
-            //scan public methods only (will be removed)
             if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
