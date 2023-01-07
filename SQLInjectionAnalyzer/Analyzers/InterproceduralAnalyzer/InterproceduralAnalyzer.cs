@@ -399,14 +399,11 @@ namespace SQLInjectionAnalyzer
                 FollowDataFlow(rootNode, argNode, result, tainted, null, visitedNodes, level + 1);
         }
 
-        // follow what is behind = (everything except the first identifier)
         private void SolveAssignmentExpression(MethodDeclarationSyntax rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            result.AppendEvidence(new string(' ', level * 2) + assignmentNode.Right.ToString());
-            FindOrigin(rootNode, assignmentNode.Right, result, visitedNodes, level + 1, tainted);
+            FollowDataFlow(rootNode, assignmentNode.Right, result, tainted, null, visitedNodes, level + 1);
         }
 
-        // nemozem to riesit rovnako ako solve assignment expr?
         private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
