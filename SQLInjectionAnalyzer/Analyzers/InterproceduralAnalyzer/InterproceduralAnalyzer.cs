@@ -35,7 +35,7 @@ namespace SQLInjectionAnalyzer
         private string targetFileType = "*.csproj";
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
-        private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
+        private GlobalHelper commonSyntaxHelper = new GlobalHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {

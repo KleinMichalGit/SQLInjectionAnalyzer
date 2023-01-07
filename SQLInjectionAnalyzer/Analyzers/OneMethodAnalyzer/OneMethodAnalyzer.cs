@@ -32,7 +32,7 @@ namespace SQLInjectionAnalyzer
         private string targetFileType = "*.csproj";
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
-        private CommonSyntaxHelper commonSyntaxHelper = new CommonSyntaxHelper();
+        private GlobalHelper commonSyntaxHelper = new GlobalHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
@@ -83,17 +83,14 @@ namespace SQLInjectionAnalyzer
                 foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
                 {
                     csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
-                    SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
-                    SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree, semanticModel);
+                    SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree);
                     csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
                 }
-
             }
-
             csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
         }
 
-        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, SemanticModel semanticModel)
+        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
         {
             SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
             syntaxTreeScanResult.SyntaxTreeScanResultStartTime = DateTime.Now;
@@ -107,7 +104,7 @@ namespace SQLInjectionAnalyzer
 
                 if (methodScanResult.Hits > 0)
                 {
-                    methodScanResult.MethodName = semanticModel.GetDeclaredSymbol(methodSyntax).Name;
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
                     methodScanResult.MethodBody = methodSyntax.ToString();
                     FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
