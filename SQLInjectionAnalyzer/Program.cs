@@ -64,13 +64,13 @@ namespace SQLInjectionAnalyzer
                 switch (input.Scope)
                 {
                     case ScopeOfAnalysis.OneMethodSyntaxTree:
-                        analyzer = new SimpleAnalyzer();
+                        analyzer = new OneMethodSyntaxTreeAnalyzer();
                         break;
                     case ScopeOfAnalysis.OneMethodCSProj:
-                        analyzer = new OneMethodAnalyzer();
+                        analyzer = new OneMethodCSProjAnalyzer();
                         break;
                     case ScopeOfAnalysis.InterproceduralCSProj:
-                        analyzer = new InterproceduralAnalyzer();
+                        analyzer = new InterproceduralCSProjAnalyzer();
                         break;
                     default:
                         throw new AnalysisException("not implemented yet");

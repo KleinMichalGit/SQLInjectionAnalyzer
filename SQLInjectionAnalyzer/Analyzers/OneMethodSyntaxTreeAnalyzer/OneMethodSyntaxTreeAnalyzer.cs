@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
-    /// SQLInjectionAnalyzer <c>SimpleAnalyzer</c> class.
+    /// SQLInjectionAnalyzer <c>OneMethodSyntaxTreeAnalyzer</c> class.
     /// 
     /// <para>
     /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural
@@ -25,7 +25,7 @@ namespace SQLInjectionAnalyzer
     /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
-    public class SimpleAnalyzer : Analyzer
+    public class OneMethodSyntaxTreeAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
      

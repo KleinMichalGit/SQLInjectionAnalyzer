@@ -12,7 +12,7 @@ namespace UnitTests
     [TestClass]
     public class SimpleAnalyzerTest
     {
-        private SimpleAnalyzer simpleAnalyzer;
+        private OneMethodSyntaxTreeAnalyzer simpleAnalyzer;
         private ExpectedDiagnosticsSimpleAnalysis expectedDiagnosticsCreator;
         private TaintPropagationRulesCreator taintPropagationRulesCreator;
         private AnalyzerTestHelper testHelper;
@@ -22,7 +22,7 @@ namespace UnitTests
         /// </summary>
         public SimpleAnalyzerTest()
         {
-            simpleAnalyzer = new SimpleAnalyzer();
+            simpleAnalyzer = new OneMethodSyntaxTreeAnalyzer();
             expectedDiagnosticsCreator = new ExpectedDiagnosticsSimpleAnalysis();
             taintPropagationRulesCreator = new TaintPropagationRulesCreator();
             testHelper = new AnalyzerTestHelper(simpleAnalyzer);

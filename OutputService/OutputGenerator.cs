@@ -97,13 +97,13 @@ namespace OutputService
             switch (diagnostics.ScopeOfAnalysis)
             {
                 case ScopeOfAnalysis.OneMethodSyntaxTree:
-                    content = ReportSimple.report;
+                    content = ReportOneMethodSyntaxTree.report;
                     break;
                 case ScopeOfAnalysis.OneMethodCSProj:
-                    content = ReportOneMethod.report;
+                    content = ReportOneMethodCSProj.report;
                     break;
                 case ScopeOfAnalysis.InterproceduralCSProj:
-                    content = ReportInterprocedural.report;
+                    content = ReportInterproceduralCSProj.report;
                     break;
                 default:
                     throw new OutputGeneratorException("not implemented yet");

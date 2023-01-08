@@ -16,7 +16,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
-    /// SQLInjectionAnalyzer <c>OneMethodAnalyzer</c> class.
+    /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
     /// 
     /// <para>
     /// Compiles *.csproj files, without performing interprocedural analysis.
@@ -26,7 +26,7 @@ namespace SQLInjectionAnalyzer
     /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
-    public class OneMethodAnalyzer : Analyzer
+    public class OneMethodCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
         private string targetFileType = "*.csproj";

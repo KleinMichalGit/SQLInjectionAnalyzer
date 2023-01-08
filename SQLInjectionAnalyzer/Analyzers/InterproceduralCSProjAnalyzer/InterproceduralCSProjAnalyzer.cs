@@ -29,7 +29,7 @@ namespace SQLInjectionAnalyzer
     /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
-    public class InterproceduralAnalyzer : Analyzer
+    public class InterproceduralCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
         private string targetFileType = "*.csproj";

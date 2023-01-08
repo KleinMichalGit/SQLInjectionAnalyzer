@@ -84,9 +84,9 @@
     <Compile Include="DataExtractor.cs" />
     <Compile Include="OutputGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RazorOutput\ReportInterprocedural.cs" />
-    <Compile Include="RazorOutput\ReportOneMethod.cs" />
-    <Compile Include="RazorOutput\ReportSimple.cs" />
+    <Compile Include="RazorOutput\ReportInterproceduralCSProj.cs" />
+    <Compile Include="RazorOutput\ReportOneMethodCSProj.cs" />
+    <Compile Include="RazorOutput\ReportOneMethodSyntaxTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExceptionService\ExceptionService.csproj">
