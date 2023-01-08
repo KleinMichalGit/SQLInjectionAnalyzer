@@ -1,14 +1,17 @@
-# Interprocedural Analyzer
+# InterproceduralCSProj Analyzer
 
 ## A brief description of philosophy
-Compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable.
-In comparison to OneMethod analyzer, Interprocedural analyzer is able to search for the callers of the currently analysed method
-among every single C# file mentioned in the currently analysed .csproj file. It does so by creating BFS tree of callers-callees
-with the maximal height of `n`. The number `n` is defined in the `config.json` file.
+Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis 
+(where number n is defined in config.json file) for each project separately, able 
+to decide trivial problems when solving reachability problems.
+In comparison to OneMethod analyzers, InterproceduralCSProj analyzer is able to search for the callers of 
+the currently analysed method among every single C# file referred to in the currently analysed .csproj file.
+It does so by creating BFS tree of callers-callees with the maximal height of `n`.
+The number `n` is defined in the `config.json` file.
 
 ## Interprocedural Analysis
 By far, the most interesting functionality of this analyzer is how callers-callees are found on
-Interprocedural scope. The following list describes the methods used during this process.
+interprocedural scope. The following list describes the methods used during this process.
 
 - `SolveInterproceduralAnalysis` - `n`-times iterates through each `SyntaxTree` of `Compilation`. On each level, finds all method invocations of the currently analysed method inside all SyntaxTrees.
 For each invocation find out if it is located inside the body of the method. If yes, solve the invocation as if it is the invocation of the
