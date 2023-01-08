@@ -12,7 +12,7 @@ namespace UnitTests.ExpectedDiagnostics
         {
             return new Diagnostics()
             {
-                ScopeOfAnalysis = ScopeOfAnalysis.OneMethod
+                ScopeOfAnalysis = ScopeOfAnalysis.OneMethodCSProj
             };
         }
 
@@ -20,7 +20,7 @@ namespace UnitTests.ExpectedDiagnostics
         {
             return new Diagnostics()
             {
-                ScopeOfAnalysis = ScopeOfAnalysis.OneMethod
+                ScopeOfAnalysis = ScopeOfAnalysis.OneMethodCSProj
             };
         }
 
@@ -28,7 +28,7 @@ namespace UnitTests.ExpectedDiagnostics
         {
             return new Diagnostics()
             {
-                ScopeOfAnalysis = ScopeOfAnalysis.OneMethod
+                ScopeOfAnalysis = ScopeOfAnalysis.OneMethodCSProj
             };
         }
     }

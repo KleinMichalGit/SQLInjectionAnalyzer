@@ -39,7 +39,7 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethod);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
@@ -170,7 +170,7 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 FindOrigin(rootNode, currentNode, result, visitedNodes, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE" + currentNode.ToString());
+                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
         }
 
         private void SolveInvocationExpression(MethodDeclarationSyntax rootNode, InvocationExpressionSyntax invocationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)

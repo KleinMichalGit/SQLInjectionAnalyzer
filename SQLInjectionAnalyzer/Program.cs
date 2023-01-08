@@ -63,13 +63,13 @@ namespace SQLInjectionAnalyzer
 
                 switch (input.Scope)
                 {
-                    case ScopeOfAnalysis.Simple:
+                    case ScopeOfAnalysis.OneMethodSyntaxTree:
                         analyzer = new SimpleAnalyzer();
                         break;
-                    case ScopeOfAnalysis.OneMethod:
+                    case ScopeOfAnalysis.OneMethodCSProj:
                         analyzer = new OneMethodAnalyzer();
                         break;
-                    case ScopeOfAnalysis.Interprocedural:
+                    case ScopeOfAnalysis.InterproceduralCSProj:
                         analyzer = new InterproceduralAnalyzer();
                         break;
                     default:

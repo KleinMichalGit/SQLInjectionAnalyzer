@@ -13,23 +13,31 @@
     public enum ScopeOfAnalysis
     {
         /// <summary>
-        /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural analysis,
-        /// every block of code is considered as reachable (very fast but very inacurate.).
+        /// Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files, without compiling .csproj files,
+        /// without performing interprocedural analysis, every block of code is considered as reachable (very fast but very inacurate).
         /// </summary>
-        Simple,
+        OneMethodSyntaxTree,
         /// <summary>
-        /// Compiles *.csproj files, without performing interprocedural analysis.
+        /// Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered as reachable. Uses the same 
+        /// rules as OneMethodSyntaxTree, therefore provides the same results. This <see cref="ScopeOfAnalysis"/> serves only to investigate how much
+        /// time is needed for compilation of all .csproj files.
         /// </summary>
-        OneMethod,
+        OneMethodCSProj,
         /// <summary>
-        /// Compiles *.csproj files, performs n-level interprocedural analysis,
-        /// every block of code is considered as reachable.
-        /// </summary>
-        Interprocedural,
-        /// <summary>
-        /// Compiles *.csproj files, performs n-level interprocedural analysis,
+        /// Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined in config.json file) for each project separately,
         /// able to decide trivial problems when solving reachability problems.
         /// </summary>
-        InterproceduralReachability
+        InterproceduralCSProj,
+        /// <summary>
+        /// Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is defined in config.json file) for each solution separately,
+        /// able to decide trivial problems when solving reachability problems.
+        /// </summary>
+        InterproceduralSolution,
+        /// <summary>
+        /// Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing them in the solution,
+        /// performs n-level interprocedural analysis (where number n is defined in config.json file) at 1 universaly created solution,
+        /// able to decide trivial problems when solving reachability problems.
+        /// </summary>
+        InterproceduralOneSolution
     }
 }

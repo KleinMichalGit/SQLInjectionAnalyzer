@@ -40,7 +40,7 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.Simple);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodSyntaxTree);
 
             int numberOfCSFilesUnderThisDirectory = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfProcessedFiles = 0;

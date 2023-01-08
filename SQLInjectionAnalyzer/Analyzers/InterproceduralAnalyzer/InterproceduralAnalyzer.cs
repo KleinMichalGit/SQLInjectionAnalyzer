@@ -41,7 +41,7 @@ namespace SQLInjectionAnalyzer
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.Interprocedural);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;

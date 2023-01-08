@@ -16,8 +16,8 @@ namespace UnitTests
     public class InputReaderTest
     {
         InputReader inputReader = new InputReader();
-        string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/" };
-        string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
+        string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/" };
+        string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
       
         [TestMethod]
         public void InputArgumentsAreUnique()
@@ -129,23 +129,28 @@ namespace UnitTests
             bool scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
-            //scope is defined as Simple
-            args = new string[] { "--scope-of-analysis=Simple" };
+            //scope is defined as OneMethodSyntaxTree
+            args = new string[] { "--scope-of-analysis=OneMethodSyntaxTree" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
-            //scope is defined as OneMethod
-            args = new string[] { "--scope-of-analysis=OneMethod" };
+            //scope is defined as OneMethodCSProj
+            args = new string[] { "--scope-of-analysis=OneMethodCSProj" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
-            //scope is defined as Interprocedural
-            args = new string[] { "--scope-of-analysis=Interprocedural" };
+            //scope is defined as InterproceduralCSProj
+            args = new string[] { "--scope-of-analysis=InterproceduralCSProj" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
-            //scope is defined as InterproceduralReachability
-            args = new string[] { "--scope-of-analysis=InterproceduralReachability" };
+            //scope is defined as InterproceduralSolution
+            args = new string[] { "--scope-of-analysis=InterproceduralSolution" };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is defined as InterproceduralOneSolution
+            args = new string[] { "--scope-of-analysis=InterproceduralOneSolution" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
@@ -231,28 +236,34 @@ namespace UnitTests
         {
             MethodInfo methodInfo = typeof(InputReader).GetMethod("GetScopeFromArgument", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            //get Simple Scope
-            string argument = "Simple";
+            //get OneMethodSyntaxTree Scope
+            string argument = "OneMethodSyntaxTree";
             ScopeOfAnalysis receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
-            ScopeOfAnalysis expected = ScopeOfAnalysis.Simple;
+            ScopeOfAnalysis expected = ScopeOfAnalysis.OneMethodSyntaxTree;
             Assert.AreEqual(expected, receivedValue);
 
-            //get OneMethod Scope
-            argument = "OneMethod";
+            //get OneMethodCSProj Scope
+            argument = "OneMethodCSProj";
             receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
-            expected = ScopeOfAnalysis.OneMethod;
+            expected = ScopeOfAnalysis.OneMethodCSProj;
             Assert.AreEqual(expected, receivedValue);
 
-            //get Interprocedural Scope
-            argument = "Interprocedural";
+            //get InterproceduralCSProj Scope
+            argument = "InterproceduralCSProj";
             receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
-            expected = ScopeOfAnalysis.Interprocedural;
+            expected = ScopeOfAnalysis.InterproceduralCSProj;
             Assert.AreEqual(expected, receivedValue);
 
-            //get InterproceduralReachability Scope
-            argument = "InterproceduralReachability";
+            //get InterproceduralSolution Scope
+            argument = "InterproceduralSolution";
             receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
-            expected = ScopeOfAnalysis.InterproceduralReachability;
+            expected = ScopeOfAnalysis.InterproceduralSolution;
+            Assert.AreEqual(expected, receivedValue);
+
+            //get InterproceduralOneSolution Scope
+            argument = "InterproceduralOneSolution";
+            receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
+            expected = ScopeOfAnalysis.InterproceduralOneSolution;
             Assert.AreEqual(expected, receivedValue);
         }
 
@@ -274,19 +285,19 @@ namespace UnitTests
             expected = new Input()
             {
                 SourceFolderPath = "./a/b",
-                Scope = ScopeOfAnalysis.Simple,
+                Scope = ScopeOfAnalysis.OneMethodSyntaxTree,
                 ConfigFilePath = "./c/d/config.json",
                 ExportPath = "./x/y/z/",
             };
             Assert.IsTrue(TwoInputsAreEqual(expected, input));
 
             //all arguments except help
-            args = new string[] { "--path=./a/b", "--scope-of-analysis=Interprocedural", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console" };
+            args = new string[] { "--path=./a/b", "--scope-of-analysis=InterproceduralCSProj", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console" };
             input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
             expected = new Input()
             {
                 SourceFolderPath = "./a/b",
-                Scope = ScopeOfAnalysis.Interprocedural,
+                Scope = ScopeOfAnalysis.InterproceduralCSProj,
                 ConfigFilePath = "./c/d/config.json",
                 ExportPath = "./x/y/z/",
                 ExcludeSubpaths = new List<string> { "A", "B" },
@@ -295,7 +306,7 @@ namespace UnitTests
             Assert.IsTrue(TwoInputsAreEqual(expected, input));
 
             //test for unequality
-            args = new string[] { "--path=./a/b", "--scope-of-analysis=Interprocedural", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console" };
+            args = new string[] { "--path=./a/b", "--scope-of-analysis=InterproceduralCSProj", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console" };
             input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
             expected = new Input()
             {
@@ -337,7 +348,7 @@ namespace UnitTests
             Input expected = new Input()
             {
                 SourceFolderPath = "./a/b",
-                Scope = ScopeOfAnalysis.Simple,
+                Scope = ScopeOfAnalysis.OneMethodSyntaxTree,
                 ConfigFilePath = "./c/d/config.json",
                 ExportPath = "./x/y/z/",
             };
