@@ -39,6 +39,7 @@ namespace SQLInjectionAnalyzer
         private bool writeOnConsole = false;
         private GlobalHelper globalHelper = new GlobalHelper();
         private TableOfRules tableOfRules = new TableOfRules();
+
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
@@ -84,6 +85,7 @@ namespace SQLInjectionAnalyzer
                 Project project = await workspace.OpenProjectAsync(csprojPath);
 
                 Compilation compilation = await project.GetCompilationAsync();
+                
 
                 foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
                 {
@@ -168,7 +170,7 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is VariableDeclaratorSyntax)
                 nextLevelNodes = tableOfRules.SolveVariableDeclarator((VariableDeclaratorSyntax)currentNode);
             else if (currentNode is ConditionalExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode);
+                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode, result, level).Result;
             else if (currentNode is LiteralExpressionSyntax)
                 tableOfRules.SolveLiteralExpression(result, level);
             else if (currentNode is ArgumentSyntax)

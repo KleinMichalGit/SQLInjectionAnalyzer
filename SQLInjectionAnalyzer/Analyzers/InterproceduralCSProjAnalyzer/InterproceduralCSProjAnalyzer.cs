@@ -14,6 +14,8 @@ using Model.Method;
 using Model.Rules;
 using Model.SyntaxTree;
 using Model;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace SQLInjectionAnalyzer
 {
@@ -473,11 +475,29 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        private void SolveConditionalExpression(MethodDeclarationSyntax rootNode, ConditionalExpressionSyntax currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
+        private async void SolveConditionalExpression(MethodDeclarationSyntax rootNode, ConditionalExpressionSyntax currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
-            FollowDataFlow(rootNode, currentNode.Condition, result, tainted, null, visitedNodes, level + 1);
-            FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
-            FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
+            try
+            {
+                bool evaluationResult = (bool)await CSharpScript.EvaluateAsync(currentNode.Condition.ToString());
+                if (evaluationResult)
+                {
+                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as True (only 1 block will be investigated).");
+                    FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
+                }
+                else
+                {
+                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as False (only 1 block will be investigated).");
+                    FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
+                }
+            }
+            catch (CompilationErrorException e)
+            {
+                // unable to evaluate the condition, therefore both blocks of conditional expression have to be investigated
+                result.AppendEvidence(new string(' ', level * 2) + "unsuccessfully evaluated condition (both blocks will be investigated).");
+                FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
+                FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
+            }
         }
 
         private void SolveLiteralExpression(MethodScanResult result, int level)
