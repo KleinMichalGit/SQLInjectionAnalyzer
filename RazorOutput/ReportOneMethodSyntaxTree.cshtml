@@ -104,43 +104,52 @@
                 {
                     @if (Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInFile(syntaxTreeScanResult) > 0)
                     {
-                        <h5>file path: @syntaxTreeScanResult.Path</h5>
-                        <p>file scan start time: @syntaxTreeScanResult.SyntaxTreeScanResultStartTime</p>   
-                        <p>file scan end time: @syntaxTreeScanResult.SyntaxTreeScanResultEndTime</p>   
-                        <p>file scan total time: @syntaxTreeScanResult.SyntaxTreeScanResultTotalTime</p>   
-                    }
-
-                    @foreach(var methodScanResult in syntaxTreeScanResult.MethodScanResults)
-                    {
-                        @if (methodScanResult.Hits > 0)
-                        {
-                            <div class="card bg-light mb-3">
+                        <div class="card bg-info mb-3">
                             <div class="card-header">
-                                <h5>@methodScanResult.MethodName</h5>
-                                <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
-                                <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
+                                <h5>C# file scan report</h5>
                             </div>
                             <div class="card-body">
-                                <ul class="list-group list-group-flush bg-light">
-                                <li class="list-group-item bg-light">
-                                    <h6>Method body</h6>
-                                    <pre class="prettyprint bg-white">@methodScanResult.MethodBody</pre>
-                                </li>
-                                <li class="list-group-item bg-light">
-                                    <h6>Evidence</h6>
-                                    <pre class="prettyprint bg-white">@methodScanResult.Evidence</pre>
-                                </li>
-                            </ul>
+                                <h5>file path: @syntaxTreeScanResult.Path</h5>
+                                <p>file scan start time: @syntaxTreeScanResult.SyntaxTreeScanResultStartTime</p>
+                                <p>file scan end time: @syntaxTreeScanResult.SyntaxTreeScanResultEndTime</p>
+                                <p>file scan total time: @syntaxTreeScanResult.SyntaxTreeScanResultTotalTime</p>
                             </div>
-                            </div>   
-                        }
-                    }
-                }
-            }
-        } else
-        {
-            <h3>No vulnerabilities were detected. Injection analysis test passed successfully.</h3>
-        }
-    </div>    
+                            </div>
+
+                            }
+
+                            @foreach (var methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                            {
+                                @if (methodScanResult.Hits > 0)
+                                {
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-header">
+                                            <h5>Method name: @methodScanResult.MethodName</h5>
+                                            <h5>Line number: @methodScanResult.LineNumber</h5>
+                                            <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
+                                            <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush bg-light">
+                                                <li class="list-group-item bg-light">
+                                                    <h6>Method body</h6>
+                                                    <pre class="prettyprint bg-white">@methodScanResult.MethodBody</pre>
+                                                </li>
+                                                <li class="list-group-item bg-light">
+                                                    <h6>Evidence</h6>
+                                                    <pre class="prettyprint bg-white">@methodScanResult.Evidence</pre>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            }
+                            }
+                            } else
+                            {
+                            <h3>No vulnerabilities were detected. Injection analysis test passed successfully.</h3>
+                            }
+                        </div>    
 </body>
 </html>
