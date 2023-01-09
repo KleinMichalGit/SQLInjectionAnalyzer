@@ -18,11 +18,11 @@ using Model;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
-    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
+    /// SQLInjectionAnalyzer <c>InterproceduralCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Compiles *.csproj files, performs n-level interprocedural analysis,
-    /// every block of code is considered as reachable
+    /// Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
+    /// in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.

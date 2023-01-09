@@ -12,6 +12,8 @@ using Model.Rules;
 using Model.SyntaxTree;
 using Model;
 using Microsoft.CodeAnalysis.MSBuild;
+using Humanizer;
+using static Humanizer.In;
 
 namespace SQLInjectionAnalyzer
 {
@@ -19,7 +21,9 @@ namespace SQLInjectionAnalyzer
     /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Compiles *.csproj files, without performing interprocedural analysis.
+    /// Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered
+    /// as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
+    /// serves only to investigate how much time is needed for compilation of all .csproj files.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
