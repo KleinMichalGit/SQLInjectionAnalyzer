@@ -112,5 +112,10 @@ namespace SQLInjectionAnalyzer.Analyzers
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
         }
+
+        public void SolveUnrecognizedSyntaxNode(MethodScanResult result, SyntaxNode currentNode, int level)
+        {
+            result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
+        }
     }
 }

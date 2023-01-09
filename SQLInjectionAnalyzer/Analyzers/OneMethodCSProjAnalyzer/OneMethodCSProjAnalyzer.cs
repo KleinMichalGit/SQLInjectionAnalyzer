@@ -157,7 +157,6 @@ namespace SQLInjectionAnalyzer
             result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
             level += 1;
 
-
             SyntaxNode[] nextLevelNodes = null;
 
             if (currentNode is InvocationExpressionSyntax)
@@ -177,13 +176,13 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
+                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
 
             if (nextLevelNodes != null)
             {
                 for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level++);
+                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }
             }
         }

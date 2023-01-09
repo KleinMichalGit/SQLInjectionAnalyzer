@@ -146,7 +146,7 @@ namespace SQLInjectionAnalyzer
             SyntaxNode[] nextLevelNodes = null;
 
             if (currentNode is InvocationExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax) currentNode, result, level, taintPropagationRules);
+                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax)currentNode, result, level, taintPropagationRules);
             else if (currentNode is ObjectCreationExpressionSyntax)
                 nextLevelNodes = tableOfRules.SolveObjectCreationExpression((ObjectCreationExpressionSyntax)currentNode);
             else if (currentNode is AssignmentExpressionSyntax)
@@ -162,13 +162,13 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
+                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
 
             if(nextLevelNodes != null)
             {
                 for(int i=0; i<nextLevelNodes.Length; i++)
                 {
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level++);
+                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }
             }
         }
