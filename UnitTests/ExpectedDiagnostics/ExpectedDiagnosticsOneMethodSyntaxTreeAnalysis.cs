@@ -8,9 +8,9 @@ namespace UnitTests.ExpectedDiagnostics
 {
     /// <summary>
     /// common helper for creating custom expected diagnostics <see cref="Diagnostics"/>
-    /// for Simple scope of analysis <see cref="ScopeOfAnalysis"/>.
+    /// for OneMethodSyntaxTree scope of analysis <see cref="ScopeOfAnalysis"/>.
     /// </summary>
-    public class ExpectedDiagnosticsSimpleAnalysis
+    public class ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis
     {
         
         public Diagnostics GetSimpleEmptyDiagnostics()

@@ -7,25 +7,25 @@ using UnitTests.TaintPropagationRulesExamples;
 namespace UnitTests
 {
     /// <summary>
-    /// UnitTests TestClass for testing Simple scope of analysis via SimpleAnalyzer.
+    /// UnitTests TestClass for testing OneMethodSyntaxTree scope of analysis via OneMethodSyntaxTreeAnalyzer.
     /// </summary>
     [TestClass]
-    public class SimpleAnalyzerTest
+    public class OneMethodSyntaxTreeAnalyzerTest
     {
-        private OneMethodSyntaxTreeAnalyzer simpleAnalyzer;
-        private ExpectedDiagnosticsSimpleAnalysis expectedDiagnosticsCreator;
+        private OneMethodSyntaxTreeAnalyzer oneMethodSyntaxTreeAnalyzer;
+        private ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis expectedDiagnosticsCreator;
         private TaintPropagationRulesCreator taintPropagationRulesCreator;
         private AnalyzerTestHelper testHelper;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleAnalyzerTest"/> class.
+        /// Initializes a new instance of the <see cref="OneMethodSyntaxTreeAnalyzerTest"/> class.
         /// </summary>
-        public SimpleAnalyzerTest()
+        public OneMethodSyntaxTreeAnalyzerTest()
         {
-            simpleAnalyzer = new OneMethodSyntaxTreeAnalyzer();
-            expectedDiagnosticsCreator = new ExpectedDiagnosticsSimpleAnalysis();
+            oneMethodSyntaxTreeAnalyzer = new OneMethodSyntaxTreeAnalyzer();
+            expectedDiagnosticsCreator = new ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis();
             taintPropagationRulesCreator = new TaintPropagationRulesCreator();
-            testHelper = new AnalyzerTestHelper(simpleAnalyzer);
+            testHelper = new AnalyzerTestHelper(oneMethodSyntaxTreeAnalyzer);
         }
 
         [TestMethod]
