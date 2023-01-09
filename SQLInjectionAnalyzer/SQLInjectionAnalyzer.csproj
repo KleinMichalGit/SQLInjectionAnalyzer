@@ -178,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
+    <Compile Include="Analyzers\TableOfRules.cs" />
     <Compile Include="GlobalHelper.cs" />
     <Compile Include="Analyzers\InterproceduralCSProjAnalyzer\InterproceduralCSProjAnalyzer.cs" />
     <Compile Include="Analyzers\OneMethodCSProjAnalyzer\OneMethodCSProjAnalyzer.cs" />
