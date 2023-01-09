@@ -233,7 +233,6 @@ namespace SQLInjectionAnalyzer
                 if (!visitedNodes.Contains(assignment))
                 {
                     FollowDataFlow(rootNode, assignment, result, visitedNodes, level + 1);
-                    visitedNodes.Add(assignment);
                     return;
                 }
             }
@@ -243,7 +242,6 @@ namespace SQLInjectionAnalyzer
                 if (!visitedNodes.Contains(dec))
                 {
                     FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
-                    visitedNodes.Add(dec);
                     return;
                 }
             }
