@@ -141,7 +141,6 @@ namespace SQLInjectionAnalyzer
             result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
             level += 1;
 
-
             if (currentNode is InvocationExpressionSyntax)
                 SolveInvocationExpression(rootNode, (InvocationExpressionSyntax)currentNode, result, visitedNodes, level);
             else if (currentNode is ObjectCreationExpressionSyntax)
@@ -200,6 +199,7 @@ namespace SQLInjectionAnalyzer
         private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             string arg = currentNode.ToString();
+            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
 
             if (currentNode is ArgumentSyntax)
             {
@@ -230,7 +230,7 @@ namespace SQLInjectionAnalyzer
 
             foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
             {
-                if (!visitedNodes.Contains(assignment))
+                if (!visitedNodes.Contains(assignment) && currentNodePosition > assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, assignment, result, visitedNodes, level + 1);
                     return;
@@ -239,7 +239,7 @@ namespace SQLInjectionAnalyzer
 
             foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
             {
-                if (!visitedNodes.Contains(dec))
+                if (!visitedNodes.Contains(dec) && currentNodePosition > dec.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
                     return;
