@@ -10,7 +10,7 @@ namespace UnitTests.CodeToBeAnalysed.ConditionalExpressionRules.VulnerableCondit
     {
         public void ThisIsVulnerableMethod(string arg)
         {
-            string thisIsConditionalExpression = 1 < 2 ? "the universe works" : arg;
+            string thisIsConditionalExpression = 1 > 2 ? "the universe works" : arg;
 
             SinkMethodOne(thisIsConditionalExpression);
         }
