@@ -18,11 +18,11 @@ using Model;
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
-    /// SQLInjectionAnalyzer <c>InterproceduralAnalyzer</c> class.
+    /// SQLInjectionAnalyzer <c>InterproceduralCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Compiles *.csproj files, performs n-level interprocedural analysis,
-    /// every block of code is considered as reachable
+    /// Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
+    /// in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
@@ -414,6 +414,7 @@ namespace SQLInjectionAnalyzer
         private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
         {
             string arg = currentNode.ToString();
+            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
 
             if (currentNode is ArgumentSyntax)
             {
@@ -444,20 +445,18 @@ namespace SQLInjectionAnalyzer
 
             foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
             {
-                if (!visitedNodes.Contains(assignment))
+                if (!visitedNodes.Contains(assignment) && currentNodePosition > assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, assignment, result, tainted, null, visitedNodes, level + 1);
-                    visitedNodes.Add(assignment);
                     return;
                 }
             }
 
             foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
             {
-                if (!visitedNodes.Contains(dec))
+                if (!visitedNodes.Contains(dec) && currentNodePosition > dec.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, dec, result, tainted, null, visitedNodes, level + 1);
-                    visitedNodes.Add(dec);
                     return;
                 }
             }

@@ -17,8 +17,9 @@ namespace SQLInjectionAnalyzer
     /// SQLInjectionAnalyzer <c>OneMethodSyntaxTreeAnalyzer</c> class.
     /// 
     /// <para>
-    /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural
-    /// analysis, every block of code is considered as reachable (very fast but very imprecise).
+    /// Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,
+    /// without compiling .csproj files, without performing interprocedural analysis, every block of code is
+    /// considered as reachable (very fast but very inacurate).
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
@@ -140,7 +141,6 @@ namespace SQLInjectionAnalyzer
             result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
             level += 1;
 
-
             if (currentNode is InvocationExpressionSyntax)
                 SolveInvocationExpression(rootNode, (InvocationExpressionSyntax)currentNode, result, visitedNodes, level);
             else if (currentNode is ObjectCreationExpressionSyntax)
@@ -199,6 +199,7 @@ namespace SQLInjectionAnalyzer
         private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             string arg = currentNode.ToString();
+            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
 
             if (currentNode is ArgumentSyntax)
             {
@@ -229,20 +230,18 @@ namespace SQLInjectionAnalyzer
 
             foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
             {
-                if (!visitedNodes.Contains(assignment))
+                if (!visitedNodes.Contains(assignment) && currentNodePosition > assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, assignment, result, visitedNodes, level + 1);
-                    visitedNodes.Add(assignment);
                     return;
                 }
             }
 
             foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
             {
-                if (!visitedNodes.Contains(dec))
+                if (!visitedNodes.Contains(dec) && currentNodePosition > dec.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
-                    visitedNodes.Add(dec);
                     return;
                 }
             }

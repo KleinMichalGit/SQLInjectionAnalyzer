@@ -12,6 +12,8 @@ using Model.Rules;
 using Model.SyntaxTree;
 using Model;
 using Microsoft.CodeAnalysis.MSBuild;
+using Humanizer;
+using static Humanizer.In;
 
 namespace SQLInjectionAnalyzer
 {
@@ -19,7 +21,9 @@ namespace SQLInjectionAnalyzer
     /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Compiles *.csproj files, without performing interprocedural analysis.
+    /// Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered
+    /// as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
+    /// serves only to investigate how much time is needed for compilation of all .csproj files.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
@@ -211,6 +215,7 @@ namespace SQLInjectionAnalyzer
         private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             string arg = currentNode.ToString();
+            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
 
             if (currentNode is ArgumentSyntax)
             {
@@ -241,20 +246,18 @@ namespace SQLInjectionAnalyzer
 
             foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
             {
-                if (!visitedNodes.Contains(assignment))
+                if (!visitedNodes.Contains(assignment) && currentNodePosition > assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, assignment, result, visitedNodes, level + 1);
-                    visitedNodes.Add(assignment);
                     return;
                 }
             }
 
             foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
             {
-                if (!visitedNodes.Contains(dec))
+                if (!visitedNodes.Contains(dec) && currentNodePosition > dec.GetLocation().GetLineSpan().StartLinePosition.Line)
                 {
                     FollowDataFlow(rootNode, dec, result, visitedNodes, level + 1);
-                    visitedNodes.Add(dec);
                     return;
                 }
             }
