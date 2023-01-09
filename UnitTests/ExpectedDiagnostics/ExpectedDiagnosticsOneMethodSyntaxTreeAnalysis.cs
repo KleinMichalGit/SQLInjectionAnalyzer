@@ -3,6 +3,7 @@ using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
 using Model;
+using System;
 
 namespace UnitTests.ExpectedDiagnostics
 {
@@ -489,6 +490,72 @@ namespace UnitTests.ExpectedDiagnostics
                                         MethodBody = "public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string myString = arg;\r\n            int arg3;\r\n\r\n            string arg1 = CreateStringValue(1 < 2 ? myString : string.Empty);\r\n            string arg2 = CreateStringValue(\"\");\r\n            arg3 = 0;\r\n            arg3 = 1;\r\n\r\n            SinkMethodOne(arg1, arg2, arg3, new MyClass(string.Empty));\r\n        }",
                                         LineNumber = 10,
                                         LineCount = 11,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetSafeFindOriginDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                CSProjectScanResults = new List<CSProjectScanResult>()
+                {
+                    new CSProjectScanResult()
+                    {
+                        NamesOfAllCSFilesInsideThisCSProject = new List<string>() {
+                            "../../CodeToBeAnalysed/FindOriginRules/SafeFindOriginRules\\SafeFindOriginClass.cs"
+                        },
+                        SyntaxTreeScanResults = new List<SyntaxTreeScanResult>()
+                        {
+                             new SyntaxTreeScanResult()
+                            {
+                                NumberOfSkippedMethods = 1,
+                                MethodScanResults = new List<MethodScanResult>()
+                                {
+                                    new MethodScanResult()
+                                    {
+                                        Sinks = 1,
+                                        Hits = 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetVulnerableFindOriginDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                CSProjectScanResults = new List<CSProjectScanResult>()
+                {
+                    new CSProjectScanResult()
+                    {
+                        NamesOfAllCSFilesInsideThisCSProject = new List<string>() {
+                            "../../CodeToBeAnalysed/FindOriginRules/VulnerableFindOriginRules\\VulnerableFindOriginClass.cs"
+                        },
+                        SyntaxTreeScanResults = new List<SyntaxTreeScanResult>()
+                        {
+                             new SyntaxTreeScanResult()
+                            {
+                                NumberOfSkippedMethods = 1,
+                                MethodScanResults = new List<MethodScanResult>()
+                                {
+                                    new MethodScanResult()
+                                    {
+                                        Sinks = 1,
+                                        Hits = 1,
+                                        MethodName = "ThisIsVulnerableMethod(string arg)",
+                                        MethodBody = "public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            SinkMethodOne(arg); //find origin should look above this line. Not bellow!\r\n\r\n            arg = \"my String\";\r\n        }",
+                                        LineNumber = 10,
+                                        LineCount = 5,
                                     }
                                 }
                             }

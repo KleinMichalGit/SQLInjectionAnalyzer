@@ -63,6 +63,8 @@
     <Compile Include="CodeToBeAnalysed\CreationRules\VulnerableCreationRules\VulnerableCreationClass.cs" />
     <Compile Include="CodeToBeAnalysed\ExcludingPaths\ExcludingPaths1\ThisClassWillBeScanned.cs" />
     <Compile Include="CodeToBeAnalysed\ExcludingPaths\ExcludingPaths2\ThisClassWillNotBeScanned.cs" />
+    <Compile Include="CodeToBeAnalysed\FindOriginRules\SafeFindOriginRules\SafeFindOriginClass.cs" />
+    <Compile Include="CodeToBeAnalysed\FindOriginRules\VulnerableFindOriginRules\VulnerableFindOriginClass.cs" />
     <Compile Include="CodeToBeAnalysed\InvocationRules\InvocationTestClass.cs" />
     <Compile Include="CodeToBeAnalysed\InvocationRules\InvocationTestClass2.cs" />
     <Compile Include="CodeToBeAnalysed\InvocationRules\InvocationTestClass3.cs" />

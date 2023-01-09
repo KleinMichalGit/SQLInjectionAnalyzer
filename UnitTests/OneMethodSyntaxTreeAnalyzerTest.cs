@@ -133,13 +133,26 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// lambda expression rule TODO
+        /// find origin rules
         /// </summary>
         [TestMethod]
-        public void TestLambdaExpressionRules()
+        public void TestFindOriginRules()
         {
+            // safe find origin
+            testHelper.CreateScenario(
+               taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
+               "../../CodeToBeAnalysed/FindOriginRules/SafeFindOriginRules",
+               expectedDiagnosticsCreator.GetSafeFindOriginDiagnostics(),
+               new List<string>()
+               );
 
-
+            // vulnerable find origin
+            testHelper.CreateScenario(
+               taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
+               "../../CodeToBeAnalysed/FindOriginRules/VulnerableFindOriginRules",
+               expectedDiagnosticsCreator.GetVulnerableFindOriginDiagnostics(),
+               new List<string>()
+               );
         }
 
         /// <summary>
