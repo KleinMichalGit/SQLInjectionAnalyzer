@@ -11,6 +11,8 @@ using Model.SyntaxTree;
 using Model;
 using System.Collections.Generic;
 using SQLInjectionAnalyzer.Analyzers;
+using static Humanizer.In;
+using System.Threading.Tasks;
 
 namespace SQLInjectionAnalyzer
 {
@@ -37,7 +39,6 @@ namespace SQLInjectionAnalyzer
         
         private GlobalHelper globalHelper = new GlobalHelper();
         private TableOfRules tableOfRules = new TableOfRules();
-
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
@@ -82,6 +83,8 @@ namespace SQLInjectionAnalyzer
             SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(filePath);
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(file);
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var compilation = CSharpCompilation.Create("comp", syntaxTrees: new[] { syntaxTree }, references: new[] { mscorlib });
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
@@ -146,7 +149,7 @@ namespace SQLInjectionAnalyzer
             SyntaxNode[] nextLevelNodes = null;
 
             if (currentNode is InvocationExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax) currentNode, result, level, taintPropagationRules);
+                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax)currentNode, result, level, taintPropagationRules);
             else if (currentNode is ObjectCreationExpressionSyntax)
                 nextLevelNodes = tableOfRules.SolveObjectCreationExpression((ObjectCreationExpressionSyntax)currentNode);
             else if (currentNode is AssignmentExpressionSyntax)
@@ -154,7 +157,7 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is VariableDeclaratorSyntax)
                 nextLevelNodes = tableOfRules.SolveVariableDeclarator((VariableDeclaratorSyntax)currentNode);
             else if (currentNode is ConditionalExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode);
+                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode, result, level).Result;
             else if (currentNode is LiteralExpressionSyntax)
                 tableOfRules.SolveLiteralExpression(result, level);
             else if (currentNode is ArgumentSyntax)
@@ -162,13 +165,13 @@ namespace SQLInjectionAnalyzer
             else if (currentNode is IdentifierNameSyntax)
                 nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
+                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
 
             if(nextLevelNodes != null)
             {
                 for(int i=0; i<nextLevelNodes.Length; i++)
                 {
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level++);
+                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }
             }
         }

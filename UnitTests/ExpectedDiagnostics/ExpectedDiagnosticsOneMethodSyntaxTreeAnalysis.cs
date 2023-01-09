@@ -318,7 +318,7 @@ namespace UnitTests.ExpectedDiagnostics
                                     new MethodScanResult()
                                     {
                                         Sinks = 1,
-                                        Hits = 2,
+                                        Hits = 1,
                                         MethodName = "ThisIsVulnerableMethod(string arg)",
                                         MethodBody = "public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string vulnerableString1 = arg;\r\n            string vulnerableString2;\r\n            string vulnerableString3;\r\n            string vulnerableString4;\r\n\r\n            vulnerableString2 = 1 > 2 ? vulnerableString1 : arg;\r\n            vulnerableString3 = CreateString(vulnerableString2);\r\n            vulnerableString4 = vulnerableString3;\r\n\r\n            SinkMethodOne(vulnerableString4);\r\n        }",
                                         LineNumber = 10,
@@ -386,7 +386,7 @@ namespace UnitTests.ExpectedDiagnostics
                                         Sinks = 1,
                                         Hits = 1,
                                         MethodName = "ThisIsVulnerableMethod(string arg)",
-                                        MethodBody = "public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string thisIsConditionalExpression = 1 < 2 ? \"the universe works\" : arg;\r\n\r\n            SinkMethodOne(thisIsConditionalExpression);\r\n        }",
+                                        MethodBody = "public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string thisIsConditionalExpression = 1 > 2 ? \"the universe works\" : arg;\r\n\r\n            SinkMethodOne(thisIsConditionalExpression);\r\n        }",
                                         LineNumber = 10,
                                         LineCount = 5,
                                     }

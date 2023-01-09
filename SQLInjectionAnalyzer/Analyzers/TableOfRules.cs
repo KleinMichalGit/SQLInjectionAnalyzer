@@ -7,6 +7,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 using Model.Method;
 using Model.Rules;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using ExceptionService.ExceptionType;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace SQLInjectionAnalyzer.Analyzers
 {
@@ -103,14 +106,37 @@ namespace SQLInjectionAnalyzer.Analyzers
             return null;
         }
 
-        public SyntaxNode[] SolveConditionalExpression(ConditionalExpressionSyntax currentNode)
+        public async Task<SyntaxNode[]> SolveConditionalExpression(ConditionalExpressionSyntax currentNode, MethodScanResult result, int level)
         {
-            return new SyntaxNode[3] { currentNode.Condition, currentNode.WhenTrue, currentNode.WhenFalse };
+            try
+            {
+                bool evaluationResult = (bool)await CSharpScript.EvaluateAsync(currentNode.Condition.ToString());
+                if (evaluationResult)
+                {
+                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as True (only 1 block will be investigated).");
+                    return new SyntaxNode[1] { currentNode.WhenTrue };
+                } else
+                {
+                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as False (only 1 block will be investigated).");
+                    return new SyntaxNode[1] { currentNode.WhenFalse };
+                }
+            }
+            catch (CompilationErrorException e)
+            {
+                // unable to evaluate the condition, therefore both blocks of conditional expression have to be investigated
+                result.AppendEvidence(new string(' ', level * 2) + "unsuccessfully evaluated condition (both blocks will be investigated).");
+                return new SyntaxNode[2] { currentNode.WhenTrue, currentNode.WhenFalse };
+            }
         }
 
         public void SolveLiteralExpression(MethodScanResult result, int level)
         {
             result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
+        }
+
+        public void SolveUnrecognizedSyntaxNode(MethodScanResult result, SyntaxNode currentNode, int level)
+        {
+            result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
         }
     }
 }
