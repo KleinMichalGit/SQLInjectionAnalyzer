@@ -5,6 +5,7 @@ The folder which contains all analyzer implementations.
 - [InterproceduralCSProjAnalyzer](InterproceduralCSProjAnalyzer/InterproceduralCSProjAnalyzer.cs).
 - [OneMethodCSProjAnalyzer](OneMethodCSProjAnalyzer/OneMethodCSProjAnalyzer.cs).
 - [OneMethodSyntaxTreeAnalyzer](OneMethodSyntaxTreeAnalyzer/OneMethodSyntaxTreeAnalyzer.cs).
+- [TableOfRules](TableOfRules.cs) - rules for tracking taint propagation variables.
 
 ## Table of available analyzers
 | Analyzer                      | Description                                                                                                                                                                                                                                                                                                                |

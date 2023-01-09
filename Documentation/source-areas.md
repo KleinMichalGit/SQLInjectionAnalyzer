@@ -16,19 +16,19 @@ Consider the following config.json (namely the sourceAreas):
     "sourceAreas": [
         {
             "label": "WEB",
-            "path": "My\\Folder\\Web\\"
+            "path": "InterproceduralCodeToBeAnalysed\\Web\\"
         },
         {
             "label": "DATABASE",
-            "path": "My\\Folder\\Database\\"
+            "path": "InterproceduralCodeToBeAnalysed\\Database\\"
         },
         {
             "label": "SRC",
-            "path": "Another\\Folder\\Src\\"
+            "path": "InterproceduralCodeToBeAnalysed\\Src\\"
         },
         {
             "label": "TOOLS",
-            "path": "Yet\\Another\\Folder\\Tools\\"
+            "path": "InterproceduralCodeToBeAnalysed\\Tools\\"
         }
     ],
     "sinkMethods": [

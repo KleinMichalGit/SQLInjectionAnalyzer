@@ -20,6 +20,7 @@ Primarily, this project was created for the purpose of [my](https://github.com/K
 - [ExceptionService](ExceptionService/README.md) - custom exception types and exception writer used across entire repository.
 - [InputService](InputService/README.md) - methods for reading, validating, and processing input from console and from config files.
 - [OutputService](OutputService/README.md) - multiple adjustable outputs based on the scope of the analysis.
+- `RazorOutput` - .cshtml templates of final reports
 
 ## High level flow chart
 Here is a diagrammatic representation of the entire process of the analysis from `Start` to `End`.
