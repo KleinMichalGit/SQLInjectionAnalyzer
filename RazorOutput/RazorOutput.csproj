@@ -42,9 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="ReportInterprocedural.cshtml" />
-    <None Include="ReportOneMethod.cshtml" />
-    <None Include="ReportSimple.cshtml" />
+    <None Include="ReportInterproceduralCSProj.cshtml" />
+    <None Include="ReportOneMethodCSProj.cshtml" />
+    <None Include="ReportOneMethodSyntaxTree.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

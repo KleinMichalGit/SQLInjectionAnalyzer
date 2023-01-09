@@ -63,11 +63,11 @@ namespace OutputService
             Console.WriteLine("Analysis start time: " + diagnostics.DiagnosticsStartTime);
             Console.WriteLine("Analysis end time: " + diagnostics.DiagnosticsEndTime);
             Console.WriteLine("Analysis total time: " + diagnostics.DiagnosticsTotalTime);
-            if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.Simple)
+            if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.OneMethodSyntaxTree)
             {
                 Console.WriteLine("*.cs files: " + dataExtractor.GetNumberOfAllCSFiles());
             }
-            else if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.OneMethod)
+            else if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.OneMethodCSProj)
             {
                 Console.WriteLine("*.csproj files in directory: " + dataExtractor.GetNumberOfAllCSProjFiles());
                 Console.WriteLine("Scanned *.csproj files: " + dataExtractor.GetNumberOfScannedCSProjFiles());
@@ -96,14 +96,14 @@ namespace OutputService
 
             switch (diagnostics.ScopeOfAnalysis)
             {
-                case ScopeOfAnalysis.Simple:
-                    content = ReportSimple.report;
+                case ScopeOfAnalysis.OneMethodSyntaxTree:
+                    content = ReportOneMethodSyntaxTree.report;
                     break;
-                case ScopeOfAnalysis.OneMethod:
-                    content = ReportOneMethod.report;
+                case ScopeOfAnalysis.OneMethodCSProj:
+                    content = ReportOneMethodCSProj.report;
                     break;
-                case ScopeOfAnalysis.Interprocedural:
-                    content = ReportInterprocedural.report;
+                case ScopeOfAnalysis.InterproceduralCSProj:
+                    content = ReportInterproceduralCSProj.report;
                     break;
                 default:
                     throw new OutputGeneratorException("not implemented yet");

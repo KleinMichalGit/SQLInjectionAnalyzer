@@ -125,7 +125,7 @@ namespace InputService
                 string argumentBeginning = argument.Split('=')[0];
                 if (argumentBeginning == "--scope-of-analysis")
                 {
-                    HashSet<string> scopeValues = new HashSet<string> { "Simple", "OneMethod", "Interprocedural", "InterproceduralReachability" };
+                    HashSet<string> scopeValues = new HashSet<string>(Enum.GetNames(typeof(ScopeOfAnalysis))); // compute all names from ScopeOfAnalysis enum
                     string scopeValue = argument.Split('=')[1];
 
                     if (scopeValues.Contains(scopeValue))
@@ -189,10 +189,7 @@ namespace InputService
 
         private ScopeOfAnalysis GetScopeFromArgument(string argumentValue)
         {
-            if (argumentValue == "Simple") return ScopeOfAnalysis.Simple;
-            if (argumentValue == "OneMethod") return ScopeOfAnalysis.OneMethod;
-            if (argumentValue == "Interprocedural") return ScopeOfAnalysis.Interprocedural;
-            return ScopeOfAnalysis.InterproceduralReachability;
+            return (ScopeOfAnalysis)Enum.Parse(typeof(ScopeOfAnalysis), argumentValue);
         }
 
         /// <summary>

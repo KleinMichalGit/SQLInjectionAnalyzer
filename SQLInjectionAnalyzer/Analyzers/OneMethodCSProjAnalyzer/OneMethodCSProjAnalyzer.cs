@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
@@ -9,30 +11,27 @@ using Model.Method;
 using Model.Rules;
 using Model.SyntaxTree;
 using Model;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
-    /// SQLInjectionAnalyzer <c>SimpleAnalyzer</c> class.
+    /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Reads *.cs files separately, without compiling .csproj files, without performing interprocedural
-    /// analysis, every block of code is considered as reachable (very fast but very imprecise).
+    /// Compiles *.csproj files, without performing interprocedural analysis.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
     /// </para>
     /// </summary>
     /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
-    public class SimpleAnalyzer : Analyzer
+    public class OneMethodCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
-     
-        private string targetFileType = "*.cs";
-        
+        private string targetFileType = "*.csproj";
+        private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
-        
         private GlobalHelper globalHelper = new GlobalHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
@@ -40,52 +39,67 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.Simple);
+            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
 
-            int numberOfCSFilesUnderThisDirectory = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
-            int numberOfProcessedFiles = 0;
-
-            CSProjectScanResult scanResult = globalHelper.InitialiseScanResult(directoryPath);
+            int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
+            int numberOfScannedCSProjFilesSoFar = 0;
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
-                scanResult.NamesOfAllCSFilesInsideThisCSProject.Add(filePath);
+                diagnostics.NumberOfCSProjFiles++;
 
-                // skip scanning blacklisted files
-                if (!excludeSubpaths.Any(subPath => filePath.Contains(subPath)))
+                // skip all blacklisted .csproj files
+                if (excludeSubpaths.Any(x => filePath.Contains(x)))
                 {
-                    Console.WriteLine("currently scanned file: " + filePath);
-                    Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
-                    scanResult.SyntaxTreeScanResults.Add(ScanFile(filePath));
+                    diagnostics.PathsOfSkippedCSProjects.Add(filePath);
                 }
-                numberOfProcessedFiles++;
+                else
+                {
+                    Console.WriteLine("currently scanned .csproj: " + filePath);
+                    Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
+                    ScanCSProj(filePath).Wait();
+                    diagnostics.CSProjectScanResults.Add(csprojScanResult);
+                }
+
+                numberOfScannedCSProjFilesSoFar++;
             }
 
-            Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
+            Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
 
-            scanResult.CSProjectScanResultEndTime = DateTime.Now;
-
-            if (scanResult.SyntaxTreeScanResults.Count() > 0)
-            {
-                diagnostics.CSProjectScanResults.Add(scanResult);
-            }
             diagnostics.DiagnosticsEndTime = DateTime.Now;
             return diagnostics;
         }
 
-        private SyntaxTreeScanResult ScanFile(string filePath)
+        private async Task ScanCSProj(string csprojPath)
         {
-            string file = File.ReadAllText(filePath);
-            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(filePath);
+            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
 
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(file);
+            using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
+            {
+                Project project = await workspace.OpenProjectAsync(csprojPath);
+
+                Compilation compilation = await project.GetCompilationAsync();
+
+                foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
+                {
+                    csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
+                    SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree);
+                    csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
+                }
+            }
+            csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
+        }
+
+        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
+        {
+            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);
+
                 if (methodScanResult.Hits > 0)
                 {
                     methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
@@ -99,10 +113,8 @@ namespace SQLInjectionAnalyzer
                         globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
                     }
                 }
-
                 syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
             }
-
             syntaxTreeScanResult.SyntaxTreeScanResultEndTime = DateTime.Now;
             return syntaxTreeScanResult;
         }
@@ -170,7 +182,6 @@ namespace SQLInjectionAnalyzer
             }
             if (invocationNode.ArgumentList == null)
                 return;
-
             foreach (ArgumentSyntax argumentNode in invocationNode.ArgumentList.Arguments)
                 FollowDataFlow(rootNode, argumentNode, result, visitedNodes, level + 1);
         }
@@ -187,6 +198,7 @@ namespace SQLInjectionAnalyzer
         {
             FollowDataFlow(rootNode, assignmentNode.Right, result, visitedNodes, level + 1);
         }
+
         private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
@@ -246,7 +258,7 @@ namespace SQLInjectionAnalyzer
                     return;
                 }
             }
-            
+
             // only after no assignment, declaration,... was found, only after that test for presence among parameters
             for (int i = 0; i < rootNode.ParameterList.Parameters.Count(); i++)
             {

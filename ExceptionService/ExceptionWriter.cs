@@ -30,19 +30,29 @@ namespace ExceptionService
                                 "\n" +
                                 "For Example:\n" +
                                 "\n" +
-                                ".\\SQLInjectionAnalyzer.exe --path=.\\source\\folder\\ --scope-of-analysis=Simple --config=.\\config\\folder\\config.json --result=.\\result\\path\\ --exclude-paths=TEST,E2E --write-console\n" +
+                                ".\\SQLInjectionAnalyzer.exe --path=.\\source\\folder\\ --scope-of-analysis=InterproceduralCSProj --config=.\\config\\folder\\config.json --result=.\\result\\path\\ --exclude-paths=TEST,E2E --write-console\n" +
                                 "\n" +
                                 "Parameters:\n" +
                                 "\n" +
                                 "--path:\n" +
                                 "     any valid path to the folder which should be analysed\n" +
                                 "--scope-of-analysis:\n" +
-                                "     Simple                         reads *.cs files separately, without compiling .csproj files, without performing interprocedural analysis, every block of code is considered as reachable (very fast but very imprecise)\n" +
-                                "     OneMethod                      compiles *.csproj files, without performing interprocedural analysis\n" +
-                                "     Interprocedural                compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable\n" +
-                                "     InterproceduralReachability    compiles *.csproj files, performs n-level interprocedural analysis, able to decide trivial problems when solving reachability problems (requires the most resources, the most precise type of analysis)\n" +
+                                "     OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,\n" +
+                                "                                   without compiling .csproj files, without performing interprocedural analysis, every block of code is\n" +
+                                "                                   considered as reachable (very fast but very inacurate).\n" +
+                                "     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered\n" +
+                                "                                   as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis\n" +
+                                "                                   serves only to investigate how much time is needed for compilation of all .csproj files.\n" +
+                                "     InterproceduralCSProj         Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined\n" +
+                                "                                   in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.\n" +
+                                "     InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is\n" +
+                                "                                   defined in config.json file) for each solution separately, able to decide trivial problems when solving\n" +
+                                "                                   reachability problems.\n" +
+                                "     InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing\n" +
+                                "                                   them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)\n" +
+                                "                                   at 1 universaly created solution, able to decide trivial problems when solving reachability problems.\n" +
                                 "--config:\n" +
-                                "     any valid path to valid config.json (configures rules for taint propagation)\n" +
+                                "     any valid path to valid config.json (configures rules for taint variables propagation)\n" +
                                 "--result:\n" +
                                 "     any valid path to the folder where diagnostic-result-files should be exported\n" +
                                 "--exclude-paths:\n" +

@@ -69,11 +69,10 @@
     <Compile Include="CodeToBeAnalysed\OneSafeMethod\SimpleClass.cs" />
     <Compile Include="CodeToBeAnalysed\OneVulnerableMethod\SimpleClass.cs" />
     <Compile Include="ConfigFileReaderTest.cs" />
-    <Compile Include="ExpectedDiagnostics\ExpectedDiagnosticsOneMethodAnalysis.cs" />
-    <Compile Include="ExpectedDiagnostics\ExpectedDiagnosticsSimpleAnalysis.cs" />
+    <Compile Include="ExpectedDiagnostics\ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis.cs" />
     <Compile Include="InputReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleAnalyzerTest.cs" />
+    <Compile Include="OneMethodSyntaxTreeAnalyzerTest.cs" />
     <Compile Include="TaintPropagationRulesExamples\TaintPropagationRulesCreator.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@
 <body>
     <nav class="navbar fixed-top bg-body-tertiary ">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">SQL Injection Analyzer (OneMethod scope of analysis)</a>
+            <a class="navbar-brand" href="#">SQL Injection Analyzer (InterproceduralCSProj scope of analysis)</a>
         </div>
     </nav>
     <div class="container" style="margin-top: 70px;">
@@ -60,10 +60,12 @@
                     <td>@Model.NumberOfAllSinks</td>
                 </tr>
                 <tr>
-                    <th scope="row">@if (Model.NumberOfVulnerableMethods > 0)
-                    {<span class="badge text-bg-danger">Vulnerabilities detected: </span> }
-                    else
-                    { <span class="badge text-bg-success">OK (no vulnerabilities detected)</span>} Number of vulnerable methods</th>
+                    <th scope="row">
+                        @if (Model.NumberOfVulnerableMethods > 0)
+                        {<span class="badge text-bg-danger">Vulnerabilities detected: </span> }
+                        else
+                        { <span class="badge text-bg-success">OK (no vulnerabilities detected)</span>} Number of vulnerable methods
+                    </th>
                     <td>@Model.NumberOfVulnerableMethods</td>
                 </tr>
             </tbody>
@@ -145,9 +147,17 @@
                                         <h5>@methodScanResult.MethodName</h5>
                                         <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
                                         <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
+                                        @foreach (var sourceLabel in methodScanResult.SourceAreasLabels)
+                                        {
+                                            <span class="badge text-bg-warning">@sourceLabel</span>
+                                        }
                                     </div>
                                     <div class="card-body">
                                         <ul class="list-group list-group-flush bg-light">
+                                            <li class="list-group-item bg-light">
+                                                <h6>n-level BFS Inteprocedural-callers tree</h6>
+                                                <pre class="prettyprint bg-white">@methodScanResult.CallersTree</pre>
+                                            </li>
                                             <li class="list-group-item bg-light">
                                                 <h6>Method body</h6>
                                                 <pre class="prettyprint bg-white">@methodScanResult.MethodBody</pre>
