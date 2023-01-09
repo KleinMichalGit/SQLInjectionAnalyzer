@@ -28,9 +28,9 @@ dotnet build
 ```
 in command line.
 
-## Exemplary usage
+### Exemplary usage
 ``` shell
-.\SQLInjectionAnalyzer.exe --path=.\source\folder\ --scope-of-analysis=Interprocedural --config=.\config\folder\config.json --result=.\result\path\ --exclude-paths=TEST,E2E --write-console
+.\SQLInjectionAnalyzer.exe --path=.\source\folder\ --scope-of-analysis=InterproceduralCSProj --config=.\config\folder\config.json --result=.\result\path\ --exclude-paths=TEST,E2E --write-console
 ```
 
 ### Arguments
@@ -47,20 +47,30 @@ in command line.
 ### About arguments
 ```
 --path:
-     any valid path to the folder which should be analysed
+     any valid path to the folder which should be analysed.
 --scope-of-analysis:
-     Simple                         reads *.cs files separately, without compiling .csproj files, without performing interprocedural analysis, every block of code is considered as reachable (very fast but very imprecise)
-     OneMethod                      compiles *.csproj files, without performing interprocedural analysis
-     Interprocedural                compiles *.csproj files, performs n-level interprocedural analysis, every block of code is considered as reachable
-     InterproceduralReachability    compiles *.csproj files, performs n-level interprocedural analysis, able to decide trivial problems when solving reachability problems (requires the most resources, the most precise type of analysis)
+     OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,
+                                   without compiling .csproj files, without performing interprocedural analysis, every block of code is
+                                   considered as reachable (very fast but very inacurate).
+     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered
+                                   as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
+                                   serves only to investigate how much time is needed for compilation of all .csproj files.
+     InterproceduralCSProj         Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
+                                   in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.
+     InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is
+                                   defined in config.json file) for each solution separately, able to decide trivial problems when solving
+                                   reachability problems.
+     InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing
+                                   them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)
+                                   at 1 universaly created solution, able to decide trivial problems when solving reachability problems.
 --config:
-     any valid path to valid config.json (configures rules for taint propagation)
+     any valid path to valid config.json (configures rules for taint variables propagation).
 --result:
-     any valid path to the folder where diagnostic-result-files should be exported
+     any valid path to the folder where diagnostic-result-files should be exported.
 --exclude-paths:
-     comma delimited list of sub-paths to be skipped during analysis (for example tests)
+     comma delimited list of sub-paths to be skipped during analysis (for example tests).
 --write-console:
-     informs about results in real-time
+     informs about results in real-time.
 ```
 ## Configuration
 The file which specifies configuration rules for solving taint propagation problems is expected to have the following format.
