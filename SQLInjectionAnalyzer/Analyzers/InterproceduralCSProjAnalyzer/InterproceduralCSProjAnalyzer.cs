@@ -283,22 +283,17 @@ namespace SQLInjectionAnalyzer
             {
                 for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
-
-                    if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0))
-                    {
-                        continue;
-                    }
-
+                    // investigate only the origin of arguments which were previously tainted as method parameters
+                    if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0)) continue;
+                   
                     int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
+                    
                     FollowDataFlow(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
 
                     // for the first invocation only
                     // for the parent's tainted method parameters only
                     // if following the data flow increased the number of tainted method parameters, it means that current argument of this invocationNode should be tainted
-                    if (level == 1 && (taintedMethodParameters == null || taintedMethodParameters[i] > 0) && numberOfTaintedMethodParametersBefore < tainted.TaintedMethodParameters.Count(num => num != 0))
-                    {
-                        tainted.TaintedInvocationArguments[i] += 1;
-                    }
+                    if (level == 1 && (taintedMethodParameters == null || taintedMethodParameters[i] > 0) && numberOfTaintedMethodParametersBefore < tainted.TaintedMethodParameters.Count(num => num != 0)) tainted.TaintedInvocationArguments[i] += 1;
                 }
             }
         }
