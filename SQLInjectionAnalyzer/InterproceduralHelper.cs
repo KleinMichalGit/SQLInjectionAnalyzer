@@ -36,11 +36,8 @@ namespace SQLInjectionAnalyzer
 
         public bool AllTaintVariablesAreCleanedInThisBranch(int[] parentMethodTainted, int[] invocationTainted)
         {
-            if (parentMethodTainted.Length != invocationTainted.Length)
-            {
-                throw new AnalysisException("number of tainted method parameters and invocation arguments is incorrect!");
-            }
-
+            if (parentMethodTainted.Length != invocationTainted.Length) throw new AnalysisException("number of tainted method parameters and invocation arguments is incorrect!");
+           
             for (int i = 0; i < parentMethodTainted.Length; i++)
             {
                 if (parentMethodTainted[i] > 0 && invocationTainted[i] > 0)
@@ -68,8 +65,8 @@ namespace SQLInjectionAnalyzer
                         }
                         else
                         {
-                            methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-                            return null; //tainted method parameters are therefore unclearable
+                            methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH A DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
+                            
                         }
                     }
                 }

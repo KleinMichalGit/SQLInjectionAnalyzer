@@ -108,9 +108,9 @@ namespace SQLInjectionAnalyzer
             {
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
-                MethodScanResult methodScanResult = ScanMethod(methodSyntax);
+                MethodScanResult methodScanResult = InterproceduralScanMethod(methodSyntax, compilation);
 
-                // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
+                // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing monorepository
                 if (methodScanResult.Hits > 0)
                 {
                     methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
@@ -119,18 +119,15 @@ namespace SQLInjectionAnalyzer
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
 
-                    methodScanResult.AppendCaller("level | method");
-                    SolveInterproceduralAnalysis(methodSyntax, compilation, syntaxTree, methodScanResult);
-
-                    if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
-                    {
-                        methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
-                    }
-
-                    if (methodScanResult.Hits > 0 && writeOnConsole)
+                    if (writeOnConsole)
                     {
                         globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
                     }
+                }
+                
+                if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
+                {
+                    methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
                 }
 
                 syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
@@ -139,86 +136,10 @@ namespace SQLInjectionAnalyzer
             return syntaxTreeScanResult;
         }
 
-        private void SolveInterproceduralAnalysis(MethodDeclarationSyntax methodSyntax, Compilation compilation, SyntaxTree syntaxTree, MethodScanResult methodScanResult)
-        {
-            SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
-            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
-
-            methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
-            List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
-            List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
-
-            // n-level BFS interprocedural analysis
-            for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
-            {
-                foreach (SyntaxTree currentSyntaxTree in compilation.SyntaxTrees)
-                {
-                    globalHelper.SolveSourceAreas(currentSyntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
-
-                    semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
-
-                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
-
-                    if (allMethodInvocations == null)
-                    {
-                        return;
-                    }
-
-                    foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
-                    {
-                        MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
-
-                        if (parent != null)
-                        {
-                            methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
-                            methodScanResult.BodiesOfCallers.Add(parent.ToString());
-                            methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
-
-                            Tainted tainted = new Tainted()
-                            {
-                                TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
-                                TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
-                            };
-
-                            FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
-
-                            if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
-                            {
-                                methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
-                            }
-                            else
-                            {
-                                nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
-                            }
-
-                        }
-                    }
-                }
-
-                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
-                // will never be cleaned.
-                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
-                {
-                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
-                    return;
-                }
-
-                currentLevelBlocks = nextLevelBlocks;
-                nextLevelBlocks = new List<LevelBlock>();
-
-                //all tainted parameters are cleaned
-                if (currentLevelBlocks.Count() == 0)
-                {
-                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED. THEREFORE, THIS MESSAGE SHOULD NOT BE INCLUDED AMONG RESULTS.");
-                    methodScanResult.Hits = 0;
-                    return;
-                }
-            }
-        }
-
-        private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
-        {
+        private MethodScanResult InterproceduralScanMethod(MethodDeclarationSyntax methodSyntax, Compilation compilation)
+        { 
             MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            methodScanResult.AppendCaller("level | method");
             methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
@@ -247,8 +168,77 @@ namespace SQLInjectionAnalyzer
             }
 
             methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
-            methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            
+            SemanticModel semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
+            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
 
+            methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
+            List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
+            List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
+
+            // n-level BFS interprocedural analysis
+            for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
+            {
+                foreach (SyntaxTree currentSyntaxTree in compilation.SyntaxTrees)
+                {
+                    globalHelper.SolveSourceAreas(currentSyntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
+                    semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
+
+                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
+
+                    if (allMethodInvocations == null) return diagnosticsInitializer.InitialiseMethodScanResult();
+                    
+                    foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
+                    {
+                        MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
+
+                        if (parent == null) continue;
+                        
+                        methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
+                        methodScanResult.BodiesOfCallers.Add(parent.ToString());
+                        methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
+
+                        Tainted tainted = new Tainted()
+                        {
+                            TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
+                            TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
+                        };
+
+                        FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
+
+                        if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
+                        {
+                            methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
+                        }
+                        else
+                        {
+                            nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
+                        }
+                    }
+                }
+
+                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
+                // will never be cleaned.
+                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+
+                currentLevelBlocks = nextLevelBlocks;
+                nextLevelBlocks = new List<LevelBlock>();
+
+                //all tainted parameters are cleaned
+                if (currentLevelBlocks.Count() == 0)
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+            }
+
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
 
