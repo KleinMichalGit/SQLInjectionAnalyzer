@@ -16,6 +16,7 @@ using Model.SyntaxTree;
 using Model;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using SQLInjectionAnalyzer.Analyzers;
 
 namespace SQLInjectionAnalyzer
 {
@@ -38,12 +39,15 @@ namespace SQLInjectionAnalyzer
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
         private GlobalHelper globalHelper = new GlobalHelper();
+        private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
+        private TableOfRules tableOfRules = new TableOfRules();
+        private InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
@@ -77,7 +81,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
+            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -92,25 +96,21 @@ namespace SQLInjectionAnalyzer
                     SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree, compilation);
                     csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
                 }
-
             }
-
             csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
         }
 
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Compilation compilation)
         {
-            SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
-            syntaxTreeScanResult.SyntaxTreeScanResultStartTime = DateTime.Now;
-            syntaxTreeScanResult.Path = syntaxTree.FilePath;
+            SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
-                MethodScanResult methodScanResult = ScanMethod(methodSyntax);
+                MethodScanResult methodScanResult = InterproceduralScanMethod(methodSyntax, compilation);
 
-                // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
+                // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing monorepository
                 if (methodScanResult.Hits > 0)
                 {
                     methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
@@ -119,18 +119,15 @@ namespace SQLInjectionAnalyzer
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
 
-                    methodScanResult.AppendCaller("level | method");
-                    SolveInterproceduralAnalysis(methodSyntax, compilation, syntaxTree, methodScanResult);
-
-                    if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
-                    {
-                        methodScanResult = globalHelper.InitialiseMethodScanResult();
-                    }
-
-                    if (methodScanResult.Hits > 0 && writeOnConsole)
+                    if (writeOnConsole)
                     {
                         globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
                     }
+                }
+                
+                if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
+                {
+                    methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
                 }
 
                 syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
@@ -139,159 +136,10 @@ namespace SQLInjectionAnalyzer
             return syntaxTreeScanResult;
         }
 
-        private void SolveInterproceduralAnalysis(MethodDeclarationSyntax methodSyntax, Compilation compilation, SyntaxTree syntaxTree, MethodScanResult methodScanResult)
-        {
-            SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: false);
-            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
-
-            methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
-            List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
-            List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
-
-            // n-level BFS interprocedural analysis
-            for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
-            {
-                foreach (SyntaxTree currentSyntaxTree in compilation.SyntaxTrees)
-                {
-                    SolveSourceAreas(currentSyntaxTree, methodScanResult); // source areas labels for more informative result
-
-                    semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
-
-                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
-
-                    if (allMethodInvocations == null)
-                    {
-                        return;
-                    }
-
-                    foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
-                    {
-                        MethodDeclarationSyntax parent = FindMethodParent(invocation.InvocationExpression.Parent);
-
-                        if (parent != null)
-                        {
-                            methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
-                            methodScanResult.BodiesOfCallers.Add(parent.ToString());
-                            methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
-
-                            Tainted tainted = new Tainted()
-                            {
-                                TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
-                                TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
-                            };
-
-                            FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
-
-                            if (AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
-                            {
-                                methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
-                            }
-                            else
-                            {
-                                nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
-                            }
-
-                        }
-                    }
-                }
-
-
-                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
-                // will be never cleaned.
-                if (CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
-                {
-                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
-                    return;
-                }
-
-                currentLevelBlocks = nextLevelBlocks;
-                nextLevelBlocks = new List<LevelBlock>();
-
-                //all tainted parameters are cleaned
-                if (currentLevelBlocks.Count() == 0)
-                {
-                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED. THEREFORE, THIS MESSAGE SHOULD NOT BE INCLUDED AMONG RESULTS.");
-                    methodScanResult.Hits = 0;
-                    return;
-                }
-            }
-        }
-
-        private bool CurrentLevelContainsTaintedBlocksWithoutCallers(List<LevelBlock> currentLevelBlocks)
-        {
-            foreach (LevelBlock levelBlock in currentLevelBlocks)
-                if (levelBlock.TaintedMethodParameters.Sum() > 0 && levelBlock.NumberOfCallers == 0)
-                    return true;
-
-            return false;
-        }
-
-        private bool AllTaintVariablesAreCleanedInThisBranch(int[] parentMethodTainted, int[] invocationTainted)
-        {
-            if (parentMethodTainted.Length != invocationTainted.Length)
-            {
-                throw new AnalysisException("number of tainted method parameters and invocation arguments is incorrect!");
-            }
-
-            for (int i = 0; i < parentMethodTainted.Length; i++)
-            {
-                if (parentMethodTainted[i] > 0 && invocationTainted[i] > 0)
-                    return false;
-            }
-            return true;
-        }
-
-        private List<InvocationAndParentsTaintedParameters> FindAllCallersOfCurrentBlock(SyntaxTree currentSyntaxTree, List<LevelBlock> currentLevelBlocks, SemanticModel semanticModel, MethodScanResult methodScanResult)
-        {
-            IEnumerable<InvocationExpressionSyntax> allInvocations = currentSyntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
-            List<InvocationAndParentsTaintedParameters> allMethodInvocations = new List<InvocationAndParentsTaintedParameters>();
-
-            // find all invocations with same symbol info AND number of parameters
-            foreach (LevelBlock block in currentLevelBlocks) // method
-            {
-                foreach (InvocationExpressionSyntax inv in allInvocations) //it's invocation
-                {
-                    if (block.MethodSymbol == semanticModel.GetSymbolInfo(inv).Symbol)
-                    {
-                        if (block.MethodSymbol.Parameters.Count() == inv.ArgumentList.Arguments.Count())
-                        {
-                            block.NumberOfCallers += 1;
-                            allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters });
-                        }
-                        else
-                        {
-                            methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-                            return null; //tainted method parameters are therefore unclearable
-                        }
-                    }
-                }
-            }
-            return allMethodInvocations;
-        }
-
-        private void SolveSourceAreas(SyntaxTree syntaxTree, MethodScanResult methodScanResult)
-        {
-            foreach (SourceArea source in taintPropagationRules.SourceAreas)
-                if (syntaxTree.FilePath.Contains(source.Path))
-                    methodScanResult.SourceAreasLabels.Add(source.Label);
-        }
-
-        private MethodDeclarationSyntax FindMethodParent(SyntaxNode parent)
-        {
-            while (parent != null)
-            {
-                if (parent is MethodDeclarationSyntax)
-                {
-                    return (MethodDeclarationSyntax)parent;
-                }
-                parent = parent.Parent;
-            }
-            return null;
-        }
-
-        private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
-        {
-            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
+        private MethodScanResult InterproceduralScanMethod(MethodDeclarationSyntax methodSyntax, Compilation compilation)
+        { 
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            methodScanResult.AppendCaller("level | method");
             methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
@@ -320,8 +168,77 @@ namespace SQLInjectionAnalyzer
             }
 
             methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
-            methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            
+            SemanticModel semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
+            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
 
+            methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
+            List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
+            List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
+
+            // n-level BFS interprocedural analysis
+            for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
+            {
+                foreach (SyntaxTree currentSyntaxTree in compilation.SyntaxTrees)
+                {
+                    globalHelper.SolveSourceAreas(currentSyntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
+                    semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
+
+                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
+
+                    if (allMethodInvocations == null) return diagnosticsInitializer.InitialiseMethodScanResult();
+                    
+                    foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
+                    {
+                        MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
+
+                        if (parent == null) continue;
+                        
+                        methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
+                        methodScanResult.BodiesOfCallers.Add(parent.ToString());
+                        methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
+
+                        Tainted tainted = new Tainted()
+                        {
+                            TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
+                            TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
+                        };
+
+                        FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
+
+                        if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
+                        {
+                            methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
+                        }
+                        else
+                        {
+                            nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
+                        }
+                    }
+                }
+
+                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
+                // will never be cleaned.
+                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+
+                currentLevelBlocks = nextLevelBlocks;
+                nextLevelBlocks = new List<LevelBlock>();
+
+                //all tainted parameters are cleaned
+                if (currentLevelBlocks.Count() == 0)
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+            }
+
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
 
@@ -341,168 +258,44 @@ namespace SQLInjectionAnalyzer
             result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
             level += 1;
 
+            SyntaxNode[] nextLevelNodes = null;
+
             if (currentNode is InvocationExpressionSyntax)
-                SolveInvocationExpression(rootNode, (InvocationExpressionSyntax)currentNode, result, visitedNodes, level, tainted, taintedMethodParameters);
+                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax)currentNode, result, level, taintPropagationRules);
             else if (currentNode is ObjectCreationExpressionSyntax)
-                SolveObjectCreationExpression(rootNode, (ObjectCreationExpressionSyntax)currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.SolveObjectCreationExpression((ObjectCreationExpressionSyntax)currentNode);
             else if (currentNode is AssignmentExpressionSyntax)
-                SolveAssignmentExpression(rootNode, (AssignmentExpressionSyntax)currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.SolveAssignmentExpression((AssignmentExpressionSyntax)currentNode);
             else if (currentNode is VariableDeclaratorSyntax)
-                SolveVariableDeclarator(rootNode, (VariableDeclaratorSyntax)currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.SolveVariableDeclarator((VariableDeclaratorSyntax)currentNode);
             else if (currentNode is ArgumentSyntax)
-                FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is IdentifierNameSyntax)
-                FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
             else if (currentNode is ConditionalExpressionSyntax)
-                SolveConditionalExpression(rootNode, (ConditionalExpressionSyntax)currentNode, result, visitedNodes, level, tainted);
+                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode, result, level).Result;
             else if (currentNode is LiteralExpressionSyntax)
-                SolveLiteralExpression(result, level);
+                tableOfRules.SolveLiteralExpression(result, level);
             else
-                result.AppendEvidence(new string(' ', level * 2) + "UNRECOGNIZED NODE " + currentNode.ToString());
-        }
+                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
 
-        private void SolveInvocationExpression(MethodDeclarationSyntax rootNode, InvocationExpressionSyntax invocationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted, int[] taintedMethodParameters = null)
-        {
-            if (taintPropagationRules.CleaningMethods.Any(cleaningMethod => invocationNode.ToString().Contains(cleaningMethod)))
+            if (nextLevelNodes != null)
             {
-                result.AppendEvidence(new string(' ', level * 2) + "OK (Cleaning method)");
-                return;
-            }
-
-            if (invocationNode.ArgumentList == null)
-                return;
-
-            for (int i = 0; i < invocationNode.ArgumentList.Arguments.Count(); i++)
-            {
-                if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0))
+                for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
-                    continue;
-                }
-                int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
-                FollowDataFlow(rootNode, invocationNode.ArgumentList.Arguments[i], result, tainted, null, visitedNodes, level + 1);
+                    // investigate only the origin of arguments which were previously tainted as method parameters
+                    if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0)) continue;
+                   
+                    int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
+                    
+                    FollowDataFlow(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
 
-                // for the first invocation only
-                // for the parent's tainted method parameters only
-                // if following the data flow increased the number of tainted method parameters, it means that current argument of this invocationNode should be tainted
-                if (level == 1 && (taintedMethodParameters == null || taintedMethodParameters[i] > 0) && numberOfTaintedMethodParametersBefore < tainted.TaintedMethodParameters.Count(num => num != 0))
-                {
-                    tainted.TaintedInvocationArguments[i] += 1;
+                    // for the first invocation only
+                    // for the parent's tainted method parameters only
+                    // if following the data flow increased the number of tainted method parameters, it means that current argument of this invocationNode should be tainted
+                    if (level == 1 && (taintedMethodParameters == null || taintedMethodParameters[i] > 0) && numberOfTaintedMethodParametersBefore < tainted.TaintedMethodParameters.Count(num => num != 0)) tainted.TaintedInvocationArguments[i] += 1;
                 }
             }
-        }
-
-        private void SolveObjectCreationExpression(MethodDeclarationSyntax rootNode, ObjectCreationExpressionSyntax objectCreationNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
-        {
-            if (objectCreationNode.ArgumentList == null)
-                return;
-            foreach (ArgumentSyntax argNode in objectCreationNode.ArgumentList.Arguments)
-                FollowDataFlow(rootNode, argNode, result, tainted, null, visitedNodes, level + 1);
-        }
-
-        private void SolveAssignmentExpression(MethodDeclarationSyntax rootNode, AssignmentExpressionSyntax assignmentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
-        {
-            FollowDataFlow(rootNode, assignmentNode.Right, result, tainted, null, visitedNodes, level + 1);
-        }
-
-        private void SolveVariableDeclarator(MethodDeclarationSyntax rootNode, VariableDeclaratorSyntax variableDeclaratorNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
-        {
-            var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
-
-            if (eq != null)
-                foreach (var dec in eq.ChildNodes())
-                    FollowDataFlow(rootNode, dec, result, tainted, null, visitedNodes, level + 1);
-        }
-
-        private void FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
-        {
-            string arg = currentNode.ToString();
-            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
-
-            if (currentNode is ArgumentSyntax)
-            {
-                if (currentNode.ChildNodes().First() is MemberAccessExpressionSyntax)
-                    arg = currentNode.ChildNodes().First().ChildNodes().OfType<IdentifierNameSyntax>().First().Identifier.Text;
-            }
-
-            InvocationExpressionSyntax invocation = currentNode.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
-            if (invocation != null)
-            {
-                FollowDataFlow(rootNode, invocation, result, tainted, null, visitedNodes, level + 1);
-                return;
-            }
-
-            ConditionalExpressionSyntax conditional = currentNode.DescendantNodes().OfType<ConditionalExpressionSyntax>().FirstOrDefault();
-            if (conditional != null)
-            {
-                FollowDataFlow(rootNode, conditional, result, tainted, null, visitedNodes, level + 1);
-                return;
-            }
-
-            ObjectCreationExpressionSyntax objectCreation = currentNode.DescendantNodes().OfType<ObjectCreationExpressionSyntax>().FirstOrDefault();
-            if (objectCreation != null)
-            {
-                FollowDataFlow(rootNode, objectCreation, result, tainted, null, visitedNodes, level + 1);
-                return;
-            }
-
-            foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType<AssignmentExpressionSyntax>().Where(a => a.Left.ToString() == arg).Reverse())
-            {
-                if (!visitedNodes.Contains(assignment) && currentNodePosition > assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
-                {
-                    FollowDataFlow(rootNode, assignment, result, tainted, null, visitedNodes, level + 1);
-                    return;
-                }
-            }
-
-            foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType<VariableDeclaratorSyntax>().Where(d => d.Identifier.Text == arg).Reverse())
-            {
-                if (!visitedNodes.Contains(dec) && currentNodePosition > dec.GetLocation().GetLineSpan().StartLinePosition.Line)
-                {
-                    FollowDataFlow(rootNode, dec, result, tainted, null, visitedNodes, level + 1);
-                    return;
-                }
-            }
-
-            // only after no assignment, declaration,... was found, only after that test for presence among parameters
-            for (int i = 0; i < rootNode.ParameterList.Parameters.Count(); i++)
-            {
-                if (arg == rootNode.ParameterList.Parameters[i].Identifier.Text)
-                {
-                    result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
-                    result.Hits++;
-                    tainted.TaintedMethodParameters[i] += 1;
-                }
-            }
-        }
-
-        private async void SolveConditionalExpression(MethodDeclarationSyntax rootNode, ConditionalExpressionSyntax currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted)
-        {
-            try
-            {
-                bool evaluationResult = (bool)await CSharpScript.EvaluateAsync(currentNode.Condition.ToString());
-                if (evaluationResult)
-                {
-                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as True (only 1 block will be investigated).");
-                    FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
-                }
-                else
-                {
-                    result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as False (only 1 block will be investigated).");
-                    FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
-                }
-            }
-            catch (CompilationErrorException e)
-            {
-                // unable to evaluate the condition, therefore both blocks of conditional expression have to be investigated
-                result.AppendEvidence(new string(' ', level * 2) + "unsuccessfully evaluated condition (both blocks will be investigated).");
-                FollowDataFlow(rootNode, currentNode.WhenTrue, result, tainted, null, visitedNodes, level + 1);
-                FollowDataFlow(rootNode, currentNode.WhenFalse, result, tainted, null, visitedNodes, level + 1);
-            }
-        }
-
-        private void SolveLiteralExpression(MethodScanResult result, int level)
-        {
-            result.AppendEvidence(new string(' ', level * 2) + "OK (Literal)");
         }
     }
 }

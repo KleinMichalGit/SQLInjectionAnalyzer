@@ -19,6 +19,8 @@ namespace UnitTests.TaintPropagationRulesExamples
         {
             return new TaintPropagationRules()
             {
+                Level = 5,
+                SourceAreas = new List<SourceArea>(),
                 SinkMethods = new List<string>()
                 {
                     "SinkMethodOne",

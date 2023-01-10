@@ -58,41 +58,6 @@ namespace SQLInjectionAnalyzer
             );
         }
 
-        public Diagnostics InitialiseDiagnostics(ScopeOfAnalysis scopeOfAnalysis)
-        {
-            Diagnostics diagnostics = new Diagnostics();
-            diagnostics.ScopeOfAnalysis = scopeOfAnalysis;
-            diagnostics.DiagnosticsStartTime = DateTime.Now;
-            return diagnostics;
-        }
-
-
-        public CSProjectScanResult InitialiseScanResult(string directoryPath)
-        {
-            CSProjectScanResult scanResult = new CSProjectScanResult();
-            scanResult.CSProjectScanResultStartTime = DateTime.Now;
-            scanResult.Path = directoryPath;
-
-            return scanResult;
-        }
-
-        public SyntaxTreeScanResult InitialiseSyntaxTreeScanResult(string filePath)
-        {
-            SyntaxTreeScanResult syntaxTreeScanResult = new SyntaxTreeScanResult();
-            syntaxTreeScanResult.SyntaxTreeScanResultStartTime = DateTime.Now;
-            syntaxTreeScanResult.Path = filePath;
-
-            return syntaxTreeScanResult;
-        }
-
-        public MethodScanResult InitialiseMethodScanResult()
-        {
-            MethodScanResult methodScanResult = new MethodScanResult();
-            methodScanResult.MethodScanResultStartTime = DateTime.Now;
-
-            return methodScanResult;
-        }
-
         public bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult, TaintPropagationRules rules)
         {
             if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
@@ -117,6 +82,12 @@ namespace SQLInjectionAnalyzer
             return true;
         }
 
+        public void SolveSourceAreas(SyntaxTree syntaxTree, MethodScanResult methodScanResult, TaintPropagationRules taintPropagationRules)
+        {
+            foreach (SourceArea source in taintPropagationRules.SourceAreas)
+                if (syntaxTree.FilePath.Contains(source.Path))
+                    methodScanResult.SourceAreasLabels.Add(source.Label);
+        }
 
         public void WriteEvidenceOnConsole(string methodName, string evidence, MethodScanResult result=null)
         {
