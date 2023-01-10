@@ -38,6 +38,7 @@ namespace SQLInjectionAnalyzer
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
         private GlobalHelper globalHelper = new GlobalHelper();
+        private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
@@ -45,7 +46,7 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
@@ -78,7 +79,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
+            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -99,7 +100,7 @@ namespace SQLInjectionAnalyzer
 
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
         {
-            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
+            SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
@@ -115,6 +116,8 @@ namespace SQLInjectionAnalyzer
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
 
+                    globalHelper.SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
+
                     if (writeOnConsole)
                     {
                         globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
@@ -128,7 +131,7 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
             methodScanResult.Sinks = (short)invocations.Count();

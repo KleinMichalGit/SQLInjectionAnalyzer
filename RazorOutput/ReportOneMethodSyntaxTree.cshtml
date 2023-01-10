@@ -128,6 +128,10 @@
                                             <h5>Line number: @methodScanResult.LineNumber</h5>
                                             <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
                                             <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
+                                            @foreach (var sourceLabel in methodScanResult.SourceAreasLabels)
+                                            {
+                                                <span class="badge text-bg-warning">@sourceLabel</span>
+                                            }
                                         </div>
                                         <div class="card-body">
                                             <ul class="list-group list-group-flush bg-light">

@@ -39,13 +39,15 @@ namespace SQLInjectionAnalyzer
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
         private bool writeOnConsole = false;
         private GlobalHelper globalHelper = new GlobalHelper();
+        private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
+        private InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
@@ -79,7 +81,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = globalHelper.InitialiseScanResult(csprojPath);
+            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
@@ -100,7 +102,7 @@ namespace SQLInjectionAnalyzer
 
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Compilation compilation)
         {
-            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
+            SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
@@ -122,7 +124,7 @@ namespace SQLInjectionAnalyzer
 
                     if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
                     {
-                        methodScanResult = globalHelper.InitialiseMethodScanResult();
+                        methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
                     }
 
                     if (methodScanResult.Hits > 0 && writeOnConsole)
@@ -151,11 +153,11 @@ namespace SQLInjectionAnalyzer
             {
                 foreach (SyntaxTree currentSyntaxTree in compilation.SyntaxTrees)
                 {
-                    SolveSourceAreas(currentSyntaxTree, methodScanResult); // source areas labels for more informative result
+                    globalHelper.SolveSourceAreas(currentSyntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
 
                     semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
 
-                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
+                    List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
 
                     if (allMethodInvocations == null)
                     {
@@ -164,7 +166,7 @@ namespace SQLInjectionAnalyzer
 
                     foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
                     {
-                        MethodDeclarationSyntax parent = FindMethodParent(invocation.InvocationExpression.Parent);
+                        MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
 
                         if (parent != null)
                         {
@@ -180,7 +182,7 @@ namespace SQLInjectionAnalyzer
 
                             FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
 
-                            if (AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
+                            if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
                             {
                                 methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
                             }
@@ -195,7 +197,7 @@ namespace SQLInjectionAnalyzer
 
                 // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
                 // will never be cleaned.
-                if (CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
+                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
                 {
                     methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
                     return;
@@ -214,81 +216,9 @@ namespace SQLInjectionAnalyzer
             }
         }
 
-        private bool CurrentLevelContainsTaintedBlocksWithoutCallers(List<LevelBlock> currentLevelBlocks)
-        {
-            foreach (LevelBlock levelBlock in currentLevelBlocks)
-                if (levelBlock.TaintedMethodParameters.Sum() > 0 && levelBlock.NumberOfCallers == 0)
-                    return true;
-
-            return false;
-        }
-
-        private bool AllTaintVariablesAreCleanedInThisBranch(int[] parentMethodTainted, int[] invocationTainted)
-        {
-            if (parentMethodTainted.Length != invocationTainted.Length)
-            {
-                throw new AnalysisException("number of tainted method parameters and invocation arguments is incorrect!");
-            }
-
-            for (int i = 0; i < parentMethodTainted.Length; i++)
-            {
-                if (parentMethodTainted[i] > 0 && invocationTainted[i] > 0)
-                    return false;
-            }
-            return true;
-        }
-
-        private List<InvocationAndParentsTaintedParameters> FindAllCallersOfCurrentBlock(SyntaxTree currentSyntaxTree, List<LevelBlock> currentLevelBlocks, SemanticModel semanticModel, MethodScanResult methodScanResult)
-        {
-            IEnumerable<InvocationExpressionSyntax> allInvocations = currentSyntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
-            List<InvocationAndParentsTaintedParameters> allMethodInvocations = new List<InvocationAndParentsTaintedParameters>();
-
-            // find all invocations with same symbol info AND number of parameters
-            foreach (LevelBlock block in currentLevelBlocks) // method
-            {
-                foreach (InvocationExpressionSyntax inv in allInvocations) //it's invocation
-                {
-                    if (block.MethodSymbol == semanticModel.GetSymbolInfo(inv).Symbol)
-                    {
-                        if (block.MethodSymbol.Parameters.Count() == inv.ArgumentList.Arguments.Count())
-                        {
-                            block.NumberOfCallers += 1;
-                            allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters });
-                        }
-                        else
-                        {
-                            methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-                            return null; //tainted method parameters are therefore unclearable
-                        }
-                    }
-                }
-            }
-            return allMethodInvocations;
-        }
-
-        private void SolveSourceAreas(SyntaxTree syntaxTree, MethodScanResult methodScanResult)
-        {
-            foreach (SourceArea source in taintPropagationRules.SourceAreas)
-                if (syntaxTree.FilePath.Contains(source.Path))
-                    methodScanResult.SourceAreasLabels.Add(source.Label);
-        }
-
-        private MethodDeclarationSyntax FindMethodParent(SyntaxNode parent)
-        {
-            while (parent != null)
-            {
-                if (parent is MethodDeclarationSyntax)
-                {
-                    return (MethodDeclarationSyntax)parent;
-                }
-                parent = parent.Parent;
-            }
-            return null;
-        }
-
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
             methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);

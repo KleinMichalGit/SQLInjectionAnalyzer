@@ -38,18 +38,19 @@ namespace SQLInjectionAnalyzer
         private bool writeOnConsole = false;
         
         private GlobalHelper globalHelper = new GlobalHelper();
+        private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = globalHelper.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodSyntaxTree);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodSyntaxTree);
 
             int numberOfCSFilesUnderThisDirectory = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfProcessedFiles = 0;
 
-            CSProjectScanResult scanResult = globalHelper.InitialiseScanResult(directoryPath);
+            CSProjectScanResult scanResult = diagnosticsInitializer.InitialiseScanResult(directoryPath);
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
@@ -80,7 +81,7 @@ namespace SQLInjectionAnalyzer
         private SyntaxTreeScanResult ScanFile(string filePath)
         {
             string file = File.ReadAllText(filePath);
-            SyntaxTreeScanResult syntaxTreeScanResult = globalHelper.InitialiseSyntaxTreeScanResult(filePath);
+            SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(filePath);
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(file);
             var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
@@ -99,6 +100,8 @@ namespace SQLInjectionAnalyzer
                     FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
+                    
+                    globalHelper.SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
 
                     if (writeOnConsole)
                     {
@@ -115,7 +118,7 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = globalHelper.InitialiseMethodScanResult();
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
 
             IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
             methodScanResult.Sinks = (short)invocations.Count();
