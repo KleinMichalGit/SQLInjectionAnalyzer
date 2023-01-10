@@ -49,7 +49,7 @@ namespace SQLInjectionAnalyzer.Analyzers
             return null;
         }
 
-        public SyntaxNode[] FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level)
+        public SyntaxNode[] FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted = null)
         {
             string arg = currentNode.ToString();
             int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
@@ -101,6 +101,7 @@ namespace SQLInjectionAnalyzer.Analyzers
                 {
                     result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
                     result.Hits++;
+                    if(tainted != null) tainted.TaintedMethodParameters[i] += 1;
                 }
             }
             return null;
