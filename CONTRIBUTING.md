@@ -1,6 +1,6 @@
 # SQL Injection Analyzer contributing guidelines
 
-These design guidelines are not law. Be pragmatic, and when there is a good reason for violating the guideline, discuss the exception with broader group, and find the best solution.
+These guidelines are not law. Be pragmatic, and when there is a good reason for violating the guideline, discuss the exception with broader group, and find the best solution.
 
 ## Initial setup
 [initial-setup.md](Documentation/initial-setup.md) contains information about how to clone, build, and run the code.
