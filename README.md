@@ -131,3 +131,6 @@ It must be `*.json` file.
 ## Results
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument). More
 information about how result files are generated [HERE](OutputService/README.md).  
+
+## License
+See [LICENSE](LICENSE).
