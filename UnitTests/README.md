@@ -12,13 +12,13 @@ whether they are fit for use."[^1]
 After creating your own implementation of an analyzer, or after modifying the existing
 functionality, please make sure the additional or changed functionality is
 fully covered by `unit tests`. To inspire yourself, look at [OneMethodSyntaxTreeTest.cs](OneMethodSyntaxTreeAnalyzerTest.cs)
-which covers the functionality of the implementation of the analyzer for Simple scope of analysis.
+which covers the functionality of the implementation of the analyzer for OneMethodSyntaxTree scope of analysis.
 Another examples are [ConfigFileReaderTest.cs](ConfigFileReaderTest.cs) or [InputReaderTest.cs](InputReaderTest.cs)
 which test [ConfigFileReader](../InputService/ConfigFileReader.cs) and [InputReader](../InputService/InputReader.cs)
 in InputService. You can add additional tests right here into this folder.
 
-### AnalyzerTestHelper.cs
-[AnalyzerTestHelper.cs](AnalyzerTestHelper.cs) contains useful methods for creating `Test Scenarios`, and for comparing
+### ScenarioFactory.cs
+[ScenarioFactory.cs](ScenarioFactory.cs) contains useful methods for creating `Test Scenarios`, and for comparing
 expected and actual `Diagnostics`. For example `TwoDiagnosticFilesShouldBeEqual(Diagnostics expected, Diagnostics actual)`.
 Since `Diagnostics` contain `time information` it would be impossible (and it would make no sense) to compare time values because
 every time they can be different (it depends on the environment where tests are run). Therefore, only values which `do not`
@@ -54,7 +54,7 @@ The good practice is to always attach the evidence/output of the test into Test 
 - `ConfigFileExamples/` - valid and invalid config files tested by unit tests.
 - `ExpectedDiagnostics/` - expected diagnostics of each tested analyzer. The results of unit tests are compared against these expected diagnostics. Tests are successful only if expected and received diagnostics are considered as equal. As diagnostics also contain various measured times, these times are not compared and should not be compared as it makes no logical sense comparing the times of two otherwise identical diagnostics (it depends on environment, etc..).   
 - `TaintPropagationRulesExamples/` -  contains a creator of taint propagation rules used by unit tests.
-- `AnalyzerTestHelper.cs` - contains helpful methods for creating test scenarios, and comparing diagnostic files. 
+- `ScenarioFactory.cs` - contains helpful methods for creating test scenarios, and comparing diagnostic files. 
 - `ConfigFileReaderTest.cs` - tests for config file reader.
 - `OneMethodSyntaxTreeTest.cs` - tests for OneMethodSyntaxTree analyzer.
 

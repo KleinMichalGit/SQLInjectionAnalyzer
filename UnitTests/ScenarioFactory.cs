@@ -15,15 +15,15 @@ namespace UnitTests
     /// Common test helper. Contains common methods for creating test scenarios,
     /// and for testing if the received results are equal.
     /// </summary>
-    public class AnalyzerTestHelper
+    public class ScenarioFactory
     {
         Analyzer analyzer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyzerTestHelper"/> class.
+        /// Initializes a new instance of the <see cref="ScenarioFactory"/> class.
         /// </summary>
         /// <param name="analyzer">The analyzer.</param>
-        public AnalyzerTestHelper(Analyzer analyzer)
+        public ScenarioFactory(Analyzer analyzer)
         {
             this.analyzer = analyzer;
         }
