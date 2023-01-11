@@ -24,7 +24,7 @@ method from the set of sinkMethods. However, only those invocation arguments sho
 - `CurrentLevelContainsTaintedBlocksWithoutCallers` - decides whether the current level of BFS tree contains methods with tainted parameters without callers.
 - `AllTaintVariablesAreCleanedInThisBranch` - decides whether in this branch on this level of BFS tree all tainted variables are cleaned.
 - `FindAllCallersOfCurrentBlock` - finds all callers of the method with the same number of arguments as the method's parameters. 
-- `SolveSourceAreas` - handles adding the batches specified in the config file.
+- `SolveSourceAreas` - handles adding the badges specified in the config file.
 - `FindMethodParent` - tries to figure out if the current `SyntaxTree` node has `MethodDeclarationSyntax` parent or not.
 
 ## Taint propagation rules
