@@ -1,3 +1,5 @@
+![main](https://github.com/KleinMichalGit/SQLInjectionAnalyzer/actions/workflows/main.yml/badge.svg)
+
 # SQL Injection Analyzer
 ## About
 SQL Injection Analyzer is a [Roslyn](https://github.com/dotnet/roslyn "The .NET Compiler Platform")-based static source code analyzer which focuses on finding non parametric queries in C# source code.
@@ -93,7 +95,7 @@ flowchart LR;
 The file which specifies configuration rules for solving taint propagation problems is expected to have the following format.
 It must be `*.json` file.
 - level - maximal allowed height of BFS tree during `Interprocedural` analysis
-- sourceAreas - batches for method findings which should be added to the `.html` result file. label defines the batch which should be added, path defines the path of the file containing at least one method analysed during analysis.
+- sourceAreas - badges for method findings which should be added to the `.html` result file. label defines the badge which should be added, path defines the path of the file containing at least one method analysed during analysis.
 - sinkMethods - the names of the methods considered to be potentially dangerous when any non-parametrised parameter is passed to them.
 - cleaningMethods - the names of the methods considered to be clear. Therefore, if any tainted variable is passed to the calling of such method, it will automatically clean the tainted variable.
 
@@ -129,3 +131,6 @@ It must be `*.json` file.
 ## Results
 Analyzer should produce .html, and .txt result into pre-defined directory (--result argument). More
 information about how result files are generated [HERE](OutputService/README.md).  
+
+## License
+See [LICENSE](LICENSE).

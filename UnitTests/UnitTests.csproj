@@ -49,7 +49,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalyzerTestHelper.cs" />
+    <Compile Include="ScenarioFactory.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\SafeAssignment\SafeAssignment1.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment2.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment1.cs" />

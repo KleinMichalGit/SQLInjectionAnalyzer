@@ -15,7 +15,7 @@ namespace UnitTests
         private OneMethodSyntaxTreeAnalyzer oneMethodSyntaxTreeAnalyzer;
         private ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis expectedDiagnosticsCreator;
         private TaintPropagationRulesCreator taintPropagationRulesCreator;
-        private AnalyzerTestHelper testHelper;
+        private ScenarioFactory scenarioFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OneMethodSyntaxTreeAnalyzerTest"/> class.
@@ -25,14 +25,14 @@ namespace UnitTests
             oneMethodSyntaxTreeAnalyzer = new OneMethodSyntaxTreeAnalyzer();
             expectedDiagnosticsCreator = new ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis();
             taintPropagationRulesCreator = new TaintPropagationRulesCreator();
-            testHelper = new AnalyzerTestHelper(oneMethodSyntaxTreeAnalyzer);
+            scenarioFactory = new ScenarioFactory(oneMethodSyntaxTreeAnalyzer);
         }
 
         [TestMethod]
         public void TestCleaningRules()
         {
             // scenario: all arguments of sink method are cleaned
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/CleaningRules/AllArgumentsAreCleaned/",
                 expectedDiagnosticsCreator.GetAllArgumentsAreCleanedDiagnostics(),
@@ -40,7 +40,7 @@ namespace UnitTests
                 );
 
             //scenario: not all arguments of sink method are cleaned
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/CleaningRules/NotAllArgumentsAreCleaned/",
                 expectedDiagnosticsCreator.GetNotAllArgumentsAreCleanedDiagnostics(),
@@ -55,7 +55,7 @@ namespace UnitTests
         public void TestAssignmentRules()
         {
             // safe assignments
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/AssignmentRules/SafeAssignment/",
                expectedDiagnosticsCreator.GetSafeAssignmentsDiagnostics(),
@@ -63,7 +63,7 @@ namespace UnitTests
                );
 
             //vulnerable assignments
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/AssignmentRules/VulnerableAssignment/",
                expectedDiagnosticsCreator.GetVulnerableAssignmentsDiagnostics(),
@@ -78,7 +78,7 @@ namespace UnitTests
         [TestMethod]
         public void TestInvocationRules()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/InvocationRules/",
                 expectedDiagnosticsCreator.GetInvocationRulesDiagnostics(),
@@ -93,7 +93,7 @@ namespace UnitTests
         public void TestObjectCreationRules()
         {
             // safe object creation
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/CreationRules/SafeCreationRules/",
                expectedDiagnosticsCreator.GetSafeObjectCreationDiagnostics(),
@@ -101,7 +101,7 @@ namespace UnitTests
                );
 
             // vulnerable object creation
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/CreationRules/VulnerableCreationRules/",
                expectedDiagnosticsCreator.GetVulnerableObjectCreationDiagnostics(),
@@ -116,7 +116,7 @@ namespace UnitTests
         public void TestConditionalExpressionRules()
         {
             // safe conditional expression
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/ConditionalExpressionRules/SafeConditionalExpression",
                expectedDiagnosticsCreator.GetSafeConditionalExpressionDiagnostics(),
@@ -124,7 +124,7 @@ namespace UnitTests
                );
 
             // vulnerable conditional expression
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/ConditionalExpressionRules/VulnerableConditionalExpression",
                expectedDiagnosticsCreator.GetVulnerableConditionalExpressionDiagnostics(),
@@ -139,7 +139,7 @@ namespace UnitTests
         public void TestFindOriginRules()
         {
             // safe find origin
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/FindOriginRules/SafeFindOriginRules",
                expectedDiagnosticsCreator.GetSafeFindOriginDiagnostics(),
@@ -147,7 +147,7 @@ namespace UnitTests
                );
 
             // vulnerable find origin
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                "../../CodeToBeAnalysed/FindOriginRules/VulnerableFindOriginRules",
                expectedDiagnosticsCreator.GetVulnerableFindOriginDiagnostics(),
@@ -161,7 +161,7 @@ namespace UnitTests
         [TestMethod]
         public void TestExcludingPaths()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/ExcludingPaths/",
                 expectedDiagnosticsCreator.GetExcludingPathsDiagnostics(),
@@ -175,7 +175,7 @@ namespace UnitTests
         [TestMethod]
         public void TestScanningEmptyFolder()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetEmptyRules(),
                 "../../CodeToBeAnalysed/IntentionalyLeftEmptyFolder/",
                 expectedDiagnosticsCreator.GetSimpleEmptyDiagnostics(),
@@ -186,7 +186,7 @@ namespace UnitTests
         [TestMethod]
         public void TestScanningFileWithOneSafeMethod()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetEmptyRules(),
                 "../../CodeToBeAnalysed/OneSafeMethod/",
                 expectedDiagnosticsCreator.GetSimpleDiagnosticsWithOneCSFileScaned(),
@@ -197,7 +197,7 @@ namespace UnitTests
         [TestMethod]
         public void TestScanningFileWithOneVulnerableMethod()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/OneVulnerableMethod/",
                 expectedDiagnosticsCreator.GetOneVulnerableMethodDiagnostics(),
@@ -208,7 +208,7 @@ namespace UnitTests
         [TestMethod]
         public void TestComplexTest()
         {
-            testHelper.CreateScenario(
+            scenarioFactory.CreateScenario(
                 taintPropagationRulesCreator.GetRulesWithSinkMethodNames(),
                 "../../CodeToBeAnalysed/Complex/",
                 expectedDiagnosticsCreator.GetComplexTestDiagnostics(),
