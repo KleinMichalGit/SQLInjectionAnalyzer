@@ -1,3 +1,5 @@
+![main](https://github.com/KleinMichalGit/SQLInjectionAnalyzer/actions/workflows/main.yml/badge.svg)
+
 # SQL Injection Analyzer
 ## About
 SQL Injection Analyzer is a [Roslyn](https://github.com/dotnet/roslyn "The .NET Compiler Platform")-based static source code analyzer which focuses on finding non parametric queries in C# source code.
