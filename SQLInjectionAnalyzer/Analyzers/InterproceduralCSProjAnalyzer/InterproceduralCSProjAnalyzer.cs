@@ -14,8 +14,6 @@ using Model.Method;
 using Model.Rules;
 using Model.SyntaxTree;
 using Model;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 using SQLInjectionAnalyzer.Analyzers;
 
 namespace SQLInjectionAnalyzer
@@ -137,38 +135,8 @@ namespace SQLInjectionAnalyzer
         }
 
         private MethodScanResult InterproceduralScanMethod(MethodDeclarationSyntax methodSyntax, Compilation compilation)
-        { 
-            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
-            methodScanResult.AppendCaller("level | method");
-            methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
-
-            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
-            methodScanResult.Sinks = (short)invocations.Count();
-
-            Tainted taintedMethod = new Tainted()
-            {
-                TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
-            };
-
-            // follows data flow inside method for each sink invocation from sink invocation to source
-            foreach (var invocation in invocations)
-            {
-                Tainted taintedInvocation = new Tainted()
-                {
-                    TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
-                    TaintedInvocationArguments = new int[invocation.ArgumentList.Arguments.Count()]
-                };
-
-                FollowDataFlow(methodSyntax, invocation, methodScanResult, taintedInvocation);
-
-                for (int i = 0; i < taintedMethod.TaintedMethodParameters.Length; i++)
-                {
-                    taintedMethod.TaintedMethodParameters[i] += taintedInvocation.TaintedMethodParameters[i];
-                }
-            }
-
-            methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
-            
+        {
+            MethodScanResult methodScanResult = ConductScanOfTheInitialMethod(methodSyntax);
             SemanticModel semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
             IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
 
@@ -221,7 +189,7 @@ namespace SQLInjectionAnalyzer
                 // will never be cleaned.
                 if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
                 {
-                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WHICH DOES NOT HAVE ANY CALLERS. THEREFORE ITS PARAMETERS ARE UNCLEANABLE.");
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WITHOUT ANY CALLERS. THEREFORE, ITS PARAMETERS ARE UNCLEANABLE.");
                     methodScanResult.MethodScanResultEndTime = DateTime.Now;
                     return methodScanResult;
                 }
@@ -239,6 +207,41 @@ namespace SQLInjectionAnalyzer
             }
 
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            return methodScanResult;
+        }
+
+        private MethodScanResult ConductScanOfTheInitialMethod(MethodDeclarationSyntax methodSyntax)
+        {
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            methodScanResult.AppendCaller("level | method");
+            methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
+
+            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            methodScanResult.Sinks = (short)invocations.Count();
+
+            Tainted taintedMethod = new Tainted()
+            {
+                TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+            };
+
+            // follows data flow inside method for each sink invocation from sink invocation to source
+            foreach (var invocation in invocations)
+            {
+                Tainted taintedInvocation = new Tainted()
+                {
+                    TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+                    TaintedInvocationArguments = new int[invocation.ArgumentList.Arguments.Count()]
+                };
+
+                FollowDataFlow(methodSyntax, invocation, methodScanResult, taintedInvocation);
+
+                for (int i = 0; i < taintedMethod.TaintedMethodParameters.Length; i++)
+                {
+                    taintedMethod.TaintedMethodParameters[i] += taintedInvocation.TaintedMethodParameters[i];
+                }
+            }
+
+            methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
             return methodScanResult;
         }
 
