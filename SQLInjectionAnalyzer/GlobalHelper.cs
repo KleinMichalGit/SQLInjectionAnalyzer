@@ -58,9 +58,9 @@ namespace SQLInjectionAnalyzer
             );
         }
 
-        public bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult, TaintPropagationRules rules)
+        public bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult, TaintPropagationRules rules, bool includePrivate = false)
         {
-            if (!methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
+            if (!includePrivate && !methodSyntax.Modifiers.Where(modifier => modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
             {
                 syntaxTreeScanResult.NumberOfSkippedMethods++;
                 return false;
