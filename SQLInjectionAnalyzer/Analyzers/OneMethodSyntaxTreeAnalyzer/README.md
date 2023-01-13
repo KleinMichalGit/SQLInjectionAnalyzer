@@ -1,7 +1,7 @@
 # OneMethodSyntaxTree Analyzer
 
 ## A brief description of philosophy
-Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files, without compiling .csproj files, without performing interprocedural analysis, every block of code is considered as reachable (very fast but very inacurate).
+Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files, without compiling .csproj files, without performing interprocedural analysis, able to decide trivial conditional statements (very fast but very inacurate).
 
 ## Taint propagation rules
 

@@ -50,19 +50,19 @@ in command line.
      any valid path to the folder which should be analysed.
 --scope-of-analysis:
      OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,
-                                   without compiling .csproj files, without performing interprocedural analysis, every block of code is
-                                   considered as reachable (very fast but very inacurate).
-     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered
-                                   as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
+                                   without compiling .csproj files, without performing interprocedural analysis, able to decide trivial
+                                   conditional statements (very fast but very inacurate).
+     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as
+                                   OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
                                    serves only to investigate how much time is needed for compilation of all .csproj files.
+                                   Able to decide trivial conditional statements.
      InterproceduralCSProj         Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
-                                   in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.
+                                   in config.json file) for each project separately, able to decide trivial conditional statements.
      InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is
-                                   defined in config.json file) for each solution separately, able to decide trivial problems when solving
-                                   reachability problems.
+                                   defined in config.json file) for each solution separately, able to decide trivial conditional statements.
      InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing
                                    them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)
-                                   at 1 universaly created solution, able to decide trivial problems when solving reachability problems.
+                                   at 1 universaly created solution, able to decide trivial conditional statements.
 --config:
      any valid path to valid config.json (configures rules for taint variables propagation).
 --result:

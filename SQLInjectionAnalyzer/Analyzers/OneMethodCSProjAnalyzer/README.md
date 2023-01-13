@@ -2,10 +2,10 @@
 
 ## A brief description of philosophy
 Compiles *.csproj files, without performing interprocedural analysis.
-Every block of code is considered as reachable. 
 Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. 
-This ScopeOfAnalysis serves only to investigate how much time is needed for compilation of all .csproj files. Actually,
-the compilation of *.csproj files takes the most of the time of the analysis. 
+This ScopeOfAnalysis serves only to investigate how much time is needed for compilation of all .csproj files.
+Able to decide trivial conditional statements.
+Actually, the compilation of *.csproj files takes the most of the time of the analysis. 
 Instead of analysing each *.cs file one-by-one, we use `MSBuildWorkspace`
 to open project `Project` using method `OpenProjectAsync`. 
 We receive compilation `Compilation` using method `GetCompilationAsync`.
