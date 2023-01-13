@@ -2,8 +2,7 @@
 
 ## A brief description of philosophy
 Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis 
-(where number n is defined in config.json file) for each project separately, able 
-to decide trivial problems when solving reachability problems.
+(where number n is defined in config.json file) for each project separately, able to decide trivial conditional statements.
 In comparison to OneMethod analyzers, InterproceduralCSProj analyzer is able to search for the callers of 
 the currently analysed method among every single C# file referred to in the currently analysed .csproj file.
 It does so by creating BFS tree of callers-callees with the maximal height of `n`.

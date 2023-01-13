@@ -25,7 +25,7 @@ namespace SQLInjectionAnalyzer
     /// 
     /// <para>
     /// Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
-    /// in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.
+    /// in config.json file) for each project separately, able to decide trivial conditional statements.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.

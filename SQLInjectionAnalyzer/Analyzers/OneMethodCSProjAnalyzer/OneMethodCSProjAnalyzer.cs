@@ -22,9 +22,10 @@ namespace SQLInjectionAnalyzer
     /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
     /// 
     /// <para>
-    /// Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered
-    /// as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
+    /// Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as OneMethodSyntaxTree,
+    /// therefore provides the same results. This ScopeOfAnalysis
     /// serves only to investigate how much time is needed for compilation of all .csproj files.
+    /// Able to decide trivial conditional statements
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
