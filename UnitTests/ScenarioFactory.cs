@@ -8,6 +8,8 @@ using Model.Rules;
 using Model.SyntaxTree;
 using OutputService;
 using SQLInjectionAnalyzer;
+using FluentAssertions;
+
 
 namespace UnitTests
 {
@@ -45,11 +47,12 @@ namespace UnitTests
 
         private void TwoDiagnosticFilesShouldBeEqual(Diagnostics expected, Diagnostics actual)
         {
-            Assert.AreEqual(expected.ScopeOfAnalysis, actual.ScopeOfAnalysis);
             // times of analyses do not have to be equal, since there is no way multiple analyses of the same code would take the same time
             // paths do not have to be equal, since they depend on the environment
-            Assert.AreEqual(expected.NumberOfCSProjFiles, actual.NumberOfCSProjFiles);
-            Assert.AreEqual(expected.CSProjectScanResults.Count(), actual.CSProjectScanResults.Count());
+            expected.ScopeOfAnalysis.Should().Be(actual.ScopeOfAnalysis);
+            expected.NumberOfCSProjFiles.Should().Be(actual.NumberOfCSProjFiles);
+            expected.CSProjectScanResults.Count().Should().Be(actual.CSProjectScanResults.Count());
+
 
             for (int i = 0; i < expected.CSProjectScanResults.Count(); i++)
             {
@@ -61,12 +64,11 @@ namespace UnitTests
         {
             for (int i = 0; i < expected.NamesOfAllCSFilesInsideThisCSProject.Count(); i++)
             {
-                Assert.AreEqual(expected.NamesOfAllCSFilesInsideThisCSProject[i], actual.NamesOfAllCSFilesInsideThisCSProject[i]);
+                expected.NamesOfAllCSFilesInsideThisCSProject[i].Should().Be(actual.NamesOfAllCSFilesInsideThisCSProject[i]);
             }
 
-            Assert.AreEqual(expected.NamesOfAllCSFilesInsideThisCSProject.Count(), actual.NamesOfAllCSFilesInsideThisCSProject.Count());
-
-            Assert.AreEqual(expected.SyntaxTreeScanResults.Count(), actual.SyntaxTreeScanResults.Count());
+            expected.NamesOfAllCSFilesInsideThisCSProject.Count().Should().Be(actual.NamesOfAllCSFilesInsideThisCSProject.Count());
+            expected.SyntaxTreeScanResults.Count().Should().Be(actual.SyntaxTreeScanResults.Count());
 
             for (int i = 0; i < expected.SyntaxTreeScanResults.Count(); i++)
             {
@@ -76,8 +78,8 @@ namespace UnitTests
 
         private void TwoSyntaxTreeScanResultsShouldBeEqual(SyntaxTreeScanResult expected, SyntaxTreeScanResult actual)
         {
-            Assert.AreEqual(expected.NumberOfSkippedMethods, actual.NumberOfSkippedMethods);
-            Assert.AreEqual(expected.MethodScanResults.Count(), actual.MethodScanResults.Count());
+            expected.NumberOfSkippedMethods.Should().Be(actual.NumberOfSkippedMethods);
+            expected.MethodScanResults.Count().Should().Be(actual.MethodScanResults.Count());
 
             for (int i = 0; i < expected.MethodScanResults.Count(); i++)
             {
@@ -88,16 +90,16 @@ namespace UnitTests
         private void TwoMethodScanResultsShouldBeEqual(MethodScanResult expected, MethodScanResult actual)
         {
 
-            Assert.AreEqual(expected.Sinks, actual.Sinks);
-            Assert.AreEqual(expected.Hits, actual.Hits);
+            expected.Sinks.Should().Be(actual.Sinks);
+            expected.Hits.Should().Be(actual.Hits);
 
             // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
             if (expected.Hits > 0)
             {
-                Assert.AreEqual(expected.MethodName, actual.MethodName);
-                Assert.AreEqual(expected.MethodBody, actual.MethodBody);
-                Assert.AreEqual(expected.LineNumber, actual.LineNumber);
-                Assert.AreEqual(expected.LineCount, actual.LineCount);
+                expected.MethodName.Should().Be(actual.MethodName);
+                expected.MethodBody.Should().Be(actual.MethodBody);
+                expected.LineNumber.Should().Be(actual.LineNumber);
+                expected.LineCount.Should().Be(actual.LineCount);
             }
         }
     }
