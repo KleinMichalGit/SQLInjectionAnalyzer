@@ -25,20 +25,28 @@ Please read carefully the instructions before contributing to this repository [C
 Here is a diagrammatic representation of the entire process of the analysis from `Start` to `End`.
 
 ```mermaid
+%%{
+  init: {
+    'themeVariables': {
+      'primaryColor': '#BB2528',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#F8B229'
+    }
+  }
+}%%
+
 flowchart LR;
     J[Start]-->A[Process input]
     A-->B[Process config];
     B-->C{Scope};
-    C-->|OneMethodSyntaxTree|D[OneMethodSyntaxTreeAnalyzer];
-    C-->|OneMethodCSProj|E[OneMethodCSProjAnalyzer];
-    C-->|InterproceduralCSProj|F[InterproceduralCSProjAnalyzer];
-    C-->|InterproceduralSolution|G[InterproceduralSolutionAnalyzer];
-    C-->|InterproceduralOneSolution|L[InterproceduralOneSolutionAnalyzer];
+    C-->|OneMethodSyntaxTree|D([OneMethodSyntaxTreeAnalyzer]);
+    C-->|OneMethodCSProj|E([OneMethodCSProjAnalyzer]);
+    C-->|InterproceduralCSProj|F([InterproceduralCSProjAnalyzer]);
+    C-->|InterproceduralSolution|G([InterproceduralSolutionAnalyzer]);
     D-->H[Create report from Diagnostics];
     E-->H;
     F-->H;
     G-->H;
-    L-->H;
     H-->I[End]
 ```
 
@@ -76,9 +84,6 @@ flowchart LR;
                                    in config.json file) for each project separately, able to decide trivial conditional statements.
      InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is
                                    defined in config.json file) for each solution separately, able to decide trivial conditional statements.
-     InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing
-                                   them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)
-                                   at 1 universaly created solution, able to decide trivial conditional statements.
 --config:
      any valid path to valid config.json (configures rules for taint variables propagation).
 --result:
@@ -112,15 +117,11 @@ It must be `*.json` file.
   ],
   "sinkMethods": [
     "NameOfTheSinkMethod1",
-    "NameOfTheSinkMethod2",
-    "NameOfTheSinkMethod3",
-    "NameOfTheSinkMethod4",
-    "NameOfTheSinkMethod5"
+    "NameOfTheSinkMethod2"
   ],
   "cleaningMethods": [
     "NameOfTheCleaningMethod1",
-    "NameOfTheCleaningMethod2",
-    "NameOfTheCleaningMethod3"
+    "NameOfTheCleaningMethod2"
   ]
 }
 ```
