@@ -36,23 +36,24 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             int numberOfSolutionFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedSolutionFilesSoFar = 0;
 
-            Console.WriteLine(numberOfSolutionFilesUnderThisRepository);
-            foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
+            foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
-                // skip all blacklisted .csproj files
-                if (excludeSubpaths.Any(x => filePath.Contains(x)))
+                // skip all blacklisted .sln files
+                if (excludeSubpaths.Any(x => solutionFilePath.Contains(x)))
                 {
-                    diagnostics.PathsOfSkippedCSProjects.Add(filePath);
+                    diagnostics.PathsOfSkippedCSProjects.Add(solutionFilePath);
                 }
                 else
                 {
-                    Console.WriteLine("currently scanned .sln: " + filePath);
+                    Console.WriteLine("currently scanned .sln: " + solutionFilePath);
                     Console.WriteLine(numberOfScannedSolutionFilesSoFar + " / " + numberOfSolutionFilesUnderThisRepository + " .sln files scanned");
-                    ScanSolution(filePath).Wait();
+                    ScanSolution(solutionFilePath).Wait();
                     diagnostics.CSProjectScanResults.Add(csprojScanResult);
                 }
-
+                numberOfScannedSolutionFilesSoFar++;
             }
+
+            Console.WriteLine(numberOfScannedSolutionFilesSoFar + " / " + numberOfSolutionFilesUnderThisRepository + " .sln files scanned");
 
             diagnostics.DiagnosticsEndTime = DateTime.Now;
 
@@ -66,7 +67,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                 Solution solution = await workspace.OpenSolutionAsync(solutionPath);
                 foreach(Project project in solution.Projects)
                 {
-                    Console.WriteLine(project.FilePath);
+                    Console.WriteLine("    + project: " + project.FilePath);
                     ScanCSProj(project, solution).Wait();
                 }
             }
@@ -81,15 +82,14 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
             {
                 csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
-                Console.WriteLine(syntaxTree.FilePath);
-                SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree, solution);
+                SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree, solution, compilation);
                 csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
             }
 
             csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
         }
 
-        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Solution solution)
+        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Solution solution, Compilation compilation)
         {
             SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
@@ -97,7 +97,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             {
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules, true)) continue;
 
-                MethodScanResult methodScanResult = InterproceduralSolutionScanMethod(methodSyntax, solution);
+                MethodScanResult methodScanResult = InterproceduralSolutionScanMethod(methodSyntax, solution, compilation);
 
                 // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing monorepository
                 if (methodScanResult.Hits > 0)
@@ -125,11 +125,168 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             return syntaxTreeScanResult;
         }
 
-        private MethodScanResult InterproceduralSolutionScanMethod(MethodDeclarationSyntax methodSyntax, Solution solution)
+        private MethodScanResult InterproceduralSolutionScanMethod(MethodDeclarationSyntax methodSyntax, Solution solution, Compilation compilation)
         {
-            MethodScanResult methodScanResult = new MethodScanResult();
-            Console.WriteLine(methodSyntax.Identifier.ToString());
+            MethodScanResult methodScanResult = ConductScanOfTheInitialMethod(methodSyntax);
+            SemanticModel semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
+            IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
+            
+            methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
+            List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
+            List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
+
+            // n-level BFS solution interprocedural analysis
+            for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
+            {
+                List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlockInSolutionAsync(currentLevelBlocks, methodScanResult, solution, taintPropagationRules);
+               
+                foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
+                {
+                    semanticModel = invocation.compilation.GetSemanticModel(invocation.InvocationExpression.SyntaxTree, ignoreAccessibility: false);
+
+                    MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
+
+                    if (parent == null) continue;
+
+                    methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
+                    methodScanResult.BodiesOfCallers.Add(parent.ToString());
+                    methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
+
+                    Tainted tainted = new Tainted()
+                    {
+                        TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
+                        TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
+                    };
+
+                    FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
+
+                    if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
+                    {
+                        methodScanResult.AppendEvidence("ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.");
+                    }
+                    else
+                    {
+                        nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
+                    }
+                }
+                
+
+                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
+                // will never be cleaned.
+                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WITHOUT ANY CALLERS. THEREFORE, ITS PARAMETERS ARE UNCLEANABLE.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+
+                currentLevelBlocks = nextLevelBlocks;
+                nextLevelBlocks = new List<LevelBlock>();
+
+                //all tainted parameters are cleaned
+                if (currentLevelBlocks.Count() == 0)
+                {
+                    methodScanResult.AppendEvidence("ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED.");
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+            }
+
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
+
+
+        private MethodScanResult ConductScanOfTheInitialMethod(MethodDeclarationSyntax methodSyntax)
+        {
+            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            methodScanResult.AppendCaller("level | method");
+            methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: 1 ");
+
+            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            methodScanResult.Sinks = (short)invocations.Count();
+
+            Tainted taintedMethod = new Tainted()
+            {
+                TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+            };
+
+            // follows data flow inside method for each sink invocation from sink invocation to source
+            foreach (var invocation in invocations)
+            {
+                Tainted taintedInvocation = new Tainted()
+                {
+                    TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+                    TaintedInvocationArguments = new int[invocation.ArgumentList.Arguments.Count()]
+                };
+
+                FollowDataFlow(methodSyntax, invocation, methodScanResult, taintedInvocation);
+
+                for (int i = 0; i < taintedMethod.TaintedMethodParameters.Length; i++)
+                {
+                    taintedMethod.TaintedMethodParameters[i] += taintedInvocation.TaintedMethodParameters[i];
+                }
+            }
+
+            methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
+            return methodScanResult;
+        }
+
+        private void FollowDataFlow(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, Tainted tainted, int[] taintedMethodParameters = null, List<SyntaxNode> visitedNodes = null, int level = 0)
+        {
+            if (visitedNodes == null)
+            {
+                visitedNodes = new List<SyntaxNode>();
+            }
+            else if (visitedNodes.Contains(currentNode))
+            {
+                result.AppendEvidence(new string(' ', level * 2) + "HALT (Node already visited)");
+                return;
+            }
+
+            visitedNodes.Add(currentNode);
+            result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
+            level += 1;
+
+            SyntaxNode[] nextLevelNodes = null;
+
+            if (currentNode is InvocationExpressionSyntax)
+                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax)currentNode, result, level, taintPropagationRules);
+            else if (currentNode is ObjectCreationExpressionSyntax)
+                nextLevelNodes = tableOfRules.SolveObjectCreationExpression((ObjectCreationExpressionSyntax)currentNode);
+            else if (currentNode is AssignmentExpressionSyntax)
+                nextLevelNodes = tableOfRules.SolveAssignmentExpression((AssignmentExpressionSyntax)currentNode);
+            else if (currentNode is VariableDeclaratorSyntax)
+                nextLevelNodes = tableOfRules.SolveVariableDeclarator((VariableDeclaratorSyntax)currentNode);
+            else if (currentNode is ArgumentSyntax)
+                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
+            else if (currentNode is IdentifierNameSyntax)
+                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
+            else if (currentNode is ConditionalExpressionSyntax)
+                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode, result, level).Result;
+            else if (currentNode is LiteralExpressionSyntax)
+                tableOfRules.SolveLiteralExpression(result, level);
+            else
+                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
+
+            if (nextLevelNodes != null)
+            {
+                for (int i = 0; i < nextLevelNodes.Length; i++)
+                {
+                    // investigate only the origin of arguments which were previously tainted as method parameters
+                    if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0)) continue;
+
+                    int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
+
+                    FollowDataFlow(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
+
+                    // for the first invocation only
+                    // for the parent's tainted method parameters only
+                    // if following the data flow increased the number of tainted method parameters, it means that current argument of this invocationNode should be tainted
+                    if (level == 1 && (taintedMethodParameters == null || taintedMethodParameters[i] > 0) && numberOfTaintedMethodParametersBefore < tainted.TaintedMethodParameters.Count(num => num != 0)) tainted.TaintedInvocationArguments[i] += 1;
+                }
+            }
+        }
+
     }
 }
