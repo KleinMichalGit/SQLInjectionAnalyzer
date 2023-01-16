@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
+    <Compile Include="Analyzers\InterproceduralSolution\InterproceduralSolutionAnalyzer.cs" />
     <Compile Include="Analyzers\TableOfRules.cs" />
     <Compile Include="DiagnosticsInitializer.cs" />
     <Compile Include="GlobalHelper.cs" />

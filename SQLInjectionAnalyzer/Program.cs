@@ -5,6 +5,7 @@ using InputService;
 using Model;
 using Model.Rules;
 using OutputService;
+using SQLInjectionAnalyzer.Analyzers.InterproceduralSolution;
 
 namespace SQLInjectionAnalyzer
 {
@@ -71,6 +72,9 @@ namespace SQLInjectionAnalyzer
                         break;
                     case ScopeOfAnalysis.InterproceduralCSProj:
                         analyzer = new InterproceduralCSProjAnalyzer();
+                        break;
+                    case ScopeOfAnalysis.InterproceduralSolution:
+                        analyzer = new InterproceduralSolutionAnalyzer();
                         break;
                     default:
                         throw new AnalysisException("not implemented yet");
