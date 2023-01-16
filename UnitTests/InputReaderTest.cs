@@ -45,7 +45,7 @@ namespace UnitTests
             Assert.IsTrue(isUnique);
 
             //when all mandatory arguments are specified but one of them is twice, it is not unique
-            args = new string[] { "--path=./a/b", "--path=./d/", "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/" };
+            args = new string[] { "--path=./a/b", "--path=./d/", "--scope-of-analysis=InterproceduralCSProj", "--config=./c/d/config.json", "--result=./x/y/z/" };
             isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(isUnique);
         }
@@ -104,17 +104,17 @@ namespace UnitTests
             Assert.IsFalse(mandatoryArgumentsArePresent);
 
             //--path is missing
-            args = new string[] { "--scope-of-analysis=Simple", "--config=./c/d/config.json", "--result=./x/y/z/" };
+            args = new string[] { "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/" };
             mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(mandatoryArgumentsArePresent);
 
             //--path and config are missing
-            args = new string[] { "--scope-of-analysis=Simple", "--result=./x/y/z/" };
+            args = new string[] { "--scope-of-analysis=OneMethodSyntaxTree", "--result=./x/y/z/" };
             mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(mandatoryArgumentsArePresent);
 
             //--path, config, and result are missing
-            args = new string[] { "--scope-of-analysis=Simple" };
+            args = new string[] { "--scope-of-analysis=OneMethodSyntaxTree" };
             mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(mandatoryArgumentsArePresent);
         }
@@ -146,11 +146,6 @@ namespace UnitTests
 
             //scope is defined as InterproceduralSolution
             args = new string[] { "--scope-of-analysis=InterproceduralSolution" };
-            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
-            Assert.IsTrue(scopeIsDefinedCorrectly);
-
-            //scope is defined as InterproceduralOneSolution
-            args = new string[] { "--scope-of-analysis=InterproceduralOneSolution" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(scopeIsDefinedCorrectly);
 
@@ -258,12 +253,6 @@ namespace UnitTests
             argument = "InterproceduralSolution";
             receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
             expected = ScopeOfAnalysis.InterproceduralSolution;
-            Assert.AreEqual(expected, receivedValue);
-
-            //get InterproceduralOneSolution Scope
-            argument = "InterproceduralOneSolution";
-            receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
-            expected = ScopeOfAnalysis.InterproceduralOneSolution;
             Assert.AreEqual(expected, receivedValue);
         }
 

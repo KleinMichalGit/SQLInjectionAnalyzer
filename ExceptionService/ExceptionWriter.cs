@@ -38,19 +38,16 @@ namespace ExceptionService
                                 "     any valid path to the folder which should be analysed\n" +
                                 "--scope-of-analysis:\n" +
                                 "     OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,\n" +
-                                "                                   without compiling .csproj files, without performing interprocedural analysis, every block of code is\n" +
-                                "                                   considered as reachable (very fast but very inacurate).\n" +
-                                "     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Every block of code is considered\n" +
-                                "                                   as reachable. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis\n" +
+                                "                                   without compiling .csproj files, without performing interprocedural analysis, able to decide trivial\n" +
+                                "                                   conditional statements (very fast but very inaccurate).\n" +
+                                "     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as\n" +
+                                "                                   OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis\n" +
                                 "                                   serves only to investigate how much time is needed for compilation of all .csproj files.\n" +
+                                "                                   Able to decide trivial conditional statements.\n" +
                                 "     InterproceduralCSProj         Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined\n" +
-                                "                                   in config.json file) for each project separately, able to decide trivial problems when solving reachability problems.\n" +
+                                "                                   in config.json file) for each project separately, able to decide trivial conditional statements.\n" +
                                 "     InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is\n" +
-                                "                                   defined in config.json file) for each solution separately, able to decide trivial problems when solving\n" +
-                                "                                   reachability problems.\n" +
-                                "     InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing\n" +
-                                "                                   them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)\n" +
-                                "                                   at 1 universaly created solution, able to decide trivial problems when solving reachability problems.\n" +
+                                "                                   defined in config.json file) for each solution separately, able to decide trivial conditional statements.\n" +
                                 "--config:\n" +
                                 "     any valid path to valid config.json (configures rules for taint variables propagation)\n" +
                                 "--result:\n" +
