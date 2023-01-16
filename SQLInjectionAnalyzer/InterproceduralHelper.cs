@@ -102,8 +102,6 @@ namespace SQLInjectionAnalyzer
                             {
                                 if (block.MethodSymbol.Parameters.Count() == inv.ArgumentList.Arguments.Count())
                                 {
-                                    Console.WriteLine("invocation: " + inv.ToFullString());
-                                    Console.WriteLine(block.MethodSymbol.Name);
                                     block.NumberOfCallers += 1;
                                     allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters, compilation = compilation });
                                 }
@@ -134,9 +132,6 @@ namespace SQLInjectionAnalyzer
             {
                 name = name.Substring(name.LastIndexOf(".") + 1, name.Length - 1 - (name.LastIndexOf(".")));
             }
-
-            Console.WriteLine("Computed name: " + name + " for full name: " + fullName);
-
             return name;
         }
     }
