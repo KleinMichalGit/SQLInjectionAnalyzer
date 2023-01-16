@@ -75,7 +75,7 @@ flowchart LR;
 --scope-of-analysis:
      OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,
                                    without compiling .csproj files, without performing interprocedural analysis, able to decide trivial
-                                   conditional statements (very fast but very inacurate).
+                                   conditional statements (very fast but very inaccurate).
      OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as
                                    OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis
                                    serves only to investigate how much time is needed for compilation of all .csproj files.

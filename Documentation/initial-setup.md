@@ -60,9 +60,6 @@ in command line.
                                    in config.json file) for each project separately, able to decide trivial conditional statements.
      InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is
                                    defined in config.json file) for each solution separately, able to decide trivial conditional statements.
-     InterproceduralOneSolution    Creates 1 universal C# solution (*.sln) by compiling all C# project files (*.csproj) and referrencing
-                                   them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file)
-                                   at 1 universaly created solution, able to decide trivial conditional statements.
 --config:
      any valid path to valid config.json (configures rules for taint variables propagation).
 --result:

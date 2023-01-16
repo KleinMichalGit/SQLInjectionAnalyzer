@@ -14,7 +14,6 @@ The folder which contains all analyzer implementations.
 | `OneMethodCSProj`                   | Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis serves only to investigate how much time is needed for compilation of all .csproj files. Able to decide trivial conditional statements         |
 | `InterproceduralCSProj`             | Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined in config.json file) for each project separately, able to decide trivial conditional statements.                                                                                                            |
 | `InterproceduralSolution` | Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is defined in config.json file) for each solution separately, able to decide trivial conditional statements.                                                                                           |
-| `InterproceduralOneSolution` | Creates 1 universal C# solution (*.sln) by compiling all C# project files (.csproj) and referrencing them in the solution, performs n-level interprocedural analysis (where number n is defined in config.json file) at 1 universaly created solution, able to decide trivial conditional statements |
 
 ## How to create your own analyzer 
 1. go to SQLInjectionAnalyzer/Model/Scope.cs and add your own unique Scope of analysis value.
