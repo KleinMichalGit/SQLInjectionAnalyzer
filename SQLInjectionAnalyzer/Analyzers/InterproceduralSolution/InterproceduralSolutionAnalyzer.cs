@@ -26,16 +26,19 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
         private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
         private InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
-
+        private List<string> excludeSubpaths = new List<string>();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
+            this.excludeSubpaths = excludeSubpaths;
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralSolution);
 
             int numberOfSolutionFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedSolutionFilesSoFar = 0;
+            diagnostics.NumberOfSolutions = numberOfSolutionFilesUnderThisRepository;
+
 
             foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
@@ -44,13 +47,13 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                 // skip all blacklisted .sln files
                 if (excludeSubpaths.Any(x => solutionFilePath.Contains(x)))
                 {
-                    solutionScanResult.PathsOfSkippedCSProjects.Add(solutionFilePath);
+                    diagnostics.PathsOfSkippedSolutions.Add(solutionFilePath);
                 }
                 else
                 {
                     Console.WriteLine("currently scanned .sln: " + solutionFilePath);
                     Console.WriteLine(numberOfScannedSolutionFilesSoFar + " / " + numberOfSolutionFilesUnderThisRepository + " .sln files scanned");
-                    ScanSolution(solutionFilePath).Wait();
+                    ScanSolution(solutionFilePath, solutionScanResult).Wait();
                     solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
                 }
 
@@ -67,15 +70,21 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             return diagnostics;
         }
 
-        private async Task ScanSolution(string solutionPath)
+        private async Task ScanSolution(string solutionPath, SolutionScanResult solutionScanResult)
         {
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
                 Solution solution = await workspace.OpenSolutionAsync(solutionPath);
                 foreach(Project project in solution.Projects)
                 {
-                    Console.WriteLine("    + project: " + project.FilePath);
-                    ScanCSProj(project, solution).Wait();
+                    if (excludeSubpaths.Any(x => project.FilePath.Contains(x)))
+                    {
+                        solutionScanResult.PathsOfSkippedCSProjects.Add(project.FilePath);
+                    } else
+                    {
+                        Console.WriteLine("    + project: " + project.FilePath);
+                        ScanCSProj(project, solution).Wait();
+                    }
                 }
             }
         }

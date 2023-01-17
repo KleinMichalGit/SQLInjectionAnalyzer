@@ -84,6 +84,7 @@
     <Compile Include="DataExtractor.cs" />
     <Compile Include="OutputGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RazorOutput\ReportInterproceduralSolution.cs" />
     <Compile Include="RazorOutput\ReportInterproceduralCSProj.cs" />
     <Compile Include="RazorOutput\ReportOneMethodCSProj.cs" />
     <Compile Include="RazorOutput\ReportOneMethodSyntaxTree.cs" />

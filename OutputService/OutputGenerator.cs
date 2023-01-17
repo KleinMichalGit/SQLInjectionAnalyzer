@@ -106,6 +106,9 @@ namespace OutputService
                 case ScopeOfAnalysis.InterproceduralCSProj:
                     content = ReportInterproceduralCSProj.report;
                     break;
+                case ScopeOfAnalysis.InterproceduralSolution:
+                    content = ReportInterproceduralSolution.report;
+                    break;
                 default:
                     throw new OutputGeneratorException("not implemented yet");
             }
@@ -115,6 +118,9 @@ namespace OutputService
             string result = template.Run(new
             {
                 Diagnostics = diagnostics,
+                NumberOfAllSolutionFiles = dataExtractor.GetNumberOfAllSolutionFiles(),
+                NumberOfScannedSolutionFiles = dataExtractor.GetNumberOfScannedSolutionFiles(),
+                NumberOfSkippedSolutionFiles = dataExtractor.GetNumberOfSkippedSolutionFiles(),
                 NumberOfAllCSProjFiles = dataExtractor.GetNumberOfAllCSProjFiles(),
                 NumberOfScannedCSProjFiles = dataExtractor.GetNumberOfScannedCSProjFiles(),
                 NumberOfSkippedCSProjFiles = dataExtractor.GetNumberOfSkippedCSProjFiles(),

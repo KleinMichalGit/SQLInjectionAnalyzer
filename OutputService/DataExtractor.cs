@@ -4,6 +4,7 @@ using Model.Method;
 using Model.SyntaxTree;
 using Model;
 using Model.Solution;
+using System;
 
 namespace OutputService
 {
@@ -235,6 +236,28 @@ namespace OutputService
             }
 
             return result;
+        }
+
+        internal object GetNumberOfAllSolutionFiles()
+        {
+            return diagnostics.NumberOfSolutions;
+        }
+
+        internal object GetNumberOfScannedSolutionFiles()
+        {
+            int result = 0;
+
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                result += solutionScanResult.CSProjectScanResults.Count();
+            }
+
+            return result;
+        }
+
+        internal object GetNumberOfSkippedSolutionFiles()
+        {
+            return diagnostics.PathsOfSkippedSolutions.Count();
         }
     }
 }
