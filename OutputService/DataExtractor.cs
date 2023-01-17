@@ -238,6 +238,32 @@ namespace OutputService
             return result;
         }
 
+        /// <summary>
+        /// Gets the number of vulnerable methods in one particular solution
+        /// </summary>
+        /// <param name="csprojScanResult">Solution scan result from which the number of vulnerable methods will be counted.</param>
+        public int GetNumberOfVulnerableMethodsInSolution(SolutionScanResult solutionScanResult)
+        {
+            int result = 0;
+
+            foreach(CSProjectScanResult csprojScanResult in solutionScanResult.CSProjectScanResults)
+            {
+                foreach (SyntaxTreeScanResult syntaxTreeScanResult in csprojScanResult.SyntaxTreeScanResults)
+                {
+                    foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                    {
+                        if (methodScanResult.Hits > 0)
+                        {
+                            result++;
+                        }
+                    }
+                }
+            }
+            
+
+            return result;
+        }
+
         internal object GetNumberOfAllSolutionFiles()
         {
             return diagnostics.NumberOfSolutions;

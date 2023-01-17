@@ -127,80 +127,83 @@
             <h3>Vulnerable Methods Detailed Overview</h3>
             @foreach(var solutionScanResult in Model.Diagnostics.SolutionScanResults)
             {
-                <div class="card text-white bg-danger mb-3">
-                    <div class="card-header"><h5>Solution scan result</h5></div>
-                    <div class="card-body">
-                        <h5 class="card-title">Path: @solutionScanResult.Path</h5>
+                @if(Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInSolution(solutionScanResult) > 0)
+                {
+                    <div class="card text-white bg-danger mb-3">
+                        <div class="card-header"><h5>Solution scan result</h5></div>
+                        <div class="card-body">
+                            <h5 class="card-title">Path: @solutionScanResult.Path</h5>
 
-                        <p class="card-text">solution scan start time: @solutionScanResult.SolutionScanResultStartTime</p>
-                        <p class="card-text">solution scan end time: @solutionScanResult.SolutionScanResultEndTime</p>
-                        <p class="card-text">solution scan total time: @solutionScanResult.SolutionScanResultTotalTime</p>
-                    </div>
-                </div>
-                 @foreach(var csProjectScanResult in solutionScanResult.CSProjectScanResults)
-                 {
-                    @if (Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInCSProj(csProjectScanResult) > 0)
-                    {
-                        <div class="card text-white bg-dark mb-3">
-                            <div class="card-header"><h5>.csproj scan result</h5></div>
-                            <div class="card-body">
-                                <h5 class="card-title">Path: @csProjectScanResult.Path</h5>
-
-                                <p class="card-text">.csproj scan start time: @csProjectScanResult.CSProjectScanResultStartTime</p>
-                                <p class="card-text">.csproj scan end time: @csProjectScanResult.CSProjectScanResultEndTime</p>
-                                <p class="card-text">.csproj scan total time: @csProjectScanResult.CSProjectScanResultTotalTime</p>
-                            </div>
+                            <p class="card-text">solution scan start time: @solutionScanResult.SolutionScanResultStartTime</p>
+                            <p class="card-text">solution scan end time: @solutionScanResult.SolutionScanResultEndTime</p>
+                            <p class="card-text">solution scan total time: @solutionScanResult.SolutionScanResultTotalTime</p>
                         </div>
-
-                        @foreach (var syntaxTreeScanResult in csProjectScanResult.SyntaxTreeScanResults)
+                    </div>
+                     @foreach(var csProjectScanResult in solutionScanResult.CSProjectScanResults)
+                     {
+                        @if (Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInCSProj(csProjectScanResult) > 0)
                         {
-                            @if (Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInFile(syntaxTreeScanResult) > 0)
-                            {
-                                <div class="card bg-info mb-3">
-                                    <div class="card-header">
-                                        <h5>C# file scan report</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <h5>file path: @syntaxTreeScanResult.Path</h5>
-                                        <p>file scan start time: @syntaxTreeScanResult.SyntaxTreeScanResultStartTime</p>
-                                        <p>file scan end time: @syntaxTreeScanResult.SyntaxTreeScanResultEndTime</p>
-                                        <p>file scan total time: @syntaxTreeScanResult.SyntaxTreeScanResultTotalTime</p>
-                                    </div>
-                                </div>
-                            }
+                            <div class="card text-white bg-dark mb-3">
+                                <div class="card-header"><h5>.csproj scan result</h5></div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Path: @csProjectScanResult.Path</h5>
 
-                            @foreach (var methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                                    <p class="card-text">.csproj scan start time: @csProjectScanResult.CSProjectScanResultStartTime</p>
+                                    <p class="card-text">.csproj scan end time: @csProjectScanResult.CSProjectScanResultEndTime</p>
+                                    <p class="card-text">.csproj scan total time: @csProjectScanResult.CSProjectScanResultTotalTime</p>
+                                </div>
+                            </div>
+
+                            @foreach (var syntaxTreeScanResult in csProjectScanResult.SyntaxTreeScanResults)
                             {
-                                @if (methodScanResult.Hits > 0)
+                                @if (Model.RemoteDataExtractor.GetNumberOfVulnerableMethodsInFile(syntaxTreeScanResult) > 0)
                                 {
-                                    <div class="card bg-light mb-3">
+                                    <div class="card bg-info mb-3">
                                         <div class="card-header">
-                                            <h5>Method name: @methodScanResult.MethodName</h5>
-                                            <h5>Line number: @methodScanResult.LineNumber</h5>
-                                            <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
-                                            <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
-                                            @foreach (var sourceLabel in methodScanResult.SourceAreasLabels)
-                                            {
-                                                <span class="badge text-bg-warning">@sourceLabel</span>
-                                            }
+                                            <h5>C# file scan report</h5>
                                         </div>
                                         <div class="card-body">
-                                            <ul class="list-group list-group-flush bg-light">
-                                                <li class="list-group-item bg-light">
-                                                    <h6>n-level BFS Inteprocedural-callers tree</h6>
-                                                    <pre class="prettyprint bg-white">@methodScanResult.CallersTree</pre>
-                                                </li>
-                                                <li class="list-group-item bg-light">
-                                                    <h6>Method body</h6>
-                                                    <pre class="prettyprint bg-white">@methodScanResult.MethodBody</pre>
-                                                </li>
-                                                <li class="list-group-item bg-light">
-                                                    <h6>Evidence</h6>
-                                                    <pre class="prettyprint bg-white">@methodScanResult.Evidence</pre>
-                                                </li>
-                                            </ul>
+                                            <h5>file path: @syntaxTreeScanResult.Path</h5>
+                                            <p>file scan start time: @syntaxTreeScanResult.SyntaxTreeScanResultStartTime</p>
+                                            <p>file scan end time: @syntaxTreeScanResult.SyntaxTreeScanResultEndTime</p>
+                                            <p>file scan total time: @syntaxTreeScanResult.SyntaxTreeScanResultTotalTime</p>
                                         </div>
                                     </div>
+                                }
+
+                                @foreach (var methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                                {
+                                    @if (methodScanResult.Hits > 0)
+                                    {
+                                        <div class="card bg-light mb-3">
+                                            <div class="card-header">
+                                                <h5>Method name: @methodScanResult.MethodName</h5>
+                                                <h5>Line number: @methodScanResult.LineNumber</h5>
+                                                <span class="badge text-bg-info">Sinks: @methodScanResult.Sinks</span>
+                                                <span class="badge text-bg-danger">Hits: @methodScanResult.Hits</span>
+                                                @foreach (var sourceLabel in methodScanResult.SourceAreasLabels)
+                                                {
+                                                    <span class="badge text-bg-warning">@sourceLabel</span>
+                                                }
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group list-group-flush bg-light">
+                                                    <li class="list-group-item bg-light">
+                                                        <h6>n-level BFS Inteprocedural-callers tree</h6>
+                                                        <pre class="prettyprint bg-white">@methodScanResult.CallersTree</pre>
+                                                    </li>
+                                                    <li class="list-group-item bg-light">
+                                                        <h6>Method body</h6>
+                                                        <pre class="prettyprint bg-white">@methodScanResult.MethodBody</pre>
+                                                    </li>
+                                                    <li class="list-group-item bg-light">
+                                                        <h6>Evidence</h6>
+                                                        <pre class="prettyprint bg-white">@methodScanResult.Evidence</pre>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    }
                                 }
                             }
                         }

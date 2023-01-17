@@ -77,6 +77,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                 Solution solution = await workspace.OpenSolutionAsync(solutionPath);
                 foreach(Project project in solution.Projects)
                 {
+                    solutionScanResult.NumberOfCSProjFiles++;
                     if (excludeSubpaths.Any(x => project.FilePath.Contains(x)))
                     {
                         solutionScanResult.PathsOfSkippedCSProjects.Add(project.FilePath);
@@ -92,7 +93,13 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
         private async Task ScanCSProj(Project project, Solution solution)
         {
             csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(project.FilePath);
-            
+
+            if (project.FilePath.EndsWith(".vbproj"))
+            {
+                csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
+                return;
+            }
+
             Compilation compilation = await project.GetCompilationAsync();
 
             foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
