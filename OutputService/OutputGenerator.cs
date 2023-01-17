@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using OutputService.RazorOutput;
 using RazorEngine = RazorEngineCore.RazorEngine;
 using ExceptionService.ExceptionType;
+using Model.Solution;
 
 namespace OutputService
 {
@@ -158,67 +159,72 @@ namespace OutputService
                 File.WriteAllText("report.txt", sb.ToString());
                 return;
             }
+            sb.AppendLine("List of scanned .sln files: ");
 
-            sb.AppendLine("List of scanned .csproj files: ");
-
-            foreach (CSProjectScanResult csprojectScanResult in diagnostics.CSProjectScanResults)
+            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                if (dataExtractor.GetNumberOfVulnerableMethodsInCSProj(csprojectScanResult) == 0)
+                sb.AppendLine("List of scanned .csproj files: ");
+
+                foreach (CSProjectScanResult csprojectScanResult in solutionScanResult.CSProjectScanResults)
                 {
-                    continue;
-                }
-
-                sb.AppendLine();
-                sb.AppendLine("-----------------------------");
-                sb.AppendLine("path: " + csprojectScanResult.Path);
-                sb.AppendLine(".csproj scan start time: " + csprojectScanResult.CSProjectScanResultStartTime);
-                sb.AppendLine(".csproj scan end time: " + csprojectScanResult.CSProjectScanResultEndTime);
-                sb.AppendLine(".csproj scan total time: " + csprojectScanResult.CSProjectScanResultTotalTime);
-                sb.AppendLine("number of scanned files in this .csproj: " + csprojectScanResult.SyntaxTreeScanResults.Count());
-
-                sb.AppendLine();
-
-                sb.AppendLine("List of scanned files: ");
-
-                foreach (SyntaxTreeScanResult st in csprojectScanResult.SyntaxTreeScanResults)
-                {
-                    if (dataExtractor.GetNumberOfVulnerableMethodsInFile(st) == 0)
+                    if (dataExtractor.GetNumberOfVulnerableMethodsInCSProj(csprojectScanResult) == 0)
                     {
                         continue;
                     }
-                    sb.AppendLine("########################");
-                    sb.AppendLine("path: " + st.Path);
-                    sb.AppendLine("file scan start time: " + st.SyntaxTreeScanResultStartTime);
-                    sb.AppendLine("file scan end time: " + st.SyntaxTreeScanResultEndTime);
-                    sb.AppendLine("file scan total time: " + st.SyntaxTreeScanResultTotalTime);
-                    sb.AppendLine("number of scanned methods in this file: " + st.MethodScanResults.Count());
+
+                    sb.AppendLine();
+                    sb.AppendLine("-----------------------------");
+                    sb.AppendLine("path: " + csprojectScanResult.Path);
+                    sb.AppendLine(".csproj scan start time: " + csprojectScanResult.CSProjectScanResultStartTime);
+                    sb.AppendLine(".csproj scan end time: " + csprojectScanResult.CSProjectScanResultEndTime);
+                    sb.AppendLine(".csproj scan total time: " + csprojectScanResult.CSProjectScanResultTotalTime);
+                    sb.AppendLine("number of scanned files in this .csproj: " + csprojectScanResult.SyntaxTreeScanResults.Count());
 
                     sb.AppendLine();
 
-                    sb.AppendLine("List of vulnerabilities in this file: ");
+                    sb.AppendLine("List of scanned files: ");
 
-                    foreach (MethodScanResult methodScanResult in st.MethodScanResults)
+                    foreach (SyntaxTreeScanResult st in csprojectScanResult.SyntaxTreeScanResults)
                     {
-                        if (methodScanResult.Hits > 0)
+                        if (dataExtractor.GetNumberOfVulnerableMethodsInFile(st) == 0)
                         {
-                            sb.AppendLine();
-                            sb.AppendLine("method name: " + methodScanResult.MethodName);
-                            sb.AppendLine("method implementation line number: " + methodScanResult.LineNumber);
-                            sb.AppendLine("hits: " + methodScanResult.Hits + ", sinks: " + methodScanResult.Hits);
-                            sb.AppendLine("method scan start time: " + methodScanResult.MethodScanResultStartTime);
-                            sb.AppendLine("method scan end time: " + methodScanResult.MethodScanResultEndTime);
-                            sb.AppendLine("method scan total time: " + methodScanResult.MethodScanResultTotalTime);
+                            continue;
+                        }
+                        sb.AppendLine("########################");
+                        sb.AppendLine("path: " + st.Path);
+                        sb.AppendLine("file scan start time: " + st.SyntaxTreeScanResultStartTime);
+                        sb.AppendLine("file scan end time: " + st.SyntaxTreeScanResultEndTime);
+                        sb.AppendLine("file scan total time: " + st.SyntaxTreeScanResultTotalTime);
+                        sb.AppendLine("number of scanned methods in this file: " + st.MethodScanResults.Count());
 
-                            sb.AppendLine("method body: ");
-                            sb.AppendLine(methodScanResult.MethodBody);
+                        sb.AppendLine();
 
-                            sb.AppendLine();
-                            sb.AppendLine("evidence: ");
-                            sb.AppendLine(methodScanResult.Evidence);
+                        sb.AppendLine("List of vulnerabilities in this file: ");
+
+                        foreach (MethodScanResult methodScanResult in st.MethodScanResults)
+                        {
+                            if (methodScanResult.Hits > 0)
+                            {
+                                sb.AppendLine();
+                                sb.AppendLine("method name: " + methodScanResult.MethodName);
+                                sb.AppendLine("method implementation line number: " + methodScanResult.LineNumber);
+                                sb.AppendLine("hits: " + methodScanResult.Hits + ", sinks: " + methodScanResult.Hits);
+                                sb.AppendLine("method scan start time: " + methodScanResult.MethodScanResultStartTime);
+                                sb.AppendLine("method scan end time: " + methodScanResult.MethodScanResultEndTime);
+                                sb.AppendLine("method scan total time: " + methodScanResult.MethodScanResultTotalTime);
+
+                                sb.AppendLine("method body: ");
+                                sb.AppendLine(methodScanResult.MethodBody);
+
+                                sb.AppendLine();
+                                sb.AppendLine("evidence: ");
+                                sb.AppendLine(methodScanResult.Evidence);
+                            }
                         }
                     }
                 }
             }
+            
             File.WriteAllText(exportPath + "\\report.txt", sb.ToString());
         }
     }

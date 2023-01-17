@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
 using Model;
+using Model.Solution;
 
 namespace SQLInjectionAnalyzer
 {
@@ -20,7 +17,16 @@ namespace SQLInjectionAnalyzer
             return diagnostics;
         }
 
-        public CSProjectScanResult InitialiseScanResult(string directoryPath)
+        public SolutionScanResult InitializeSolutionScanResult(string solutionPath)
+        {
+            SolutionScanResult solutionScanResult = new SolutionScanResult();
+            solutionScanResult.SolutionScanResultStartTime = DateTime.Now;
+            solutionScanResult.Path = solutionPath;
+
+            return solutionScanResult;
+        }
+
+        public CSProjectScanResult InitialiseCSProjectScanResult(string directoryPath)
         {
             CSProjectScanResult scanResult = new CSProjectScanResult();
             scanResult.CSProjectScanResultStartTime = DateTime.Now;

@@ -8,7 +8,7 @@ using Model.SyntaxTree;
 using OutputService;
 using SQLInjectionAnalyzer;
 using FluentAssertions;
-
+using Model.Solution;
 
 namespace UnitTests
 {
@@ -49,9 +49,19 @@ namespace UnitTests
             // times of analyses do not have to be equal, since there is no way multiple analyses of the same code would take the same time
             // paths do not have to be equal, since they depend on the environment
             expected.ScopeOfAnalysis.Should().Be(actual.ScopeOfAnalysis);
-            expected.NumberOfCSProjFiles.Should().Be(actual.NumberOfCSProjFiles);
-            expected.CSProjectScanResults.Count().Should().Be(actual.CSProjectScanResults.Count());
+            expected.NumberOfSolutions.Should().Be(actual.NumberOfSolutions);
+            expected.SolutionScanResults.Count().Should().Be(actual.SolutionScanResults.Count());
 
+            for(int i = 0; i < expected.SolutionScanResults.Count(); i++)
+            {
+                TwoSolutionScanResultsShouldBeEqual(expected.SolutionScanResults[i], actual.SolutionScanResults[i]);
+            }
+            
+        }
+
+        private void TwoSolutionScanResultsShouldBeEqual(SolutionScanResult expected, SolutionScanResult actual)
+        {
+            expected.CSProjectScanResults.Count().Should().Be(actual.CSProjectScanResults.Count());
 
             for (int i = 0; i < expected.CSProjectScanResults.Count(); i++)
             {

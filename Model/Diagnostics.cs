@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Model.CSProject;
+using Model.Solution;
 
 namespace Model
 {
@@ -37,26 +37,26 @@ namespace Model
         public TimeSpan DiagnosticsTotalTime { get { return DiagnosticsEndTime - DiagnosticsStartTime; } }
 
         /// <summary>
-        /// Gets or sets the list of separate .csproject scan results. The analysis of every single .csproj file <see cref="CSProjectScanResult"/>
+        /// Gets or sets the list of separate .sln scan results. The analysis of every single .sln file <see cref="SolutionScanResult"/>
         /// is stored here.
         /// </summary>
-        public List<CSProjectScanResult> CSProjectScanResults { get; set; } = new List<CSProjectScanResult>();
+        public List<SolutionScanResult> SolutionScanResults { get; set; } = new List<SolutionScanResult>();
 
         /// <summary>
-        /// Gets or sets the paths of all skipped *csproj files. For example, the .csproj file
+        /// Gets or sets the paths of all skipped .sln files. For example, the .sln file
         /// may be skipped if its file path is set to be omitted on input.
         /// </summary>
         /// <value>
         /// The paths of skipped csprojects.
         /// </value>
-        public List<String> PathsOfSkippedCSProjects { get; set; } = new List<String>();
+        public List<String> PathsOfSkippedSolutions { get; set; } = new List<String>();
 
         /// <summary>
-        /// Gets or sets the number of all *.csproj files under the analysed directory.
+        /// Gets or sets the number of all .sln files under the analysed directory.
         /// </summary>
         /// <value>
-        /// The number of all *.csproj files.
+        /// The number of all .sln files.
         /// </value>
-        public int NumberOfCSProjFiles { get; set; } = 0;
+        public int NumberOfSolutions { get; set; } = 0;
     }
 }

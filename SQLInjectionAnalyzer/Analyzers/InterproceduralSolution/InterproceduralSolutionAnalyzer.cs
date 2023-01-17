@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Model.SyntaxTree;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Model.Method;
+using Model.Solution;
 
 namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 {
@@ -38,18 +39,24 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 
             foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
+                SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(solutionFilePath);
+
                 // skip all blacklisted .sln files
                 if (excludeSubpaths.Any(x => solutionFilePath.Contains(x)))
                 {
-                    diagnostics.PathsOfSkippedCSProjects.Add(solutionFilePath);
+                    solutionScanResult.PathsOfSkippedCSProjects.Add(solutionFilePath);
                 }
                 else
                 {
                     Console.WriteLine("currently scanned .sln: " + solutionFilePath);
                     Console.WriteLine(numberOfScannedSolutionFilesSoFar + " / " + numberOfSolutionFilesUnderThisRepository + " .sln files scanned");
                     ScanSolution(solutionFilePath).Wait();
-                    diagnostics.CSProjectScanResults.Add(csprojScanResult);
+                    solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
                 }
+
+                solutionScanResult.SolutionScanResultEndTime = DateTime.Now;
+
+                diagnostics.SolutionScanResults.Add(solutionScanResult);
                 numberOfScannedSolutionFilesSoFar++;
             }
 
@@ -75,7 +82,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 
         private async Task ScanCSProj(Project project, Solution solution)
         {
-            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(project.FilePath);
+            csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(project.FilePath);
             
             Compilation compilation = await project.GetCompilationAsync();
 
