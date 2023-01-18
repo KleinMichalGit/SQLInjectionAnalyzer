@@ -11,8 +11,7 @@ using Model.SyntaxTree;
 using Model;
 using System.Collections.Generic;
 using SQLInjectionAnalyzer.Analyzers;
-using static Humanizer.In;
-using System.Threading.Tasks;
+using Model.Solution;
 
 namespace SQLInjectionAnalyzer
 {
@@ -50,29 +49,31 @@ namespace SQLInjectionAnalyzer
             int numberOfCSFilesUnderThisDirectory = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfProcessedFiles = 0;
 
-            CSProjectScanResult scanResult = diagnosticsInitializer.InitialiseScanResult(directoryPath);
+            SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
+            CSProjectScanResult csProjScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(directoryPath);
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
-                scanResult.NamesOfAllCSFilesInsideThisCSProject.Add(filePath);
+                csProjScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(filePath);
 
                 // skip scanning blacklisted files
                 if (!excludeSubpaths.Any(subPath => filePath.Contains(subPath)))
                 {
                     Console.WriteLine("currently scanned file: " + filePath);
                     Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
-                    scanResult.SyntaxTreeScanResults.Add(ScanFile(filePath));
+                    csProjScanResult.SyntaxTreeScanResults.Add(ScanFile(filePath));
                 }
                 numberOfProcessedFiles++;
             }
 
             Console.WriteLine(numberOfProcessedFiles + " / " + numberOfCSFilesUnderThisDirectory + " .cs files scanned");
 
-            scanResult.CSProjectScanResultEndTime = DateTime.Now;
+            csProjScanResult.CSProjectScanResultEndTime = DateTime.Now;
 
-            if (scanResult.SyntaxTreeScanResults.Count() > 0)
+            if (csProjScanResult.SyntaxTreeScanResults.Count() > 0)
             {
-                diagnostics.CSProjectScanResults.Add(scanResult);
+                solutionScanResult.CSProjectScanResults.Add(csProjScanResult);
+                diagnostics.SolutionScanResults.Add(solutionScanResult);
             }
             diagnostics.DiagnosticsEndTime = DateTime.Now;
             return diagnostics;

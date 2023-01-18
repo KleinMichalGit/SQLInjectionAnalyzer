@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Model.SyntaxTree;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Model.Method;
+using Model.Solution;
 
 namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 {
@@ -25,31 +26,40 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
         private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
         private InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
-
+        private List<string> excludeSubpaths = new List<string>();
 
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
+            this.excludeSubpaths = excludeSubpaths;
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
-            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralSolution);
 
             int numberOfSolutionFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedSolutionFilesSoFar = 0;
+            diagnostics.NumberOfSolutions = numberOfSolutionFilesUnderThisRepository;
+
 
             foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
+                SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(solutionFilePath);
+
                 // skip all blacklisted .sln files
                 if (excludeSubpaths.Any(x => solutionFilePath.Contains(x)))
                 {
-                    diagnostics.PathsOfSkippedCSProjects.Add(solutionFilePath);
+                    diagnostics.PathsOfSkippedSolutions.Add(solutionFilePath);
                 }
                 else
                 {
                     Console.WriteLine("currently scanned .sln: " + solutionFilePath);
                     Console.WriteLine(numberOfScannedSolutionFilesSoFar + " / " + numberOfSolutionFilesUnderThisRepository + " .sln files scanned");
-                    ScanSolution(solutionFilePath).Wait();
-                    diagnostics.CSProjectScanResults.Add(csprojScanResult);
+                    ScanSolution(solutionFilePath, solutionScanResult).Wait();
+                    solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
                 }
+
+                solutionScanResult.SolutionScanResultEndTime = DateTime.Now;
+
+                diagnostics.SolutionScanResults.Add(solutionScanResult);
                 numberOfScannedSolutionFilesSoFar++;
             }
 
@@ -60,23 +70,36 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             return diagnostics;
         }
 
-        private async Task ScanSolution(string solutionPath)
+        private async Task ScanSolution(string solutionPath, SolutionScanResult solutionScanResult)
         {
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
                 Solution solution = await workspace.OpenSolutionAsync(solutionPath);
                 foreach(Project project in solution.Projects)
                 {
-                    Console.WriteLine("    + project: " + project.FilePath);
-                    ScanCSProj(project, solution).Wait();
+                    solutionScanResult.NumberOfCSProjFiles++;
+                    if (excludeSubpaths.Any(x => project.FilePath.Contains(x)))
+                    {
+                        solutionScanResult.PathsOfSkippedCSProjects.Add(project.FilePath);
+                    } else
+                    {
+                        Console.WriteLine("    + project: " + project.FilePath);
+                        ScanCSProj(project, solution).Wait();
+                    }
                 }
             }
         }
 
         private async Task ScanCSProj(Project project, Solution solution)
         {
-            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(project.FilePath);
-            
+            csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(project.FilePath);
+
+            if (project.FilePath.EndsWith(".vbproj"))
+            {
+                csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
+                return;
+            }
+
             Compilation compilation = await project.GetCompilationAsync();
 
             foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)

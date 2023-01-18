@@ -3,6 +3,8 @@ using Model.CSProject;
 using Model.Method;
 using Model.SyntaxTree;
 using Model;
+using Model.Solution;
+using System;
 
 namespace OutputService
 {
@@ -45,7 +47,14 @@ namespace OutputService
         /// </summary>
         public int GetNumberOfAllCSProjFiles()
         {
-            return diagnostics.NumberOfCSProjFiles;
+            int output = 0;
+
+            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                output += solutionScanResult.NumberOfCSProjFiles;
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -53,7 +62,13 @@ namespace OutputService
         /// </summary>
         public int GetNumberOfScannedCSProjFiles()
         {
-            return diagnostics.CSProjectScanResults.Count();
+            int output = 0;
+
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                output += solutionScanResult.CSProjectScanResults.Count();
+            }
+            return output;
         }
 
         /// <summary>
@@ -61,7 +76,14 @@ namespace OutputService
         /// </summary>
         public int GetNumberOfSkippedCSProjFiles()
         {
-            return diagnostics.PathsOfSkippedCSProjects.Count();
+            int output = 0;
+
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                output += solutionScanResult.PathsOfSkippedCSProjects.Count();
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -71,10 +93,12 @@ namespace OutputService
         public int GetNumberOfAllCSFiles()
         {
             int result = 0;
-
-            foreach (CSProjectScanResult scanResult in diagnostics.CSProjectScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                result += scanResult.NamesOfAllCSFilesInsideThisCSProject.Count();
+                foreach (CSProjectScanResult scanResult in solutionScanResult.CSProjectScanResults)
+                {
+                    result += scanResult.NamesOfAllCSFilesInsideThisCSProject.Count();
+                }
             }
 
             return result;
@@ -87,11 +111,14 @@ namespace OutputService
         {
             int result = 0;
 
-            foreach (CSProjectScanResult scanResult in diagnostics.CSProjectScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                foreach (SyntaxTreeScanResult syntaxTreeScanResult in scanResult.SyntaxTreeScanResults)
+                foreach (CSProjectScanResult csProjScanResult in solutionScanResult.CSProjectScanResults)
                 {
-                    result += syntaxTreeScanResult.MethodScanResults.Count();
+                    foreach (SyntaxTreeScanResult syntaxTreeScanResult in csProjScanResult.SyntaxTreeScanResults)
+                    {
+                        result += syntaxTreeScanResult.MethodScanResults.Count();
+                    }
                 }
             }
 
@@ -104,12 +131,14 @@ namespace OutputService
         public int GetNumberOfSkippedMethods()
         {
             int result = 0;
-
-            foreach (CSProjectScanResult scanResult in diagnostics.CSProjectScanResults)
+            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                foreach (SyntaxTreeScanResult syntaxTreeScanResult in scanResult.SyntaxTreeScanResults)
+                foreach (CSProjectScanResult csProjScanResult in solutionScanResult.CSProjectScanResults)
                 {
-                    result += syntaxTreeScanResult.NumberOfSkippedMethods;
+                    foreach (SyntaxTreeScanResult syntaxTreeScanResult in csProjScanResult.SyntaxTreeScanResults)
+                    {
+                        result += syntaxTreeScanResult.NumberOfSkippedMethods;
+                    }
                 }
             }
 
@@ -123,16 +152,20 @@ namespace OutputService
         {
             int result = 0;
 
-            foreach (CSProjectScanResult scanResult in diagnostics.CSProjectScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                foreach (SyntaxTreeScanResult syntaxTreeScanResult in scanResult.SyntaxTreeScanResults)
+                foreach (CSProjectScanResult csProjScanResult in solutionScanResult.CSProjectScanResults)
                 {
-                    foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                    foreach (SyntaxTreeScanResult syntaxTreeScanResult in csProjScanResult.SyntaxTreeScanResults)
                     {
-                        result += methodScanResult.Sinks;
+                        foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                        {
+                            result += methodScanResult.Sinks;
+                        }
                     }
                 }
             }
+            
 
             return result;
         }
@@ -144,15 +177,18 @@ namespace OutputService
         {
             int result = 0;
 
-            foreach (CSProjectScanResult scanResult in diagnostics.CSProjectScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
-                foreach (SyntaxTreeScanResult syntaxTreeScanResult in scanResult.SyntaxTreeScanResults)
+                foreach (CSProjectScanResult scanResult in solutionScanResult.CSProjectScanResults)
                 {
-                    foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                    foreach (SyntaxTreeScanResult syntaxTreeScanResult in scanResult.SyntaxTreeScanResults)
                     {
-                        if (methodScanResult.Hits > 0)
+                        foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
                         {
-                            result++;
+                            if (methodScanResult.Hits > 0)
+                            {
+                                result++;
+                            }
                         }
                     }
                 }
@@ -200,6 +236,54 @@ namespace OutputService
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the number of vulnerable methods in one particular solution
+        /// </summary>
+        /// <param name="csprojScanResult">Solution scan result from which the number of vulnerable methods will be counted.</param>
+        public int GetNumberOfVulnerableMethodsInSolution(SolutionScanResult solutionScanResult)
+        {
+            int result = 0;
+
+            foreach(CSProjectScanResult csprojScanResult in solutionScanResult.CSProjectScanResults)
+            {
+                foreach (SyntaxTreeScanResult syntaxTreeScanResult in csprojScanResult.SyntaxTreeScanResults)
+                {
+                    foreach (MethodScanResult methodScanResult in syntaxTreeScanResult.MethodScanResults)
+                    {
+                        if (methodScanResult.Hits > 0)
+                        {
+                            result++;
+                        }
+                    }
+                }
+            }
+            
+
+            return result;
+        }
+
+        internal object GetNumberOfAllSolutionFiles()
+        {
+            return diagnostics.NumberOfSolutions;
+        }
+
+        internal object GetNumberOfScannedSolutionFiles()
+        {
+            int result = 0;
+
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                result += solutionScanResult.CSProjectScanResults.Count();
+            }
+
+            return result;
+        }
+
+        internal object GetNumberOfSkippedSolutionFiles()
+        {
+            return diagnostics.PathsOfSkippedSolutions.Count();
         }
     }
 }

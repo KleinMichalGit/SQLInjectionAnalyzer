@@ -15,6 +15,7 @@ using Model.Rules;
 using Model.SyntaxTree;
 using Model;
 using SQLInjectionAnalyzer.Analyzers;
+using Model.Solution;
 
 namespace SQLInjectionAnalyzer
 {
@@ -46,31 +47,35 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
             Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+            
+            SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedCSProjFilesSoFar = 0;
 
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
-                diagnostics.NumberOfCSProjFiles++;
+                solutionScanResult.NumberOfCSProjFiles++;
 
                 // skip all blacklisted .csproj files
                 if (excludeSubpaths.Any(x => filePath.Contains(x)))
                 {
-                    diagnostics.PathsOfSkippedCSProjects.Add(filePath);
+                    solutionScanResult.PathsOfSkippedCSProjects.Add(filePath);
                 }
                 else
                 {
                     Console.WriteLine("currently scanned .csproj: " + filePath);
                     Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
                     ScanCSProj(filePath).Wait();
-                    diagnostics.CSProjectScanResults.Add(csprojScanResult);
+                    solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
                 }
 
                 numberOfScannedCSProjFilesSoFar++;
             }
 
             Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
+
+            diagnostics.SolutionScanResults.Add(solutionScanResult);
 
             diagnostics.DiagnosticsEndTime = DateTime.Now;
 
@@ -79,7 +84,7 @@ namespace SQLInjectionAnalyzer
 
         private async Task ScanCSProj(string csprojPath)
         {
-            csprojScanResult = diagnosticsInitializer.InitialiseScanResult(csprojPath);
+            csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(csprojPath);
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {

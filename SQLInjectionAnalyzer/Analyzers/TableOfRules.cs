@@ -122,7 +122,7 @@ namespace SQLInjectionAnalyzer.Analyzers
                     return new SyntaxNode[1] { currentNode.WhenFalse };
                 }
             }
-            catch (CompilationErrorException _)
+            catch (CompilationErrorException)
             {
                 // unable to evaluate the condition, therefore both blocks of conditional expression have to be investigated
                 result.AppendEvidence(new string(' ', level * 2) + "unsuccessfully evaluated condition (both blocks will be investigated).");
