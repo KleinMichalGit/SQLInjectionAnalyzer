@@ -29,5 +29,19 @@ namespace UnitTests.TaintPropagationRulesExamples
                 CleaningMethods = new List<string>()
             };
         }
+
+        public TaintPropagationRules GetRulesWithCleaningMethod()
+        {
+            return new TaintPropagationRules()
+            {
+                Level = 5,
+                SourceAreas = new List<SourceArea>(),
+                SinkMethods = new List<string>(),
+                CleaningMethods = new List<string>()
+                {
+                    "A",
+                }
+            };
+        }
     }
 }
