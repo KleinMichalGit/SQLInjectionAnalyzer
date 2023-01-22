@@ -3,6 +3,7 @@ The folder which contains all analyzer implementations.
 
 ## Directory structure
 - [InterproceduralCSProjAnalyzer](InterproceduralCSProjAnalyzer/InterproceduralCSProjAnalyzer.cs).
+- [InterproceduralSolutionAnalyzer](InterproceduralSolution/InterproceduralSolutionAnalyzer.cs).
 - [OneMethodCSProjAnalyzer](OneMethodCSProjAnalyzer/OneMethodCSProjAnalyzer.cs).
 - [OneMethodSyntaxTreeAnalyzer](OneMethodSyntaxTreeAnalyzer/OneMethodSyntaxTreeAnalyzer.cs).
 - [TableOfRules](TableOfRules.cs) - rules for tracking taint propagation variables.
