@@ -1,6 +1,5 @@
 # Source areas
 
-## What are source areas
 A `source area` is a badge with an informative character in a final `.html` report. It describes
 a path taken during investigation of the source of the callers of a vulnerable method.
 For example, if `at least 1` caller (recursively at least 1 caller of the caller, etc.) is located

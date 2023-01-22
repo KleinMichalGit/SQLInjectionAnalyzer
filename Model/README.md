@@ -2,6 +2,7 @@
 Data models for diagnostics, taint propagation rules and input.
 
 ## Directory structure
+- `Solution/` - data structure for solution scan result.
 - `CSProject/` - data structure for cs project scan result.
 - `Method/` - data structure for method scan result.
 - `Rules/` - rules for solving taint variables propagation.

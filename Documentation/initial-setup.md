@@ -2,7 +2,8 @@
 
 ## Clone
 Make sure you have enough free disk space.
-Building SQLInjectionAnalyzer involves downloading many packages. The recommendation is to dedicate at least 500 MB of free disk space for the repository.
+Building SQLInjectionAnalyzer involves downloading many packages. The recommendation is to dedicate at
+least 700 MB of free disk space for the repository.
 #### HTTPS
 ```
 git clone https://github.com/KleinMichalGit/SQLInjectionAnalyzer.git
@@ -70,10 +71,10 @@ in command line.
      informs about results in real-time.
 ```
 ## Configuration
-The file which specifies configuration rules for solving taint propagation problems is expected to have the following format.
+The file which specifies configuration rules for solving taint variable propagation problems is expected to have the following format.
 It must be `*.json` file.
 - level - maximal allowed height of BFS tree during `Interprocedural` analysis
-- sourceAreas - badges for method findings which should be added to the `.html` result file. label defines the badge which should be added, path defines the path of the file containing at least one method analysed during analysis.
+- sourceAreas - badges for method findings which should be added to the `.html` result file. `label` defines the badge which should be added, path defines the path of the file containing at least one method analysed during analysis.
 - sinkMethods - the names of the methods considered to be potentially dangerous when any non-parametrised parameter is passed to them.
 - cleaningMethods - the names of the methods considered to be clear. Therefore, if any tainted variable is passed to the calling of such method, it will automatically clean the tainted variable.
 
@@ -93,15 +94,11 @@ It must be `*.json` file.
   ],
   "sinkMethods": [
     "NameOfTheSinkMethod1",
-    "NameOfTheSinkMethod2",
-    "NameOfTheSinkMethod3",
-    "NameOfTheSinkMethod4",
-    "NameOfTheSinkMethod5"
+    "NameOfTheSinkMethod2"
   ],
   "cleaningMethods": [
     "NameOfTheCleaningMethod1",
-    "NameOfTheCleaningMethod2",
-    "NameOfTheCleaningMethod3"
+    "NameOfTheCleaningMethod2"
   ]
 }
 ```

@@ -1,13 +1,7 @@
 # Unit Tests
-Unit tests for all types of analyzers, config file reader and input reader.
+Unit tests for the rules in the table of rules, config file reader and input reader. E2E tests for OneMethodSyntaxTreeAnalyzer. 
 In this folder, there are also helpful tools for creating own unit tests.
 
-## What are Unit Tests
-"In computer programming, `unit testing` is a software testing method by 
-which individual units of source code sets of one or more computer 
-program modules together with associated control data, usage 
-procedures, and operating procedures are tested to determine 
-whether they are fit for use."[^1]
 ## How to add your own Unit Tests
 After creating your own implementation of an analyzer, or after modifying the existing
 functionality, please make sure the additional or changed functionality is
@@ -29,6 +23,12 @@ where `rules` are the rules you want to use for solving the taint variable propa
 you expect to receive from the analysis, and `excludeSubpaths` are the sub-paths which you want to skip during the analysis. The `Scenario`
 compares by `asserting` actual results, and expected results. The test scenario is successful if actual results are equal to expected results, otherwise it fails.
 
+### TableOfRulesTest.cs
+Tests each rule for solving taint variable propagation problems separately.
+
+### NodeFactory.cs
+Finds an `index-th` syntactic node in a file with a path `filePath`. Use it by calling a `T FindSyntaxNode<T>(string filePath, int index)`. 
+
 ### Config file examples
 `ConfigFileExamples/` folder contains both valid and invalid config files for testing. Feel free to use them, or create your own.
 
@@ -38,6 +38,7 @@ code we need some code which will serve as a material for unit tests.
 
 ### Expected diagnostics
 `ExpectedDiagnostics/` folder contains many `Diagnostics` which are used as `expectedDiagnostics` for `Test Scenario`.
+
 ### Taint propagation rules examples
 `TaintPropagationRulesExamples` folder contains a taint propagation rules creator which creates custom rules for solving 
 taint variable propagation equations.
@@ -56,6 +57,7 @@ The good practice is to always attach the evidence/output of the test into Test 
 - `TaintPropagationRulesExamples/` -  contains a creator of taint propagation rules used by unit tests.
 - `ScenarioFactory.cs` - contains helpful methods for creating test scenarios, and comparing diagnostic files. 
 - `ConfigFileReaderTest.cs` - tests for config file reader.
+- `InputReaderTest.cs` - tests for reading and validating input.
 - `OneMethodSyntaxTreeTest.cs` - tests for OneMethodSyntaxTree analyzer.
-
-[^1]: https://en.wikipedia.org/wiki/Unit_testing
+- `NodeFactory.cs` - finds a syntactic node in a file. The node is then used for testing the rules in the table of rules.
+- `TableOfRules.cs` - individual tests for each rule.
