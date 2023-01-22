@@ -149,10 +149,13 @@ namespace OutputService
             sb.AppendLine("Analysis start time: " + diagnostics.DiagnosticsStartTime);
             sb.AppendLine("Analysis end time: " + diagnostics.DiagnosticsEndTime);
             sb.AppendLine("Analysis total time: " + diagnostics.DiagnosticsTotalTime);
+            sb.AppendLine("Number of all .sln files in scanned directory: " + dataExtractor.GetNumberOfAllSolutionFiles());
+            sb.AppendLine("Number of compiled .sln files: " + dataExtractor.GetNumberOfScannedSolutionFiles());
+            sb.AppendLine("Number of skipped .sln files: " + dataExtractor.GetNumberOfSkippedSolutionFiles());
             sb.AppendLine("Number of all .csproj files in scanned directory: " + dataExtractor.GetNumberOfAllCSProjFiles());
-            sb.AppendLine("Number of scanned .csproj files: " + dataExtractor.GetNumberOfScannedCSProjFiles());
+            sb.AppendLine("Number of compiled .csproj files: " + dataExtractor.GetNumberOfScannedCSProjFiles());
             sb.AppendLine("Number of skipped .csproj files: " + dataExtractor.GetNumberOfSkippedCSProjFiles());
-            sb.AppendLine("Number of all .cs files in all scanned .csproj files: " + dataExtractor.GetNumberOfAllCSFiles());
+            sb.AppendLine("Number of all .cs files referred to in all compiled .csproj files: " + dataExtractor.GetNumberOfAllCSFiles());
             sb.AppendLine("Number of scanned methods: " + dataExtractor.GetNumberOfScannedMethods());
             sb.AppendLine("Number of skipped methods: " + dataExtractor.GetNumberOfSkippedMethods());
             sb.AppendLine("Number of all sink invocations: " + dataExtractor.GetNumberOfAllSinks());
