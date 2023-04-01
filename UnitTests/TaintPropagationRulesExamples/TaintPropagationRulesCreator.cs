@@ -9,7 +9,7 @@ namespace UnitTests.TaintPropagationRulesExamples
     /// </summary>
     public class TaintPropagationRulesCreator
     {
-        
+
         public TaintPropagationRules GetEmptyRules()
         {
             return new TaintPropagationRules();

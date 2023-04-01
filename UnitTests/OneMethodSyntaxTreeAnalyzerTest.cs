@@ -7,7 +7,8 @@ using UnitTests.TaintPropagationRulesExamples;
 namespace UnitTests
 {
     /// <summary>
-    /// OneMethodSyntaxTreeAnalyzerTest for testing OneMethodSyntaxTree Scope of analysis via OneMethodSyntaxTreeAnalyzer.
+    /// OneMethodSyntaxTreeAnalyzerTest for testing OneMethodSyntaxTree Scope of
+    /// analysis via OneMethodSyntaxTreeAnalyzer.
     /// </summary>
     [TestClass]
     public class OneMethodSyntaxTreeAnalyzerTest
@@ -66,8 +67,8 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// scenario where arguments of sink method are return values of
-        /// another methods (we follow the arguments of these another methods)
+        /// scenario where arguments of sink method are return values of another
+        /// methods (we follow the arguments of these another methods)
         /// </summary>
         [TestMethod]
         public void TestInvocationRules()
@@ -150,7 +151,8 @@ namespace UnitTests
         }
 
         /// <summary>
-        /// scenario for testing excludeSubpaths (that it really excludes these subpaths)
+        /// scenario for testing excludeSubpaths (that it really excludes these
+        /// subpaths)
         /// </summary>
         [TestMethod]
         public void TestExcludingPaths()

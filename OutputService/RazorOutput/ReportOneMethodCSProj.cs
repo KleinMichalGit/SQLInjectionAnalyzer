@@ -2,7 +2,6 @@
 {
     /// <summary>
     /// OutputService.RazorOutput <c>ReportOneMethodCSProj</c> class.
-    /// 
     /// <para>
     /// Template for OneMethodCSProj <see cref="ScopeOfAnalysis"/>
     /// </para>

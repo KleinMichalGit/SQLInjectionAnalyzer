@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Scripting;
 using Model.Method;
 using Model.Rules;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using ExceptionService.ExceptionType;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace SQLInjectionAnalyzer.Analyzers
 {
@@ -101,7 +99,7 @@ namespace SQLInjectionAnalyzer.Analyzers
                 {
                     result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
                     result.Hits++;
-                    if(tainted != null) tainted.TaintedMethodParameters[i] += 1;
+                    if (tainted != null) tainted.TaintedMethodParameters[i] += 1;
                 }
             }
             return null;
@@ -116,7 +114,8 @@ namespace SQLInjectionAnalyzer.Analyzers
                 {
                     result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as True (only 1 block will be investigated).");
                     return new SyntaxNode[1] { currentNode.WhenTrue };
-                } else
+                }
+                else
                 {
                     result.AppendEvidence(new string(' ', level * 2) + "successfully evaluated condition as False (only 1 block will be investigated).");
                     return new SyntaxNode[1] { currentNode.WhenFalse };

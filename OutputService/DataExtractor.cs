@@ -1,32 +1,29 @@
 ﻿using System.Linq;
+using Model;
 using Model.CSProject;
 using Model.Method;
-using Model.SyntaxTree;
-using Model;
 using Model.Solution;
-using System;
+using Model.SyntaxTree;
 
 namespace OutputService
 {
     /// <summary>
     /// OutputService <c>DataExtractor</c> class.
-    /// 
     /// <para>
     /// Class for extracting, and/or observing data from Diagnostics.
-    /// 
     /// </para>
     /// <para>
-    /// Contains <c>DataExtractor</c> constructor.
-    /// Contains <c>GetNumberOfAllCSProjFiles</c> method.
-    /// Contains <c>GetNumberOfScannedCSProjFiles</c> method.
-    /// Contains <c>GetNumberOfSkippedCSProjFiles</c> method.
-    /// Contains <c>GetNumberOfAllCSFiles</c> method.
-    /// Contains <c>GetNumberOfScannedMethods</c> method.
-    /// Contains <c>GetNumberOfSkippedMethods</c> method.
-    /// Contains <c>GetNumberOfAllSinks</c> method.
-    /// Contains <c>GetNumberOfVulnerableMethods</c> method.
-    /// Contains <c>GetNumberOfVulnerableMethodsInFile</c> method.
-    /// Contains <c>GetNumberOfVulnerableMethodsInCSProj</c> method.
+    /// Contains <c>DataExtractor</c> constructor. Contains
+    /// <c>GetNumberOfAllCSProjFiles</c> method. Contains
+    /// <c>GetNumberOfScannedCSProjFiles</c> method. Contains
+    /// <c>GetNumberOfSkippedCSProjFiles</c> method. Contains
+    /// <c>GetNumberOfAllCSFiles</c> method. Contains
+    /// <c>GetNumberOfScannedMethods</c> method. Contains
+    /// <c>GetNumberOfSkippedMethods</c> method. Contains
+    /// <c>GetNumberOfAllSinks</c> method. Contains
+    /// <c>GetNumberOfVulnerableMethods</c> method. Contains
+    /// <c>GetNumberOfVulnerableMethodsInFile</c> method. Contains
+    /// <c>GetNumberOfVulnerableMethodsInCSProj</c> method.
     /// </para>
     /// </summary>
     public class DataExtractor
@@ -36,7 +33,8 @@ namespace OutputService
         /// <summary>
         /// Initializes a new instance of the <see cref="DataExtractor"/> class.
         /// </summary>
-        /// <param name="diag">The diagnostics from which the output should be created.</param>
+        /// <param name="diag">The diagnostics from which the output should be
+        ///     created.</param>
         public DataExtractor(Diagnostics diag)
         {
             diagnostics = diag;
@@ -49,7 +47,7 @@ namespace OutputService
         {
             int output = 0;
 
-            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
                 output += solutionScanResult.NumberOfCSProjFiles;
             }
@@ -131,7 +129,7 @@ namespace OutputService
         public int GetNumberOfSkippedMethods()
         {
             int result = 0;
-            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
                 foreach (CSProjectScanResult csProjScanResult in solutionScanResult.CSProjectScanResults)
                 {
@@ -165,7 +163,7 @@ namespace OutputService
                     }
                 }
             }
-            
+
 
             return result;
         }
@@ -196,11 +194,12 @@ namespace OutputService
 
             return result;
         }
-        
+
         /// <summary>
         /// Gets the number of vulnerable methods in one particular file.
         /// </summary>
-        /// <param name="syntaxTreeScanResult">The syntax tree scan result from which the number of vulnerable methods will be counted.</param>
+        /// <param name="syntaxTreeScanResult">The syntax tree scan result from
+        ///     which the number of vulnerable methods will be counted.</param>
         public int GetNumberOfVulnerableMethodsInFile(SyntaxTreeScanResult syntaxTreeScanResult)
         {
             int result = 0;
@@ -215,11 +214,12 @@ namespace OutputService
 
             return result;
         }
-        
+
         /// <summary>
         /// Gets the number of vulnerable methods in one particular csproj.
         /// </summary>
-        /// <param name="csprojScanResult">The csproj scan result from which the number of vulnerable methods will be counted.</param>
+        /// <param name="csprojScanResult">The csproj scan result from which the
+        ///     number of vulnerable methods will be counted.</param>
         public int GetNumberOfVulnerableMethodsInCSProj(CSProjectScanResult csprojScanResult)
         {
             int result = 0;
@@ -241,12 +241,13 @@ namespace OutputService
         /// <summary>
         /// Gets the number of vulnerable methods in one particular solution
         /// </summary>
-        /// <param name="csprojScanResult">Solution scan result from which the number of vulnerable methods will be counted.</param>
+        /// <param name="csprojScanResult">Solution scan result from which the
+        ///     number of vulnerable methods will be counted.</param>
         public int GetNumberOfVulnerableMethodsInSolution(SolutionScanResult solutionScanResult)
         {
             int result = 0;
 
-            foreach(CSProjectScanResult csprojScanResult in solutionScanResult.CSProjectScanResults)
+            foreach (CSProjectScanResult csprojScanResult in solutionScanResult.CSProjectScanResults)
             {
                 foreach (SyntaxTreeScanResult syntaxTreeScanResult in csprojScanResult.SyntaxTreeScanResults)
                 {
@@ -259,7 +260,7 @@ namespace OutputService
                     }
                 }
             }
-            
+
 
             return result;
         }

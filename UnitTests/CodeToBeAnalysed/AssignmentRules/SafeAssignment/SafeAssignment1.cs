@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.AssignmentRules.SafeAssignment
+﻿namespace UnitTests.CodeToBeAnalysed.AssignmentRules.SafeAssignment
 {
     public class SafeAssignment1
     {

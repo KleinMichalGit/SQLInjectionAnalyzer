@@ -8,10 +8,8 @@ namespace InputService
 {
     /// <summary>
     /// InputService <c>InputReader</c> class.
-    /// 
     /// <para>
     /// Reads and validates user-provided console input.
-    /// 
     /// </para>
     /// <para>
     /// Contains <c>ProcessInput</c> method.
@@ -30,7 +28,8 @@ namespace InputService
         /// </list>
         /// </summary>
         /// <param name="args">The arguments to be validated.</param>
-        /// <returns>true if the arguments are valid. Otherwise, returns false.</returns>
+        /// <returns>true if the arguments are valid. Otherwise, returns false.
+        ///     </returns>
         private bool InputArgumentsAreValid(string[] args)
         {
             return InputArgumentsAreUnique(args) &&
@@ -41,7 +40,8 @@ namespace InputService
         }
 
         /// <summary>
-        /// Input arguments are unique if there is no argument specified more than once.
+        /// Input arguments are unique if there is no argument specified more
+        /// than once.
         /// </summary>
         private bool InputArgumentsAreUnique(string[] args)
         {
@@ -59,7 +59,8 @@ namespace InputService
         }
 
         /// <summary>
-        /// Input arguments are recognizable if all arguments belong to the set of recognizableArguments.
+        /// Input arguments are recognizable if all arguments belong to the set
+        /// of recognizableArguments.
         /// </summary>
         private bool InputArgumentsAreRecognizable(string[] args)
         {
@@ -116,7 +117,8 @@ namespace InputService
         }
 
         /// <summary>
-        /// Decides if the scope of the analysis is defined correctly. The scope is defined correctly if it belongs to the set of possible scopes.
+        /// Decides if the scope of the analysis is defined correctly. The scope
+        /// is defined correctly if it belongs to the set of possible scopes.
         /// </summary>
         private bool ScopeIsDefinedCorrectly(string[] args)
         {
@@ -143,8 +145,9 @@ namespace InputService
         }
 
         /// <summary>
-        /// Decides if the path to the config file is defined correctly. The path to the config file
-        /// is defined correctly if the file located on the specified path exists, and ends with ".json".
+        /// Decides if the path to the config file is defined correctly. The
+        /// path to the config file is defined correctly if the file located on
+        /// the specified path exists, and ends with ".json".
         /// </summary>
         private bool ConfigPathIsDefinedCorrectly(string[] args)
         {
@@ -168,10 +171,10 @@ namespace InputService
         }
 
         /// <summary>
-        /// Creates the list of strings from the string of substrings delimited by comma.
-        /// The list of strings received serves as the list of strings which contains the subpaths
-        /// to be skipped during the later phase of the analysis.
-        /// 
+        /// Creates the list of strings from the string of substrings delimited
+        /// by comma. The list of strings received serves as the list of strings
+        /// which contains the subpaths to be skipped during the later phase of
+        /// the analysis.
         /// </summary>
         private List<string> ProcessExcludeSubstrings(string substrings)
         {
@@ -193,10 +196,12 @@ namespace InputService
         }
 
         /// <summary>
-        /// Creates Input object from valid array of arguments (array of arguments has to be validated before creating Input).
+        /// Creates Input object from valid array of arguments (array of
+        /// arguments has to be validated before creating Input).
         /// </summary>
         /// <param name="args">The valid array of arguments.</param>
-        /// <returns>valid Input object which contains all information received on input.</returns>
+        /// <returns>valid Input object which contains all information received
+        ///     on input.</returns>
         private Input CreateInputFromValidArguments(string[] args)
         {
             Input input = new Input();
@@ -217,12 +222,16 @@ namespace InputService
         }
 
         /// <summary>
-        /// Converts the array of string arguments into Input object which contains all information received on input.
-        /// Information received on input are used during all phases of the analysis, and also when generating output.
+        /// Converts the array of string arguments into Input object which
+        /// contains all information received on input. Information received on
+        /// input are used during all phases of the analysis, and also when
+        /// generating output.
         /// </summary>
-        /// <param name="args">The array of string arguments received on input.</param>
+        /// <param name="args">The array of string arguments received on input.
+        ///     </param>
         /// <returns>Input object.</returns>
-        /// <exception cref="ExceptionService.ExceptionType.InvalidInputException">Input arguments are invalid.</exception>
+        /// <exception cref="ExceptionService.ExceptionType.InvalidInputException">
+        ///     Input arguments are invalid.</exception>
         public Input ProcessInput(string[] args)
         {
             if (InputArgumentsAreValid(args))

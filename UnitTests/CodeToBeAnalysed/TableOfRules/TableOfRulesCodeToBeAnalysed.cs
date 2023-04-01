@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace UnitTests.CodeToBeAnalysed.TableOfRules
+﻿namespace UnitTests.CodeToBeAnalysed.TableOfRules
 {
     public class TableOfRulesCodeToBeAnalysed
     {
         private void A()
         {
             MyClass a = new MyClass();
-            string myString = "my string" + " another " + "string"; 
+            string myString = "my string" + " another " + "string";
             int i = -1;
 
             MyClass b = new MyClass("a");
@@ -57,7 +55,8 @@ namespace UnitTests.CodeToBeAnalysed.TableOfRules
             string vulnerableString = a;
         }
 
-        public class MyClass {
+        public class MyClass
+        {
             public MyClass()
             {
 

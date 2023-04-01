@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using Model;
 using Model.CSProject;
 using Model.Method;
 using Model.Rules;
+using Model.Solution;
 using Model.SyntaxTree;
 using OutputService;
 using SQLInjectionAnalyzer;
-using FluentAssertions;
-using Model.Solution;
 
 namespace UnitTests
 {
@@ -21,7 +21,8 @@ namespace UnitTests
         Analyzer analyzer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScenarioFactory"/> class.
+        /// Initializes a new instance of the <see cref="ScenarioFactory"/>
+        /// class.
         /// </summary>
         /// <param name="analyzer">The analyzer.</param>
         public ScenarioFactory(Analyzer analyzer)
@@ -32,8 +33,10 @@ namespace UnitTests
         /// <summary>
         /// Creates a new unit test scenario.
         /// </summary>
-        /// <param name="rules">The rules which should be used during the scenario.</param>
-        /// <param name="directoryPath">The directory path to be analysed.</param>
+        /// <param name="rules">The rules which should be used during the
+        ///     scenario.</param>
+        /// <param name="directoryPath">The directory path to be analysed.
+        ///     </param>
         /// <param name="expectedDiagnostics">The expected diagnostics.</param>
         /// <param name="excludeSubpaths">The exclude subpaths.</param>
         public void CreateScenario(TaintPropagationRules rules, string directoryPath, Diagnostics expectedDiagnostics, List<string> excludeSubpaths)
@@ -52,11 +55,11 @@ namespace UnitTests
             expected.NumberOfSolutions.Should().Be(actual.NumberOfSolutions);
             expected.SolutionScanResults.Count().Should().Be(actual.SolutionScanResults.Count());
 
-            for(int i = 0; i < expected.SolutionScanResults.Count(); i++)
+            for (int i = 0; i < expected.SolutionScanResults.Count(); i++)
             {
                 TwoSolutionScanResultsShouldBeEqual(expected.SolutionScanResults[i], actual.SolutionScanResults[i]);
             }
-            
+
         }
 
         private void TwoSolutionScanResultsShouldBeEqual(SolutionScanResult expected, SolutionScanResult actual)

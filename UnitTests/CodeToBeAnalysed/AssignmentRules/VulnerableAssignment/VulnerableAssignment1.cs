@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.AssignmentRules.VulnerableAssignment
+﻿namespace UnitTests.CodeToBeAnalysed.AssignmentRules.VulnerableAssignment
 {
     public class VulnerableAssignment1
     {

@@ -24,7 +24,7 @@ namespace UnitTests
         public void SolveInvocationExpressionTest()
         {
             //A();
-            InvocationExpressionSyntax invocationExpressionSyntax = nodeFactory.FindSyntaxNode<InvocationExpressionSyntax>(path , 0);
+            InvocationExpressionSyntax invocationExpressionSyntax = nodeFactory.FindSyntaxNode<InvocationExpressionSyntax>(path, 0);
             ArgumentSyntax[] transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
             Assert.AreEqual(0, transition.Length);
 
@@ -143,7 +143,7 @@ namespace UnitTests
         public void SolveLiteralExpressionTest()
         {
             MethodScanResult emptyResult = new MethodScanResult();
-           
+
             tableOfRules.SolveLiteralExpression(emptyResult, 0);
             Assert.AreEqual(emptyResult.Evidence, "OK (Literal)\r\n");
         }
@@ -152,7 +152,7 @@ namespace UnitTests
         public void SolveUnrecognizedSyntaxNode()
         {
             MethodScanResult emptyResult = new MethodScanResult();
-           
+
             // consider the following syntax node as unrecognized syntax node
             ConditionalExpressionSyntax conditionalExpressionSyntax = nodeFactory.FindSyntaxNode<ConditionalExpressionSyntax>(path, 0);
             tableOfRules.SolveUnrecognizedSyntaxNode(emptyResult, conditionalExpressionSyntax, 0);

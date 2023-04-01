@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.FindOriginRules.SafeFindOriginRules
+﻿namespace UnitTests.CodeToBeAnalysed.FindOriginRules.SafeFindOriginRules
 {
     public class SafeFindOriginClass
     {
@@ -17,7 +11,7 @@ namespace UnitTests.CodeToBeAnalysed.FindOriginRules.SafeFindOriginRules
 
             myClass = new MyClass(arg);
             myClass = new MyClass(myString);
-            
+
             myString = arg;
         }
 

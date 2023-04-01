@@ -1,9 +1,9 @@
 ﻿using System;
+using Model;
 using Model.CSProject;
 using Model.Method;
-using Model.SyntaxTree;
-using Model;
 using Model.Solution;
+using Model.SyntaxTree;
 
 namespace SQLInjectionAnalyzer
 {

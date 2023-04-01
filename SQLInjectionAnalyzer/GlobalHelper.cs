@@ -5,8 +5,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Model;
-using Model.CSProject;
 using Model.Method;
 using Model.Rules;
 using Model.SyntaxTree;
@@ -15,21 +13,22 @@ namespace SQLInjectionAnalyzer
 {
     /// <summary>
     /// SQLInjectionAnalyzer <c>GlobalHelper</c> class.
-    /// 
     /// <para>
-    /// Provides global helpful methods. Its methods are used by individual analyzers.
-    /// 
+    /// Provides global helpful methods. Its methods are used by individual
+    /// analyzers.
     /// </para>
     /// <para>
-    /// Contains <c>GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory</c> method.
-    /// Contains <c>FindSinkInvocations</c> method.
+    /// Contains
+    /// <c>GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory</c>
+    /// method. Contains <c>FindSinkInvocations</c> method.
     /// </para>
     /// </summary>
     public class GlobalHelper
     {
         /// <summary>
-        /// Gets the number of files fulfilling certain pattern under the specified directory.
-        /// For example returns the number of all C# files under the specified directory.
+        /// Gets the number of files fulfilling certain pattern under the
+        /// specified directory. For example returns the number of all C# files
+        /// under the specified directory.
         /// </summary>
         /// <param name="directoryPath">The directory path.</param>
         /// <param name="pattern">The pattern.</param>
@@ -41,13 +40,14 @@ namespace SQLInjectionAnalyzer
         }
 
         /// <summary>
-        /// Finds the sink invocations among the descendant nodes of the specified syntax node. For example,
-        /// if method body is the root, it finds all sink invocations in the body of the method. Invocation is
-        /// <see cref="InvocationExpressionSyntax"/> present among the descendant nodes of the root, which also 
-        /// belongs to the list of sink methods.
-        /// 
+        /// Finds the sink invocations among the descendant nodes of the
+        /// specified syntax node. For example, if method body is the root, it
+        /// finds all sink invocations in the body of the method. Invocation is
+        /// <see cref="InvocationExpressionSyntax"/> present among the
+        /// descendant nodes of the root, which also belongs to the list of sink
+        /// methods.
         /// </summary>
-        /// <param name="root">The root <see cref="SyntaxNode"/> </param>
+        /// <param name="root">The root <see cref="SyntaxNode"/></param>
         /// <param name="sinkMethodNames">The sink method names.</param>
         public IEnumerable<InvocationExpressionSyntax> FindSinkInvocations(SyntaxNode root, List<string> sinkMethodNames)
         {
@@ -89,7 +89,7 @@ namespace SQLInjectionAnalyzer
                     methodScanResult.SourceAreasLabels.Add(source.Label);
         }
 
-        public void WriteEvidenceOnConsole(string methodName, string evidence, MethodScanResult result=null)
+        public void WriteEvidenceOnConsole(string methodName, string evidence, MethodScanResult result = null)
         {
             Console.WriteLine("-----------------------");
             Console.WriteLine("Vulnerable method found");

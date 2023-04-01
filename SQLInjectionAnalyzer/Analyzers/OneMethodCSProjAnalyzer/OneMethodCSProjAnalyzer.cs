@@ -3,36 +3,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
+using Model;
 using Model.CSProject;
 using Model.Method;
 using Model.Rules;
-using Model.SyntaxTree;
-using Model;
-using Microsoft.CodeAnalysis.MSBuild;
-using Humanizer;
-using static Humanizer.In;
-using SQLInjectionAnalyzer.Analyzers;
 using Model.Solution;
+using Model.SyntaxTree;
+using SQLInjectionAnalyzer.Analyzers;
 
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
     /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
-    /// 
     /// <para>
-    /// Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as OneMethodSyntaxTree,
-    /// therefore provides the same results. This ScopeOfAnalysis
-    /// serves only to investigate how much time is needed for compilation of all .csproj files.
-    /// Able to decide trivial conditional statements
+    /// Compiles *.csproj files, without performing interprocedural analysis.
+    /// Uses the same rules as OneMethodSyntaxTree, therefore provides the same
+    /// results. This ScopeOfAnalysis serves only to investigate how much time
+    /// is needed for compilation of all .csproj files. Able to decide trivial
+    /// conditional statements
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
     /// </para>
     /// </summary>
-    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer"/>
     public class OneMethodCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
@@ -90,7 +88,7 @@ namespace SQLInjectionAnalyzer
                 Project project = await workspace.OpenProjectAsync(csprojPath);
 
                 Compilation compilation = await project.GetCompilationAsync();
-                
+
 
                 foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
                 {

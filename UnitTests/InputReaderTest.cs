@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExceptionService.ExceptionType;
@@ -18,7 +17,7 @@ namespace UnitTests
         InputReader inputReader = new InputReader();
         string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/" };
         string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
-      
+
         [TestMethod]
         public void InputArgumentsAreUnique()
         {
