@@ -21,7 +21,7 @@ namespace SQLInjectionAnalyzer
     /// Reads C# (*.cs) files separately and investigates Syntax Trees parsed
     /// from the separate C# files, without compiling .csproj files, without
     /// performing interprocedural analysis, able to decide trivial conditional
-    /// statements (very fast but very inacurate).
+    /// statements (very fast but very inaccurate).
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
@@ -127,14 +127,14 @@ namespace SQLInjectionAnalyzer
             // follows data flow inside method for each sink invocation from sink invocation to source
             foreach (var invocation in invocations)
             {
-                FollowDataFlow(methodSyntax, invocation, methodScanResult);
+                EvaluateRule(methodSyntax, invocation, methodScanResult);
             }
 
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
 
-        private void FollowDataFlow(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
+        private void EvaluateRule(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
         {
             if (visitedNodes == null)
             {
@@ -175,7 +175,7 @@ namespace SQLInjectionAnalyzer
             {
                 for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
+                    EvaluateRule(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }
             }
         }

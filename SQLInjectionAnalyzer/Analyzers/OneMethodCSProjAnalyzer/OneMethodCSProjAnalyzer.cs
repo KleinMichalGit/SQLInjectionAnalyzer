@@ -140,14 +140,14 @@ namespace SQLInjectionAnalyzer
             // follows data flow inside method for each sink invocation from sink invocation to source
             foreach (var invocation in invocations)
             {
-                FollowDataFlow(methodSyntax, invocation, methodScanResult);
+                EvaluateRule(methodSyntax, invocation, methodScanResult);
             }
 
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
 
-        private void FollowDataFlow(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
+        private void EvaluateRule(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
         {
             if (visitedNodes == null)
             {
@@ -188,7 +188,7 @@ namespace SQLInjectionAnalyzer
             {
                 for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
+                    EvaluateRule(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }
             }
         }
