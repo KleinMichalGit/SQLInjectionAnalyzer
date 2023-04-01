@@ -181,7 +181,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                         TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
                     };
 
-                    FollowDataFlow(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
+                    EvaluateRule(parent, invocation.InvocationExpression, methodScanResult, tainted, invocation.TaintedMethodParameters);
 
                     if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
                     {
@@ -241,7 +241,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                     TaintedInvocationArguments = new int[invocation.ArgumentList.Arguments.Count()]
                 };
 
-                FollowDataFlow(methodSyntax, invocation, methodScanResult, taintedInvocation);
+                EvaluateRule(methodSyntax, invocation, methodScanResult, taintedInvocation);
 
                 for (int i = 0; i < taintedMethod.TaintedMethodParameters.Length; i++)
                 {
@@ -253,7 +253,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             return methodScanResult;
         }
 
-        private void FollowDataFlow(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, Tainted tainted, int[] taintedMethodParameters = null, List<SyntaxNode> visitedNodes = null, int level = 0)
+        private void EvaluateRule(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, Tainted tainted, int[] taintedMethodParameters = null, List<SyntaxNode> visitedNodes = null, int level = 0)
         {
             if (visitedNodes == null)
             {
@@ -299,7 +299,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 
                     int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
 
-                    FollowDataFlow(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
+                    EvaluateRule(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
 
                     // for the first invocation only
                     // for the parent's tainted method parameters only
