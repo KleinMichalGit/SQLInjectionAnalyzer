@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.Complex
+﻿namespace UnitTests.CodeToBeAnalysed.Complex
 {
     public class ComplexAnalysis1
     {
@@ -23,7 +17,6 @@ namespace UnitTests.CodeToBeAnalysed.Complex
 
         private void SinkMethodOne(string arg1, string arg2, int arg3, MyClass myClass)
         {
-
         }
 
         private string CreateStringValue(string arg)
@@ -35,7 +28,6 @@ namespace UnitTests.CodeToBeAnalysed.Complex
         {
             public MyClass(string s)
             {
-
             }
         }
     }

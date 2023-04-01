@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ExceptionService.ExceptionType;
@@ -13,6 +12,7 @@ namespace SQLInjectionAnalyzer
     public class InterproceduralHelper
     {
         private Compilation compilation = null;
+
         public MethodDeclarationSyntax FindMethodParent(SyntaxNode parent)
         {
             while (parent != null)
@@ -29,11 +29,10 @@ namespace SQLInjectionAnalyzer
         public bool CurrentLevelContainsTaintedBlocksWithoutCallers(List<LevelBlock> currentLevelBlocks)
         {
             foreach (LevelBlock levelBlock in currentLevelBlocks)
-            {       
+            {
                 if (levelBlock.TaintedMethodParameters.Sum() > 0 && levelBlock.NumberOfCallers == 0)
                     return true;
             }
-                
 
             return false;
         }
@@ -41,7 +40,7 @@ namespace SQLInjectionAnalyzer
         public bool AllTaintVariablesAreCleanedInThisBranch(int[] parentMethodTainted, int[] invocationTainted)
         {
             if (parentMethodTainted.Length != invocationTainted.Length) throw new AnalysisException("number of tainted method parameters and invocation arguments is incorrect!");
-           
+
             for (int i = 0; i < parentMethodTainted.Length; i++)
             {
                 if (parentMethodTainted[i] > 0 && invocationTainted[i] > 0)
@@ -70,7 +69,6 @@ namespace SQLInjectionAnalyzer
                         else
                         {
                             methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH A DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-                            
                         }
                     }
                 }
@@ -78,7 +76,6 @@ namespace SQLInjectionAnalyzer
             return allMethodInvocations;
         }
 
-        
         public List<InvocationAndParentsTaintedParameters> FindAllCallersOfCurrentBlockInSolutionAsync(List<LevelBlock> currentLevelBlocks, MethodScanResult methodScanResult, Solution solution, TaintPropagationRules taintPropagationRules)
         {
             List<InvocationAndParentsTaintedParameters> allMethodInvocations = new List<InvocationAndParentsTaintedParameters>();
@@ -90,7 +87,7 @@ namespace SQLInjectionAnalyzer
                 foreach (SyntaxTree syntaxTree in compilation.SyntaxTrees)
                 {
                     new GlobalHelper().SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules);
-                    
+
                     IEnumerable<InvocationExpressionSyntax> allInvocations = syntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
 
                     // find all invocations with same symbol info AND number of parameters
@@ -108,7 +105,6 @@ namespace SQLInjectionAnalyzer
                                 else
                                 {
                                     methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH A DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-
                                 }
                             }
                         }

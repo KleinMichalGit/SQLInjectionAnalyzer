@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.ConditionalExpressionRules.SafeConditionalExpression
+﻿namespace UnitTests.CodeToBeAnalysed.ConditionalExpressionRules.SafeConditionalExpression
 {
     public class SafeConditionalExpressionClass
     {
@@ -17,7 +11,6 @@ namespace UnitTests.CodeToBeAnalysed.ConditionalExpressionRules.SafeConditionalE
 
         public void SinkMethodOne(string arg1)
         {
-
         }
     }
 }

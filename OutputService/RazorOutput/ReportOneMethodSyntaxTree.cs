@@ -2,7 +2,6 @@
 {
     /// <summary>
     /// OutputService.RazorOutput <c>ReportOneMethodSyntaxTree</c> class.
-    /// 
     /// <para>
     /// Template for OneMethodSyntaxTree <see cref="ScopeOfAnalysis"/>
     /// </para>

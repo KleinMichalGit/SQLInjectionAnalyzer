@@ -1,31 +1,28 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
+using ExceptionService.ExceptionType;
+using Model;
 using Model.CSProject;
 using Model.Method;
-using Model.SyntaxTree;
-using Model;
-using System.IO;
-using RazorEngineCore;
-using Microsoft.AspNetCore.Razor.Language;
-using OutputService.RazorOutput;
-using RazorEngine = RazorEngineCore.RazorEngine;
-using ExceptionService.ExceptionType;
 using Model.Solution;
+using Model.SyntaxTree;
+using OutputService.RazorOutput;
+using RazorEngineCore;
+using RazorEngine = RazorEngineCore.RazorEngine;
 
 namespace OutputService
 {
     /// <summary>
     /// OutputService <c>OutputGenerator</c> class.
-    /// 
     /// <para>
-    /// Class for generating .html and .txt output files according to Scope of analysis.
-    /// 
+    /// Class for generating .html and .txt output files according to Scope of
+    /// analysis.
     /// </para>
     /// <para>
-    /// Contains <c>OutputGenerator</c> constructor.
-    /// Contains <c>CreateOutput</c> method.
-    /// Contains <c>CreateConsoleOutput</c> method.
+    /// Contains <c>OutputGenerator</c> constructor. Contains
+    /// <c>CreateOutput</c> method. Contains <c>CreateConsoleOutput</c> method.
     /// </para>
     /// </summary>
     public class OutputGenerator
@@ -33,9 +30,11 @@ namespace OutputService
         private string exportPath;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OutputGenerator"/> class.
+        /// Initializes a new instance of the <see cref="OutputGenerator"/>
+        /// class.
         /// </summary>
-        /// <param name="exportPath">The export path where all results of the analysis should be created.</param>
+        /// <param name="exportPath">The export path where all results of the
+        ///     analysis should be created.</param>
         public OutputGenerator(string exportPath)
         {
             this.exportPath = exportPath;
@@ -44,7 +43,8 @@ namespace OutputService
         /// <summary>
         /// Creates Console, HTML, and TXT output based on the Scope of analysis
         /// </summary>
-        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
+        /// <param name="diagnostics">The diagnostics from which the output
+        ///     should be created.</param>
         public void CreateOutput(Diagnostics diagnostics)
         {
             CreateConsoleOutput(diagnostics);
@@ -55,7 +55,8 @@ namespace OutputService
         /// <summary>
         /// Creates the console output.
         /// </summary>
-        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
+        /// <param name="diagnostics">The diagnostics from which the output
+        ///     should be created.</param>
         public void CreateConsoleOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -87,28 +88,33 @@ namespace OutputService
         /// <summary>
         /// Creates the HTML output.
         /// </summary>
-        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
-        /// <exception cref="ExceptionHandler.ExceptionType.OutputGeneratorException">not implemented yet</exception>
+        /// <param name="diagnostics">The diagnostics from which the output
+        ///     should be created.</param>
+        /// <exception cref="ExceptionHandler.ExceptionType.OutputGeneratorException">
+        ///     not implemented yet</exception>
         private void CreateHTMLOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
             string content = "";
-
 
             switch (diagnostics.ScopeOfAnalysis)
             {
                 case ScopeOfAnalysis.OneMethodSyntaxTree:
                     content = ReportOneMethodSyntaxTree.report;
                     break;
+
                 case ScopeOfAnalysis.OneMethodCSProj:
                     content = ReportOneMethodCSProj.report;
                     break;
+
                 case ScopeOfAnalysis.InterproceduralCSProj:
                     content = ReportInterproceduralCSProj.report;
                     break;
+
                 case ScopeOfAnalysis.InterproceduralSolution:
                     content = ReportInterproceduralSolution.report;
                     break;
+
                 default:
                     throw new OutputGeneratorException("not implemented yet");
             }
@@ -138,7 +144,8 @@ namespace OutputService
         /// <summary>
         /// Creates the text file output.
         /// </summary>
-        /// <param name="diagnostics">The diagnostics from which the output should be created.</param>
+        /// <param name="diagnostics">The diagnostics from which the output
+        ///     should be created.</param>
         private void CreateTxtFileOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
@@ -161,7 +168,6 @@ namespace OutputService
             sb.AppendLine("Number of all sink invocations: " + dataExtractor.GetNumberOfAllSinks());
             sb.AppendLine("Number of vulnerable methods: " + dataExtractor.GetNumberOfVulnerableMethods());
 
-
             if (dataExtractor.GetNumberOfVulnerableMethods() == 0)
             {
                 sb.AppendLine("No vulnerabilities detected. Injection analysis passed successfully.");
@@ -170,7 +176,7 @@ namespace OutputService
             }
             sb.AppendLine("List of scanned .sln files: ");
 
-            foreach(SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
             {
                 sb.AppendLine("List of scanned .csproj files: ");
 
@@ -233,7 +239,7 @@ namespace OutputService
                     }
                 }
             }
-            
+
             File.WriteAllText(exportPath + "\\report.txt", sb.ToString());
         }
     }

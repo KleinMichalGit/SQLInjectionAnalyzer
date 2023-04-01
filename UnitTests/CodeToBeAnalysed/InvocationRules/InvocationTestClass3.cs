@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.InvocationRules
+﻿namespace UnitTests.CodeToBeAnalysed.InvocationRules
 {
     public class InvocationTestClass3
     {
@@ -26,7 +20,6 @@ namespace UnitTests.CodeToBeAnalysed.InvocationRules
 
         private void SinkMethodOne(string arg1, string arg2)
         {
-
         }
     }
 }

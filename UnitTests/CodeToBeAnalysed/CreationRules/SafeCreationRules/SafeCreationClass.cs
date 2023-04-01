@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.CreationRules.SafeCreationRules
+﻿namespace UnitTests.CodeToBeAnalysed.CreationRules.SafeCreationRules
 {
     public class SafeCreationClass
     {
@@ -18,14 +12,12 @@ namespace UnitTests.CodeToBeAnalysed.CreationRules.SafeCreationRules
 
         public void SinkMethodOne(MyClass myClass)
         {
-
         }
 
         public class MyClass
         {
             public MyClass(string s)
             {
-
             }
         }
     }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.CleaningRules.AllArgumentsAreCleaned
+﻿namespace UnitTests.CodeToBeAnalysed.CleaningRules.AllArgumentsAreCleaned
 {
     internal class ArgumentsAreCleaned1
     {
@@ -15,7 +9,6 @@ namespace UnitTests.CodeToBeAnalysed.CleaningRules.AllArgumentsAreCleaned
 
         public void SinkMethodOne(string args)
         {
-
         }
     }
 }

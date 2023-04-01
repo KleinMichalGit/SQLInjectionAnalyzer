@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.ExcludingPaths.ExcludingPaths1
+﻿namespace UnitTests.CodeToBeAnalysed.ExcludingPaths.ExcludingPaths1
 {
     public class ThisClassWillBeScanned
     {
@@ -17,7 +11,6 @@ namespace UnitTests.CodeToBeAnalysed.ExcludingPaths.ExcludingPaths1
 
         public void SinkMethodOne(string arg1, string arg2)
         {
-
         }
     }
 }

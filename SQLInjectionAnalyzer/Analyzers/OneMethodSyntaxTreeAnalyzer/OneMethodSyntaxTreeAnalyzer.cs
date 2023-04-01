@@ -1,44 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Model;
 using Model.CSProject;
 using Model.Method;
 using Model.Rules;
-using Model.SyntaxTree;
-using Model;
-using System.Collections.Generic;
-using SQLInjectionAnalyzer.Analyzers;
 using Model.Solution;
+using Model.SyntaxTree;
+using SQLInjectionAnalyzer.Analyzers;
 
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
     /// SQLInjectionAnalyzer <c>OneMethodSyntaxTreeAnalyzer</c> class.
-    /// 
     /// <para>
-    /// Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,
-    /// without compiling .csproj files, without performing interprocedural analysis,
-    /// able to decide trivial conditional statements (very fast but very inacurate).
+    /// Reads C# (*.cs) files separately and investigates Syntax Trees parsed
+    /// from the separate C# files, without compiling .csproj files, without
+    /// performing interprocedural analysis, able to decide trivial conditional
+    /// statements (very fast but very inacurate).
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
     /// </para>
     /// </summary>
-    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer"/>
     public class OneMethodSyntaxTreeAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
-     
+
         private string targetFileType = "*.cs";
-        
+
         private bool writeOnConsole = false;
-        
+
         private GlobalHelper globalHelper = new GlobalHelper();
         private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
+
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
@@ -90,7 +91,6 @@ namespace SQLInjectionAnalyzer
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);
@@ -101,7 +101,7 @@ namespace SQLInjectionAnalyzer
                     FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
-                    
+
                     globalHelper.SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
 
                     if (writeOnConsole)
@@ -171,9 +171,9 @@ namespace SQLInjectionAnalyzer
             else
                 tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
 
-            if(nextLevelNodes != null)
+            if (nextLevelNodes != null)
             {
-                for(int i=0; i<nextLevelNodes.Length; i++)
+                for (int i = 0; i < nextLevelNodes.Length; i++)
                 {
                     FollowDataFlow(rootNode, nextLevelNodes[i], result, visitedNodes, level);
                 }

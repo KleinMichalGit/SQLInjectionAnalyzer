@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
 using Model;
 using Model.CSProject;
-using Model.Rules;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp;
-using Model.SyntaxTree;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Model.Method;
+using Model.Rules;
 using Model.Solution;
+using Model.SyntaxTree;
 
 namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
 {
@@ -38,7 +38,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             int numberOfSolutionFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
             int numberOfScannedSolutionFilesSoFar = 0;
             diagnostics.NumberOfSolutions = numberOfSolutionFilesUnderThisRepository;
-
 
             foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
@@ -75,13 +74,14 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
                 Solution solution = await workspace.OpenSolutionAsync(solutionPath);
-                foreach(Project project in solution.Projects)
+                foreach (Project project in solution.Projects)
                 {
                     solutionScanResult.NumberOfCSProjFiles++;
                     if (excludeSubpaths.Any(x => project.FilePath.Contains(x)))
                     {
                         solutionScanResult.PathsOfSkippedCSProjects.Add(project.FilePath);
-                    } else
+                    }
+                    else
                     {
                         Console.WriteLine("    + project: " + project.FilePath);
                         ScanCSProj(project, solution).Wait();
@@ -153,7 +153,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             MethodScanResult methodScanResult = ConductScanOfTheInitialMethod(methodSyntax);
             SemanticModel semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
             IMethodSymbol methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
-            
+
             methodScanResult.AppendCaller("1 " + new string(' ', 2) + methodSymbol.ToString());
             List<LevelBlock> currentLevelBlocks = new List<LevelBlock>() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters } };
             List<LevelBlock> nextLevelBlocks = new List<LevelBlock>();
@@ -162,7 +162,7 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             for (int currentLevel = 2; currentLevel < taintPropagationRules.Level + 1; currentLevel++)
             {
                 List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlockInSolutionAsync(currentLevelBlocks, methodScanResult, solution, taintPropagationRules);
-               
+
                 foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
                 {
                     semanticModel = invocation.compilation.GetSemanticModel(invocation.InvocationExpression.SyntaxTree, ignoreAccessibility: false);
@@ -192,7 +192,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                         nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent) });
                     }
                 }
-                
 
                 // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
                 // will never be cleaned.
@@ -218,7 +217,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
-
 
         private MethodScanResult ConductScanOfTheInitialMethod(MethodDeclarationSyntax methodSyntax)
         {
@@ -310,6 +308,5 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                 }
             }
         }
-
     }
 }

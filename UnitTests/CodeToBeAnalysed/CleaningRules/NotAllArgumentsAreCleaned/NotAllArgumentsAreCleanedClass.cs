@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace UnitTests.CodeToBeAnalysed.CleaningRules.NotAllArgumentsAreCleaned
+﻿namespace UnitTests.CodeToBeAnalysed.CleaningRules.NotAllArgumentsAreCleaned
 {
     public class NotAllArgumentsCleanedClass
     {
@@ -17,7 +11,6 @@ namespace UnitTests.CodeToBeAnalysed.CleaningRules.NotAllArgumentsAreCleaned
 
         public void SinkMethodOne(string arg1, string arg2)
         {
-
         }
     }
 }

@@ -9,10 +9,9 @@ namespace InputService
 {
     /// <summary>
     /// InputService <c>ConfigFileReader</c> class.
-    /// 
     /// <para>
-    /// Reads and validates .json config files which contain TaintPropagationRules.
-    /// 
+    /// Reads and validates .json config files which contain
+    /// TaintPropagationRules.
     /// </para>
     /// <para>
     /// Contains <c>ProcessConfig</c> method.
@@ -21,7 +20,8 @@ namespace InputService
     public class ConfigFileReader
     {
         /// <summary>
-        /// Rules are valid if level > 0, sinkMethods, cleaningMethods, and sourceAreas are defined in config, and all sourceAreas are valid.
+        /// Rules are valid if level > 0, sinkMethods, cleaningMethods, and
+        /// sourceAreas are defined in config, and all sourceAreas are valid.
         /// </summary>
         private bool RulesAreValid(TaintPropagationRules rules)
         {
@@ -41,16 +41,17 @@ namespace InputService
         }
 
         /// <summary>
-        /// Reads the .json config on the specified path, converts it from .json format to TaintPropagationRules
-        /// format.
+        /// Reads the .json config on the specified path, converts it from .json
+        /// format to TaintPropagationRules format.
         /// </summary>
-        /// <param name="pathToConfigFile">The path to .json configuration file.</param>
-        /// <returns>If the rules received from the valid .json are valid, returns the rules. Otherwise, throws InvalidInputException.</returns>
+        /// <param name="pathToConfigFile">The path to .json configuration file.
+        ///     </param>
+        /// <returns>If the rules received from the valid .json are valid,
+        ///     returns the rules. Otherwise, throws InvalidInputException.
+        ///     </returns>
         /// <exception cref="ExceptionService.ExceptionType.InvalidInputException">
-        /// Can't read the config file.
-        /// or
-        /// Taint propagation rules are invalid.
-        /// </exception>
+        ///     Can't read the config file. or Taint propagation rules are
+        ///     invalid.</exception>
         public TaintPropagationRules ProcessConfig(string pathToConfigFile)
         {
             try

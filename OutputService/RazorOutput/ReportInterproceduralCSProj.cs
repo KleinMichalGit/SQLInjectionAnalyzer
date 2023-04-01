@@ -2,7 +2,6 @@
 {
     /// <summary>
     /// OutputService.RazorOutput <c>ReportInterproceduralCSProj</c> class.
-    /// 
     /// <para>
     /// Template for InterproceduralCSProj <see cref="ScopeOfAnalysis"/>
     /// </para>

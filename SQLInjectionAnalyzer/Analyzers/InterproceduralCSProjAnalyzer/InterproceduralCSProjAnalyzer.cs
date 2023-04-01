@@ -2,35 +2,34 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using ExceptionService.ExceptionType;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
+using Model;
 using Model.CSProject;
 using Model.Method;
 using Model.Rules;
-using Model.SyntaxTree;
-using Model;
-using SQLInjectionAnalyzer.Analyzers;
 using Model.Solution;
+using Model.SyntaxTree;
+using SQLInjectionAnalyzer.Analyzers;
 
 namespace SQLInjectionAnalyzer
 {
     /// <summary>
     /// SQLInjectionAnalyzer <c>InterproceduralCSProjAnalyzer</c> class.
-    /// 
     /// <para>
-    /// Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined
-    /// in config.json file) for each project separately, able to decide trivial conditional statements.
+    /// Compiles all C# project (*.csproj) files, performs n-level
+    /// interprocedural analysis (where number n is defined in config.json file)
+    /// for each project separately, able to decide trivial conditional
+    /// statements.
     /// </para>
     /// <para>
     /// Contains <c>ScanDirectory</c> method.
     /// </para>
     /// </summary>
-    /// <seealso cref="SQLInjectionAnalyzer.Analyzer" />
+    /// <seealso cref="SQLInjectionAnalyzer.Analyzer"/>
     public class InterproceduralCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
@@ -47,7 +46,7 @@ namespace SQLInjectionAnalyzer
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
             Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
-            
+
             SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
 
             int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
@@ -127,7 +126,7 @@ namespace SQLInjectionAnalyzer
                         globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
                     }
                 }
-                
+
                 if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
                 {
                     methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
@@ -160,13 +159,13 @@ namespace SQLInjectionAnalyzer
                     List<InvocationAndParentsTaintedParameters> allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
 
                     if (allMethodInvocations == null) return diagnosticsInitializer.InitialiseMethodScanResult();
-                    
+
                     foreach (InvocationAndParentsTaintedParameters invocation in allMethodInvocations)
                     {
                         MethodDeclarationSyntax parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
 
                         if (parent == null) continue;
-                        
+
                         methodScanResult.AppendCaller(currentLevel + " " + new string(' ', currentLevel * 2) + semanticModel.GetDeclaredSymbol(parent).ToString());
                         methodScanResult.BodiesOfCallers.Add(parent.ToString());
                         methodScanResult.AppendEvidence("INTERPROCEDURAL LEVEL: " + currentLevel + " " + semanticModel.GetDeclaredSymbol(parent).ToString());
@@ -293,9 +292,9 @@ namespace SQLInjectionAnalyzer
                 {
                     // investigate only the origin of arguments which were previously tainted as method parameters
                     if (level == 1 && (taintedMethodParameters != null && taintedMethodParameters[i] == 0)) continue;
-                   
+
                     int numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num => num != 0);
-                    
+
                     FollowDataFlow(rootNode, nextLevelNodes[i], result, tainted, null, visitedNodes, level);
 
                     // for the first invocation only
