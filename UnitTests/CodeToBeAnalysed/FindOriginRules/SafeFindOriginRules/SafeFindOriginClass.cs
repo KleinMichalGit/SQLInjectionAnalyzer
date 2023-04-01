@@ -17,13 +17,12 @@
 
         public void SinkMethodOne(MyClass myClass)
         {
-
         }
+
         public class MyClass
         {
             public MyClass(string s)
             {
-
             }
         }
     }

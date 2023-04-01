@@ -13,16 +13,19 @@ namespace Model.SyntaxTree
         /// </summary>
         /// <value>The syntax tree scan result start time.</value>
         public DateTime SyntaxTreeScanResultStartTime { get; set; }
+
         /// <summary>
         /// Gets or sets the syntax tree scan result end time.
         /// </summary>
         /// <value>The syntax tree scan result end time.</value>
         public DateTime SyntaxTreeScanResultEndTime { get; set; }
+
         /// <summary>
         /// Gets the syntax tree scan result total time.
         /// </summary>
         /// <value>The syntax tree scan result total time.</value>
-        public TimeSpan SyntaxTreeScanResultTotalTime { get { return SyntaxTreeScanResultEndTime - SyntaxTreeScanResultStartTime; } }
+        public TimeSpan SyntaxTreeScanResultTotalTime
+        { get { return SyntaxTreeScanResultEndTime - SyntaxTreeScanResultStartTime; } }
 
         /// <summary>
         /// Gets or sets the method scan results.

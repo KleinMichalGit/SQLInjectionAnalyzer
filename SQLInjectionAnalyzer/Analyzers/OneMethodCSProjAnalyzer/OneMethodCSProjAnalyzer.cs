@@ -89,7 +89,6 @@ namespace SQLInjectionAnalyzer
 
                 Compilation compilation = await project.GetCompilationAsync();
 
-
                 foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
                 {
                     csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);

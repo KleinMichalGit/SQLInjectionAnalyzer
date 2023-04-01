@@ -97,21 +97,24 @@ namespace OutputService
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
             string content = "";
 
-
             switch (diagnostics.ScopeOfAnalysis)
             {
                 case ScopeOfAnalysis.OneMethodSyntaxTree:
                     content = ReportOneMethodSyntaxTree.report;
                     break;
+
                 case ScopeOfAnalysis.OneMethodCSProj:
                     content = ReportOneMethodCSProj.report;
                     break;
+
                 case ScopeOfAnalysis.InterproceduralCSProj:
                     content = ReportInterproceduralCSProj.report;
                     break;
+
                 case ScopeOfAnalysis.InterproceduralSolution:
                     content = ReportInterproceduralSolution.report;
                     break;
+
                 default:
                     throw new OutputGeneratorException("not implemented yet");
             }
@@ -164,7 +167,6 @@ namespace OutputService
             sb.AppendLine("Number of skipped methods: " + dataExtractor.GetNumberOfSkippedMethods());
             sb.AppendLine("Number of all sink invocations: " + dataExtractor.GetNumberOfAllSinks());
             sb.AppendLine("Number of vulnerable methods: " + dataExtractor.GetNumberOfVulnerableMethods());
-
 
             if (dataExtractor.GetNumberOfVulnerableMethods() == 0)
             {

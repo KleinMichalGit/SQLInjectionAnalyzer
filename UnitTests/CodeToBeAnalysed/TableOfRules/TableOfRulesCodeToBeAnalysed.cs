@@ -23,12 +23,10 @@
 
         private void C(string a, string b)
         {
-
         }
 
         private void D(string a, int b, bool c)
         {
-
         }
 
         private void E()
@@ -59,17 +57,14 @@
         {
             public MyClass()
             {
-
             }
 
             public MyClass(string a)
             {
-
             }
 
             public MyClass(string a, int b)
             {
-
             }
         }
     }

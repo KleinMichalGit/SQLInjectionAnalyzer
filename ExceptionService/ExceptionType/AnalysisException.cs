@@ -14,12 +14,14 @@ namespace ExceptionService.ExceptionType
         /// class.
         /// </summary>
         public AnalysisException() : base() { }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisException"/>
         /// class with the message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public AnalysisException(string message) : base(message) { }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisException"/>
         /// class with the message and innerException <see cref="Exception"/>.

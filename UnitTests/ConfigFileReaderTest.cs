@@ -14,7 +14,7 @@ namespace UnitTests
     [TestClass]
     public class ConfigFileReaderTest
     {
-        ConfigFileReader configFileReader = new ConfigFileReader();
+        private ConfigFileReader configFileReader = new ConfigFileReader();
 
         [TestMethod]
         public void RulesAreValid()

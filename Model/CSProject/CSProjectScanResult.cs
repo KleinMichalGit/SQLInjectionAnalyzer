@@ -15,7 +15,8 @@ namespace Model.CSProject
     {
         public DateTime CSProjectScanResultStartTime { get; set; }
         public DateTime CSProjectScanResultEndTime { get; set; }
-        public TimeSpan CSProjectScanResultTotalTime { get { return CSProjectScanResultEndTime - CSProjectScanResultStartTime; } }
+        public TimeSpan CSProjectScanResultTotalTime
+        { get { return CSProjectScanResultEndTime - CSProjectScanResultStartTime; } }
 
         /// <summary>
         /// Gets or sets the path of the analysed .csproj file.

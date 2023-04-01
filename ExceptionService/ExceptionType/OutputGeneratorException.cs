@@ -14,12 +14,14 @@ namespace ExceptionService.ExceptionType
         /// <see cref="OutputGeneratorException"/> class.
         /// </summary>
         public OutputGeneratorException() : base() { }
+
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="OutputGeneratorException"/> class with the message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public OutputGeneratorException(string message) : base(message) { }
+
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="OutputGeneratorException"/> class with the message and

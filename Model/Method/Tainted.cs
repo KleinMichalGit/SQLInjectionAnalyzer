@@ -2,7 +2,6 @@
 {
     public class Tainted
     {
-
         /// <summary>
         /// for each tainted parameter and argument remember how many times it
         /// is tainted

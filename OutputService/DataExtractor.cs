@@ -164,7 +164,6 @@ namespace OutputService
                 }
             }
 
-
             return result;
         }
 
@@ -260,7 +259,6 @@ namespace OutputService
                     }
                 }
             }
-
 
             return result;
         }

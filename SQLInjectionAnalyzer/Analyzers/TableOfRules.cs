@@ -13,7 +13,6 @@ namespace SQLInjectionAnalyzer.Analyzers
 {
     public class TableOfRules
     {
-
         public ArgumentSyntax[] SolveInvocationExpression(InvocationExpressionSyntax invocationNode, MethodScanResult result, int level, TaintPropagationRules taintPropagationRules)
         {
             if (taintPropagationRules.CleaningMethods.Any(cleaningMethod => invocationNode.ToString().Contains(cleaningMethod)))
@@ -38,6 +37,7 @@ namespace SQLInjectionAnalyzer.Analyzers
         {
             return new ExpressionSyntax[] { assignmentNode.Right };
         }
+
         public SyntaxNode[] SolveVariableDeclarator(VariableDeclaratorSyntax variableDeclaratorNode)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();

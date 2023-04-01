@@ -39,6 +39,7 @@ namespace SQLInjectionAnalyzer
         private GlobalHelper globalHelper = new GlobalHelper();
         private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
         private TableOfRules tableOfRules = new TableOfRules();
+
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
@@ -90,7 +91,6 @@ namespace SQLInjectionAnalyzer
 
             foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
-
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
                 MethodScanResult methodScanResult = ScanMethod(methodSyntax);

@@ -39,7 +39,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             int numberOfScannedSolutionFilesSoFar = 0;
             diagnostics.NumberOfSolutions = numberOfSolutionFilesUnderThisRepository;
 
-
             foreach (string solutionFilePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
             {
                 SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(solutionFilePath);
@@ -194,7 +193,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                     }
                 }
 
-
                 // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
                 // will never be cleaned.
                 if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
@@ -219,7 +217,6 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
         }
-
 
         private MethodScanResult ConductScanOfTheInitialMethod(MethodDeclarationSyntax methodSyntax)
         {
@@ -311,6 +308,5 @@ namespace SQLInjectionAnalyzer.Analyzers.InterproceduralSolution
                 }
             }
         }
-
     }
 }

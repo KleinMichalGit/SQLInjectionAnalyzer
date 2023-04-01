@@ -17,7 +17,6 @@
 
         private void SinkMethodOne(string arg1, string arg2, int arg3, MyClass myClass)
         {
-
         }
 
         private string CreateStringValue(string arg)
@@ -29,7 +28,6 @@
         {
             public MyClass(string s)
             {
-
             }
         }
     }

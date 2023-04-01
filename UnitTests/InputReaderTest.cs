@@ -14,9 +14,9 @@ namespace UnitTests
     [TestClass]
     public class InputReaderTest
     {
-        InputReader inputReader = new InputReader();
-        string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/" };
-        string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
+        private InputReader inputReader = new InputReader();
+        private string[] mandatoryArgumentsExample = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/" };
+        private string[] allArgumentsPresentedInUsageManual = new string[] { "--path=./a/b", "--scope-of-analysis=OneMethodSyntaxTree", "--config=./c/d/config.json", "--result=./x/y/z/", "--exclude-paths=A,B", "--write-console", "--help" };
 
         [TestMethod]
         public void InputArgumentsAreUnique()
@@ -74,7 +74,6 @@ namespace UnitTests
             args = new string[] { "--any-other-argument=IsNotRecognizable" };
             isRecognizable = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(isRecognizable);
-
         }
 
         [TestMethod]
@@ -87,7 +86,7 @@ namespace UnitTests
             bool mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(mandatoryArgumentsArePresent);
 
-            //--help 
+            //--help
             args = new string[] { "--help" };
             mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsTrue(mandatoryArgumentsArePresent);
@@ -152,7 +151,6 @@ namespace UnitTests
             args = new string[] { "--scope-of-analysis=IncorectlyDefinedScope" };
             scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
             Assert.IsFalse(scopeIsDefinedCorrectly);
-
         }
 
         [TestMethod]
@@ -204,7 +202,6 @@ namespace UnitTests
             processedSubpaths = (List<string>)methodInfo.Invoke(inputReader, new object[] { substrings });
             expected = new List<string> { "A", "B", "C", "D" };
             Assert.IsTrue(Enumerable.SequenceEqual(processedSubpaths, expected));
-
         }
 
         [TestMethod]
@@ -303,7 +300,6 @@ namespace UnitTests
                 WriteOnConsole = false,
             };
             Assert.IsFalse(TwoInputsAreEqual(expected, input));
-
         }
 
         [TestMethod]

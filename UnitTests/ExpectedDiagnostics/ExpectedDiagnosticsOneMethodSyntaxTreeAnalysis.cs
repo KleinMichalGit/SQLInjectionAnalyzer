@@ -14,7 +14,6 @@ namespace UnitTests.ExpectedDiagnostics
     /// </summary>
     public class ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis
     {
-
         public Diagnostics GetSimpleEmptyDiagnostics()
         {
             return new Diagnostics();

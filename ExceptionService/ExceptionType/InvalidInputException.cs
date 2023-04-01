@@ -14,12 +14,14 @@ namespace ExceptionService.ExceptionType
         /// <see cref="InvalidInputException"/> class.
         /// </summary>
         public InvalidInputException() : base() { }
+
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="InvalidInputException"/> class with the message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public InvalidInputException(string message) : base(message) { }
+
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="InvalidInputException"/> class with the message and

@@ -15,7 +15,6 @@
 
         private void SinkMethodOne(string arg1, string arg2, int arg3)
         {
-
         }
 
         private string CreateStringValue(string arg)

@@ -31,7 +31,8 @@ namespace Model
         /// <summary>
         /// Gets the diagnostics total time.
         /// </summary>
-        public TimeSpan DiagnosticsTotalTime { get { return DiagnosticsEndTime - DiagnosticsStartTime; } }
+        public TimeSpan DiagnosticsTotalTime
+        { get { return DiagnosticsEndTime - DiagnosticsStartTime; } }
 
         /// <summary>
         /// Gets or sets the list of separate .sln scan results. The analysis of

@@ -18,7 +18,7 @@ namespace UnitTests
     /// </summary>
     public class ScenarioFactory
     {
-        Analyzer analyzer;
+        private Analyzer analyzer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScenarioFactory"/>
@@ -59,7 +59,6 @@ namespace UnitTests
             {
                 TwoSolutionScanResultsShouldBeEqual(expected.SolutionScanResults[i], actual.SolutionScanResults[i]);
             }
-
         }
 
         private void TwoSolutionScanResultsShouldBeEqual(SolutionScanResult expected, SolutionScanResult actual)
@@ -101,7 +100,6 @@ namespace UnitTests
 
         private void TwoMethodScanResultsShouldBeEqual(MethodScanResult expected, MethodScanResult actual)
         {
-
             expected.Sinks.Should().Be(actual.Sinks);
             expected.Hits.Should().Be(actual.Hits);
 

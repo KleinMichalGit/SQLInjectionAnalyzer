@@ -77,7 +77,6 @@ namespace InputService
             return true;
         }
 
-
         /// <summary>
         /// Decides if all mandatory arguments are present.
         /// </summary>
@@ -102,7 +101,6 @@ namespace InputService
                     Console.WriteLine("Use --help only separately without other arguments.");
                     return false;
                 }
-
             }
 
             if (sourcePathArgumentIsPresent && scopeArgumentIsPresent && exportPathArgumentIsPresent && configFIlePathArgumentIsPresent)

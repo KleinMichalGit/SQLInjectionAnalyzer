@@ -1,6 +1,5 @@
 ﻿namespace Model
 {
-
     /// <summary>
     /// Model <c>ScopeOfAnalysis</c> enumeration.
     /// <para>
@@ -14,7 +13,6 @@
     /// </summary>
     public enum ScopeOfAnalysis
     {
-
         /// <summary>
         /// Reads C# (*.cs) files separately and investigates Syntax Trees
         /// parsed from the separate C# files, without compiling .csproj files,

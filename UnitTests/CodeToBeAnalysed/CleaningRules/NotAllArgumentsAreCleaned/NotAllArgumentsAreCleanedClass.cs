@@ -11,7 +11,6 @@
 
         public void SinkMethodOne(string arg1, string arg2)
         {
-
         }
     }
 }

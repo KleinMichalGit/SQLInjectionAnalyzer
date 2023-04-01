@@ -12,6 +12,7 @@ namespace SQLInjectionAnalyzer
     public class InterproceduralHelper
     {
         private Compilation compilation = null;
+
         public MethodDeclarationSyntax FindMethodParent(SyntaxNode parent)
         {
             while (parent != null)
@@ -32,7 +33,6 @@ namespace SQLInjectionAnalyzer
                 if (levelBlock.TaintedMethodParameters.Sum() > 0 && levelBlock.NumberOfCallers == 0)
                     return true;
             }
-
 
             return false;
         }
@@ -69,14 +69,12 @@ namespace SQLInjectionAnalyzer
                         else
                         {
                             methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH A DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-
                         }
                     }
                 }
             }
             return allMethodInvocations;
         }
-
 
         public List<InvocationAndParentsTaintedParameters> FindAllCallersOfCurrentBlockInSolutionAsync(List<LevelBlock> currentLevelBlocks, MethodScanResult methodScanResult, Solution solution, TaintPropagationRules taintPropagationRules)
         {
@@ -107,7 +105,6 @@ namespace SQLInjectionAnalyzer
                                 else
                                 {
                                     methodScanResult.AppendEvidence("THERE IS A CALLER OF METHOD " + block.MethodSymbol.ToString() + " BUT WITH A DIFFERENT AMOUNT OF ARGUMENTS (UNABLE TO DECIDE WHICH TAINTED ARGUMENT IS WHICH)");
-
                                 }
                             }
                         }

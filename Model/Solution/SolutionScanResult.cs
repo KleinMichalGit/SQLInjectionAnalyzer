@@ -15,7 +15,8 @@ namespace Model.Solution
     {
         public DateTime SolutionScanResultStartTime { get; set; }
         public DateTime SolutionScanResultEndTime { get; set; }
-        public TimeSpan SolutionScanResultTotalTime { get { return SolutionScanResultEndTime - SolutionScanResultStartTime; } }
+        public TimeSpan SolutionScanResultTotalTime
+        { get { return SolutionScanResultEndTime - SolutionScanResultStartTime; } }
 
         /// <summary>
         /// Gets or sets the path of the analysed .sln file.

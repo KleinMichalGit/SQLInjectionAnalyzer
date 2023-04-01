@@ -29,6 +29,7 @@ namespace Model.Rules
         /// </summary>
         /// <value>The list of source areas.</value>
         public List<SourceArea> SourceAreas { get; set; }
+
         /// <summary>
         /// Gets or sets the list of sink methods. Sink methods are methods
         /// which are considered as potentialy vulnerable if at least one
@@ -37,6 +38,7 @@ namespace Model.Rules
         /// </summary>
         /// <value>The list of sink methods.</value>
         public List<string> SinkMethods { get; set; }
+
         /// <summary>
         /// Gets or sets the list of cleaning methods. Cleaning methods are
         /// methods which are considered as safe under any circumstances, and at

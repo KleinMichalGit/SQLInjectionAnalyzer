@@ -113,7 +113,7 @@ namespace UnitTests
             MethodScanResult emptyResult = new MethodScanResult();
 
             // when true
-            // myString = 1 > 2 ? "True" : "";            
+            // myString = 1 > 2 ? "True" : "";
             ConditionalExpressionSyntax conditionalExpressionSyntax = nodeFactory.FindSyntaxNode<ConditionalExpressionSyntax>(path, 0);
             SyntaxNode[] transition = tableOfRules.SolveConditionalExpression(conditionalExpressionSyntax, emptyResult, 0).Result;
             Assert.AreEqual(transition[0].ToString(), "\"True\"");

@@ -17,7 +17,8 @@ namespace Model.Method
 
         public DateTime MethodScanResultEndTime { get; set; }
 
-        public TimeSpan MethodScanResultTotalTime { get { return MethodScanResultEndTime - MethodScanResultStartTime; } }
+        public TimeSpan MethodScanResultTotalTime
+        { get { return MethodScanResultEndTime - MethodScanResultStartTime; } }
 
         private StringBuilder HardEvidence = new StringBuilder();
 
@@ -27,9 +28,11 @@ namespace Model.Method
 
         public short Hits { get; set; } = 0;
 
-        public string Evidence { get { return HardEvidence.ToString(); } }
+        public string Evidence
+        { get { return HardEvidence.ToString(); } }
 
-        public string CallersTree { get { return InterproceduralCallersTree.ToString(); } }
+        public string CallersTree
+        { get { return InterproceduralCallersTree.ToString(); } }
 
         public string MethodName { get; set; }
 
