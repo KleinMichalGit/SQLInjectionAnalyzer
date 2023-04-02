@@ -13,38 +13,30 @@ namespace SQLInjectionAnalyzer.Analyzers
 {
     public class TableOfRules
     {
-        public ArgumentSyntax[] SolveInvocationExpression(InvocationExpressionSyntax invocationNode, MethodScanResult result, int level, TaintPropagationRules taintPropagationRules)
+        public SyntaxNode[] SolveInvocationExpression(InvocationExpressionSyntax invocationNode, MethodScanResult result, int level, TaintPropagationRules taintPropagationRules)
         {
-            if (taintPropagationRules.CleaningMethods.Any(cleaningMethod => invocationNode.ToString().Contains(cleaningMethod)))
-            {
-                result.AppendEvidence(new string(' ', level * 2) + "OK (Cleaning method)");
-                return null;
-            }
-            if (invocationNode.ArgumentList == null)
-                return null;
-
-            return invocationNode.ArgumentList.Arguments.ToArray();
+            if (!taintPropagationRules.CleaningMethods.Any(cleaningMethod =>
+                    invocationNode.ToString().Contains(cleaningMethod)))
+                return invocationNode.ArgumentList.Arguments.ToArray();
+            result.AppendEvidence(new string(' ', level * 2) + "OK (Cleaning method)");
+            return null;
         }
 
-        public ArgumentSyntax[] SolveObjectCreationExpression(ObjectCreationExpressionSyntax objectCreationNode)
+        public SyntaxNode[] SolveObjectCreationExpression(ObjectCreationExpressionSyntax objectCreationNode)
         {
-            if (objectCreationNode.ArgumentList == null)
-                return null;
-            return objectCreationNode.ArgumentList.Arguments.ToArray();
+            return objectCreationNode.ArgumentList?.Arguments.ToArray();
         }
 
-        public ExpressionSyntax[] SolveAssignmentExpression(AssignmentExpressionSyntax assignmentNode)
+        public SyntaxNode[] SolveAssignmentExpression(AssignmentExpressionSyntax assignmentNode)
         {
-            return new ExpressionSyntax[] { assignmentNode.Right };
+            return new[] { assignmentNode.Right };
         }
 
         public SyntaxNode[] SolveVariableDeclarator(VariableDeclaratorSyntax variableDeclaratorNode)
         {
             var eq = variableDeclaratorNode.ChildNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
 
-            if (eq != null)
-                return eq.ChildNodes().ToArray();
-            return null;
+            return eq?.ChildNodes().ToArray();
         }
 
         public SyntaxNode[] FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes, int level, Tainted tainted = null)
@@ -95,12 +87,10 @@ namespace SQLInjectionAnalyzer.Analyzers
             // only after no assignment, declaration,... was found, only after that test for presence among parameters
             for (int i = 0; i < rootNode.ParameterList.Parameters.Count(); i++)
             {
-                if (arg == rootNode.ParameterList.Parameters[i].Identifier.Text)
-                {
-                    result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
-                    result.Hits++;
-                    if (tainted != null) tainted.TaintedMethodParameters[i] += 1;
-                }
+                if (arg != rootNode.ParameterList.Parameters[i].Identifier.Text) continue;
+                result.AppendEvidence(new string('-', (level - 2) * 2) + "> ^^^ BAD (Parameter)");
+                result.Hits++;
+                if (tainted != null) tainted.TaintedMethodParameters[i] += 1;
             }
             return null;
         }

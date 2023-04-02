@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SQLInjectionAnalyzer;
+using SQLInjectionAnalyzer.Analyzers.OneMethodSyntaxTreeAnalyzer;
 using UnitTests.ExpectedDiagnostics;
 using UnitTests.TaintPropagationRulesExamples;
 
