@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Model;
 using Model.CSProject;
 using Model.Method;
@@ -237,6 +239,29 @@ namespace OutputService
             return result;
         }
 
+        public string ShowTree(InterproceduralTree tree)
+        {
+            return "<ul>" +
+                   ShowTreeRec(tree.Callers)
+                   + "</ul>";
+        }
+
+        private string ShowTreeRec(List<InterproceduralTree> callers)
+        {
+            string report = "";
+            foreach (var caller in callers)
+            {
+                report += @"<li>
+                    <details open>
+                    <summary>" + caller.MethodName + "</summary>" + (caller.Callers.Any() ? ShowTree(caller) : "") +
+                    @"
+                </details>
+                    </li>";
+            }
+
+            return report;
+        }
+        
         /// <summary>
         /// Gets the number of vulnerable methods in one particular solution
         /// </summary>

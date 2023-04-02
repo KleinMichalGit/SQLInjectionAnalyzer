@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using ExceptionService.ExceptionType;
 using Model;
-using Model.CSProject;
-using Model.Method;
 using Model.Solution;
-using Model.SyntaxTree;
 using OutputService.RazorOutput;
 using RazorEngineCore;
 using RazorEngine = RazorEngineCore.RazorEngine;
@@ -27,7 +24,7 @@ namespace OutputService
     /// </summary>
     public class OutputGenerator
     {
-        private string exportPath;
+        private readonly string exportPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputGenerator"/>
@@ -48,7 +45,7 @@ namespace OutputService
         public void CreateOutput(Diagnostics diagnostics)
         {
             CreateConsoleOutput(diagnostics);
-            CreateHTMLOutput(diagnostics);
+            CreateHtmlOutput(diagnostics);
             CreateTxtFileOutput(diagnostics);
         }
 
@@ -65,16 +62,23 @@ namespace OutputService
             Console.WriteLine("Analysis start time: " + diagnostics.DiagnosticsStartTime);
             Console.WriteLine("Analysis end time: " + diagnostics.DiagnosticsEndTime);
             Console.WriteLine("Analysis total time: " + diagnostics.DiagnosticsTotalTime);
-            if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.OneMethodSyntaxTree)
+            switch (diagnostics.ScopeOfAnalysis)
             {
-                Console.WriteLine("*.cs files: " + dataExtractor.GetNumberOfAllCSFiles());
-            }
-            else if (diagnostics.ScopeOfAnalysis is ScopeOfAnalysis.OneMethodCSProj)
-            {
-                Console.WriteLine("*.csproj files in directory: " + dataExtractor.GetNumberOfAllCSProjFiles());
-                Console.WriteLine("Scanned *.csproj files: " + dataExtractor.GetNumberOfScannedCSProjFiles());
-                Console.WriteLine("Skipped *.csproj files: " + dataExtractor.GetNumberOfSkippedCSProjFiles());
-                Console.WriteLine("All *.cs files in all scanned *.csproj files: " + dataExtractor.GetNumberOfAllCSFiles());
+                case ScopeOfAnalysis.OneMethodSyntaxTree:
+                    Console.WriteLine("*.cs files: " + dataExtractor.GetNumberOfAllCSFiles());
+                    break;
+                case ScopeOfAnalysis.OneMethodCSProj:
+                    Console.WriteLine("*.csproj files in directory: " + dataExtractor.GetNumberOfAllCSProjFiles());
+                    Console.WriteLine("Scanned *.csproj files: " + dataExtractor.GetNumberOfScannedCSProjFiles());
+                    Console.WriteLine("Skipped *.csproj files: " + dataExtractor.GetNumberOfSkippedCSProjFiles());
+                    Console.WriteLine("All *.cs files in all scanned *.csproj files: " + dataExtractor.GetNumberOfAllCSFiles());
+                    break;
+                case ScopeOfAnalysis.InterproceduralCSProj:
+                    break;
+                case ScopeOfAnalysis.InterproceduralSolution:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             Console.WriteLine("Scanned methods: " + dataExtractor.GetNumberOfScannedMethods());
@@ -92,7 +96,7 @@ namespace OutputService
         ///     should be created.</param>
         /// <exception cref="ExceptionHandler.ExceptionType.OutputGeneratorException">
         ///     not implemented yet</exception>
-        private void CreateHTMLOutput(Diagnostics diagnostics)
+        private void CreateHtmlOutput(Diagnostics diagnostics)
         {
             DataExtractor dataExtractor = new DataExtractor(diagnostics);
             string content = "";
@@ -100,19 +104,19 @@ namespace OutputService
             switch (diagnostics.ScopeOfAnalysis)
             {
                 case ScopeOfAnalysis.OneMethodSyntaxTree:
-                    content = ReportOneMethodSyntaxTree.report;
+                    content = ReportOneMethodSyntaxTree.Report;
                     break;
 
                 case ScopeOfAnalysis.OneMethodCSProj:
-                    content = ReportOneMethodCSProj.report;
+                    content = ReportOneMethodCSProj.Report;
                     break;
 
                 case ScopeOfAnalysis.InterproceduralCSProj:
-                    content = ReportInterproceduralCSProj.report;
+                    content = ReportInterproceduralCSProj.Report;
                     break;
 
                 case ScopeOfAnalysis.InterproceduralSolution:
-                    content = ReportInterproceduralSolution.report;
+                    content = ReportInterproceduralSolution.Report;
                     break;
 
                 default:
@@ -180,13 +184,8 @@ namespace OutputService
             {
                 sb.AppendLine("List of scanned .csproj files: ");
 
-                foreach (CSProjectScanResult csprojectScanResult in solutionScanResult.CSProjectScanResults)
+                foreach (var csprojectScanResult in solutionScanResult.CSProjectScanResults.Where(csprojectScanResult => dataExtractor.GetNumberOfVulnerableMethodsInCSProj(csprojectScanResult) != 0))
                 {
-                    if (dataExtractor.GetNumberOfVulnerableMethodsInCSProj(csprojectScanResult) == 0)
-                    {
-                        continue;
-                    }
-
                     sb.AppendLine();
                     sb.AppendLine("-----------------------------");
                     sb.AppendLine("path: " + csprojectScanResult.Path);
@@ -199,12 +198,8 @@ namespace OutputService
 
                     sb.AppendLine("List of scanned files: ");
 
-                    foreach (SyntaxTreeScanResult st in csprojectScanResult.SyntaxTreeScanResults)
+                    foreach (var st in csprojectScanResult.SyntaxTreeScanResults.Where(st => dataExtractor.GetNumberOfVulnerableMethodsInFile(st) != 0))
                     {
-                        if (dataExtractor.GetNumberOfVulnerableMethodsInFile(st) == 0)
-                        {
-                            continue;
-                        }
                         sb.AppendLine("########################");
                         sb.AppendLine("path: " + st.Path);
                         sb.AppendLine("file scan start time: " + st.SyntaxTreeScanResultStartTime);
@@ -216,25 +211,22 @@ namespace OutputService
 
                         sb.AppendLine("List of vulnerabilities in this file: ");
 
-                        foreach (MethodScanResult methodScanResult in st.MethodScanResults)
+                        foreach (var methodScanResult in st.MethodScanResults.Where(methodScanResult => methodScanResult.Hits > 0))
                         {
-                            if (methodScanResult.Hits > 0)
-                            {
-                                sb.AppendLine();
-                                sb.AppendLine("method name: " + methodScanResult.MethodName);
-                                sb.AppendLine("method implementation line number: " + methodScanResult.LineNumber);
-                                sb.AppendLine("hits: " + methodScanResult.Hits + ", sinks: " + methodScanResult.Hits);
-                                sb.AppendLine("method scan start time: " + methodScanResult.MethodScanResultStartTime);
-                                sb.AppendLine("method scan end time: " + methodScanResult.MethodScanResultEndTime);
-                                sb.AppendLine("method scan total time: " + methodScanResult.MethodScanResultTotalTime);
+                            sb.AppendLine();
+                            sb.AppendLine("method name: " + methodScanResult.MethodName);
+                            sb.AppendLine("method implementation line number: " + methodScanResult.LineNumber);
+                            sb.AppendLine("hits: " + methodScanResult.Hits + ", sinks: " + methodScanResult.Hits);
+                            sb.AppendLine("method scan start time: " + methodScanResult.MethodScanResultStartTime);
+                            sb.AppendLine("method scan end time: " + methodScanResult.MethodScanResultEndTime);
+                            sb.AppendLine("method scan total time: " + methodScanResult.MethodScanResultTotalTime);
 
-                                sb.AppendLine("method body: ");
-                                sb.AppendLine(methodScanResult.MethodBody);
+                            sb.AppendLine("method body: ");
+                            sb.AppendLine(methodScanResult.MethodBody);
 
-                                sb.AppendLine();
-                                sb.AppendLine("evidence: ");
-                                sb.AppendLine(methodScanResult.Evidence);
-                            }
+                            sb.AppendLine();
+                            sb.AppendLine("evidence: ");
+                            sb.AppendLine(methodScanResult.Evidence);
                         }
                     }
                 }

@@ -78,6 +78,7 @@
     <Compile Include="CSProject\CSProjectScanResult.cs" />
     <Compile Include="Diagnostics.cs" />
     <Compile Include="Input.cs" />
+    <Compile Include="Method\InterproceduralTree.cs" />
     <Compile Include="Method\InvocationAndParentsTaintedParameters.cs" />
     <Compile Include="Method\LevelBlock.cs" />
     <Compile Include="Method\MethodScanResult.cs" />

@@ -8,6 +8,7 @@ namespace Model.Method
         public InvocationExpressionSyntax InvocationExpression;
 
         public int[] TaintedMethodParameters;
-        public Compilation compilation;
+        public Compilation Compilation;
+        public int InterproceduralCallersTreeCalleeNodeId;
     }
 }
