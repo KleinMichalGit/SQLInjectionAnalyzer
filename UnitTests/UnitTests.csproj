@@ -126,6 +126,7 @@
   <ItemGroup>
     <Compile Include="CodeToBeAnalysed\TableOfRules\TableOfRulesCodeToBeAnalysed.cs" />
     <Compile Include="ExceptionServiceTest.cs" />
+    <Compile Include="InterproceduralHelperTest.cs" />
     <Compile Include="NodeFactory.cs" />
     <Compile Include="OutputServiceTest.cs" />
     <Compile Include="ScenarioFactory.cs" />
