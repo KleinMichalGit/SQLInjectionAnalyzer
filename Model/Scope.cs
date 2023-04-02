@@ -45,5 +45,7 @@
         /// conditional statements.
         /// </summary>
         InterproceduralSolution,
+        
+        TestScope,
     }
 }

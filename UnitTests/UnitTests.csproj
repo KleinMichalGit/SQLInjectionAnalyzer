@@ -125,7 +125,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeToBeAnalysed\TableOfRules\TableOfRulesCodeToBeAnalysed.cs" />
+    <Compile Include="ExceptionServiceTest.cs" />
     <Compile Include="NodeFactory.cs" />
+    <Compile Include="OutputServiceTest.cs" />
     <Compile Include="ScenarioFactory.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\SafeAssignment\SafeAssignment1.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment2.cs" />
