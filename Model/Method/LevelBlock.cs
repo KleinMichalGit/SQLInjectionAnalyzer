@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace Model.Method
 {
@@ -9,5 +10,7 @@ namespace Model.Method
         public int[] TaintedMethodParameters;
 
         public int NumberOfCallers;
+
+        public int InterproceduralCallersTreeNodeId;
     }
 }

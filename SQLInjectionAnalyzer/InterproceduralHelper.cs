@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ExceptionService.ExceptionType;
@@ -64,7 +65,7 @@ namespace SQLInjectionAnalyzer
                         if (block.MethodSymbol.Parameters.Count() == inv.ArgumentList.Arguments.Count())
                         {
                             block.NumberOfCallers += 1;
-                            allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters });
+                            allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters, InterproceduralCallersTreeCalleeNodeId = block.InterproceduralCallersTreeNodeId});
                         }
                         else
                         {
@@ -100,7 +101,7 @@ namespace SQLInjectionAnalyzer
                                 if (block.MethodSymbol.Parameters.Count() == inv.ArgumentList.Arguments.Count())
                                 {
                                     block.NumberOfCallers += 1;
-                                    allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters, compilation = compilation });
+                                    allMethodInvocations.Add(new InvocationAndParentsTaintedParameters() { InvocationExpression = inv, TaintedMethodParameters = block.TaintedMethodParameters, Compilation = compilation, InterproceduralCallersTreeCalleeNodeId = block.InterproceduralCallersTreeNodeId});
                                 }
                                 else
                                 {
@@ -113,6 +114,20 @@ namespace SQLInjectionAnalyzer
             }
 
             return allMethodInvocations;
+        }
+
+        public void AddCaller(int id, InterproceduralTree callersTree, InterproceduralTree caller)
+        {
+            if (callersTree.Id == id)
+            {
+                callersTree.Callers.Add(caller);
+                return;
+            }
+            
+            foreach (var child in callersTree.Callers)
+            {
+                AddCaller(id, child, caller);
+            }
         }
 
         private async Task SetCompilation(Project project)

@@ -17,22 +17,17 @@ namespace Model.Method
 
         public DateTime MethodScanResultEndTime { get; set; }
 
-        public TimeSpan MethodScanResultTotalTime
-        { get { return MethodScanResultEndTime - MethodScanResultStartTime; } }
+        public TimeSpan MethodScanResultTotalTime => MethodScanResultEndTime - MethodScanResultStartTime;
 
-        private StringBuilder HardEvidence = new StringBuilder();
+        private readonly StringBuilder hardEvidence = new StringBuilder();
 
-        private StringBuilder InterproceduralCallersTree = new StringBuilder();
+        public InterproceduralTree InterproceduralCallersTree { get; set; }
 
         public short Sinks { get; set; } = 0;
 
         public short Hits { get; set; } = 0;
 
-        public string Evidence
-        { get { return HardEvidence.ToString(); } }
-
-        public string CallersTree
-        { get { return InterproceduralCallersTree.ToString(); } }
+        public string Evidence => hardEvidence.ToString();
 
         public string MethodName { get; set; }
 
@@ -42,9 +37,7 @@ namespace Model.Method
 
         public int LineCount { get; set; }
 
-        public HashSet<string> SourceAreasLabels = new HashSet<string>();
-
-        public List<string> BodiesOfCallers = new List<string>();
+        public readonly HashSet<string> SourceAreasLabels = new HashSet<string>();
 
         public int[] TaintedMethodParameters;
 
@@ -54,16 +47,7 @@ namespace Model.Method
         /// <param name="line">The line.</param>
         public void AppendEvidence(string line)
         {
-            HardEvidence.AppendLine(line);
-        }
-
-        /// <summary>
-        /// Appends the caller.
-        /// </summary>
-        /// <param name="line">The line.</param>
-        public void AppendCaller(string line)
-        {
-            InterproceduralCallersTree.AppendLine(line);
+            hardEvidence.AppendLine(line);
         }
     }
 }

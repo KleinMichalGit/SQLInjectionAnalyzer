@@ -102,12 +102,22 @@ namespace SQLInjectionAnalyzer
                 }
                 Console.WriteLine("-----------------------");
                 Console.WriteLine("Interprocedural callers tree:");
-                Console.WriteLine(result.CallersTree);
+                PrintCallers(result.InterproceduralCallersTree, 0);
                 Console.WriteLine("-----------------------");
             }
             Console.WriteLine("Evidence:");
             Console.WriteLine(evidence);
             Console.WriteLine("-----------------------");
+        }
+        
+        private void PrintCallers(InterproceduralTree callersTree, int level)
+        {
+            Console.WriteLine(level + " " + new string(' ', level * 2) + callersTree.MethodName);
+            
+            foreach (var child in callersTree.Callers)
+            {
+                PrintCallers(child, level + 1);
+            }
         }
     }
 }
