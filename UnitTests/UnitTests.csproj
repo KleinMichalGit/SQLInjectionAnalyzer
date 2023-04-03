@@ -129,6 +129,7 @@
     <Compile Include="InterproceduralHelperTest.cs" />
     <Compile Include="NodeFactory.cs" />
     <Compile Include="OutputServiceTest.cs" />
+    <Compile Include="ProgramTest.cs" />
     <Compile Include="ScenarioFactory.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\SafeAssignment\SafeAssignment1.cs" />
     <Compile Include="CodeToBeAnalysed\AssignmentRules\VulnerableAssignment\VulnerableAssignment2.cs" />
@@ -194,6 +195,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="CodeToBeAnalysed\IntentionalyLeftEmptyFolder\IntentionalyLeftEmptyFolder.txt" />
+    <Content Include="ConfigFileExamples\ValidConfigFiles\config2.json" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

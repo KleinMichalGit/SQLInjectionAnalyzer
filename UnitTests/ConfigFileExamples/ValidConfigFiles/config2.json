@@ -1,0 +1,8 @@
+﻿{
+  "level": 5,
+  "sourceAreas": [],
+  "sinkMethods": [
+    "SinkMethodOne"
+  ],
+  "cleaningMethods": []
+}

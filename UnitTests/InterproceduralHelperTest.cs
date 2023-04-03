@@ -120,12 +120,6 @@ namespace UnitTests
         }
         
         [TestMethod]
-        public void FindAllCallersOfCurrentBlockInSolution()
-        {
-            
-        }
-
-        [TestMethod]
         public void AddCaller()
         {
             var tree = new InterproceduralTree()

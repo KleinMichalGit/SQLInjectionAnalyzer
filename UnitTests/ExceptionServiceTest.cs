@@ -83,8 +83,8 @@ namespace UnitTests
     
     public class ConsoleOutput : IDisposable
     {
-        private StringWriter stringWriter;
-        private TextWriter originalOutput;
+        private readonly StringWriter stringWriter;
+        private readonly TextWriter originalOutput;
 
         public ConsoleOutput()
         {
