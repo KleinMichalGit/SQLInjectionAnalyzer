@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Rules;
 using SQLInjectionAnalyzer;
+using SQLInjectionAnalyzer.Analyzers.OneMethodCSProjAnalyzer;
 
 namespace UnitTests
 {
