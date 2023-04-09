@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\InterproceduralCSProjAnalyzerTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Rules;
+using SQLInjectionAnalyzer.Analyzers.InterproceduralCSProjAnalyzer;
+
+namespace UnitTests
+{
+    [TestClass]
+    public class InterproceduralCSProjAnalyzerTest
+    {
+        [TestMethod]
+        public void ScanDirectory()
+        {
+            // is not be able to open project is MSBuild, test only number of CSProjFiles 
+            InterproceduralCSProjAnalyzer analyzer = new InterproceduralCSProjAnalyzer();
+            var diag = analyzer.ScanDirectory(
+                &quot;../../&quot;,
+                new List&lt;string&gt;(),
+                new TaintPropagationRules(){SinkMethods = new List&lt;string&gt;(){&quot;SinkMethodOne&quot;}},
+                true
+            );
+            
+            Assert.AreEqual(1, diag.SolutionScanResults[0].NumberOfCSProjFiles);
+            
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[13,9,13,10,1],[15,13,15,90,1],[16,13,21,15,1],[23,13,23,81,1],[25,9,25,10,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Model\Input.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+
+namespace Model
+{
+    /// &lt;summary&gt;
+    /// Model &lt;c&gt;Input&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Contains all the information specified via console at the beginning of
+    /// the program. Namely, information about what should be analysed and which
+    /// method should be used. Also, where the results should be generated, what
+    /// parts of code should be skipped, where the config file is located, etc.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class Input
+    {
+        /// &lt;summary&gt;
+        /// Mandatory.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The path of the C# source folder which should be analysed.
+        ///     &lt;/value&gt;
+        public string SourceFolderPath { get; set; }
+
+        /// &lt;summary&gt;
+        /// Mandatory.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The scope refers to the philosophy used during analysis, the
+        ///     type of compiled files, the time and memory requirements of the
+        ///     analysis, the accuracy of the received diagnostics, etc. All of
+        ///     these decisions are hidden under the simplicity of the
+        ///     &lt;see cref=&quot;ScopeOfAnalysis&quot;/&gt;.&lt;/value&gt;
+        public ScopeOfAnalysis Scope { get; set; }
+
+        /// &lt;summary&gt;
+        /// Mandatory.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The path where the final results should be generated.&lt;/value&gt;
+        public string ExportPath { get; set; }
+
+        /// &lt;summary&gt;
+        /// Mandatory.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The path to the .json configuration file.&lt;/value&gt;
+        public string ConfigFilePath { get; set; }
+
+        /// &lt;summary&gt;
+        /// Optional.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The list of subpaths of files which should be omitted during
+        ///     analysis.&lt;/value&gt;
+        public List&lt;string&gt; ExcludeSubpaths { get; set; } = new List&lt;string&gt;();
+
+        /// &lt;summary&gt;
+        /// Optional.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;&lt;c&gt;true&lt;/c&gt; if results should be writen on console in
+        ///     real-time, otherwise &lt;c&gt;false&lt;/c&gt;.&lt;/value&gt;
+        public bool WriteOnConsole { get; set; }
+
+        /// &lt;summary&gt;
+        /// Optional.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;&lt;c&gt;true&lt;/c&gt; if only tutorial should be writen on console
+        ///     without performing analysis, otherwise &lt;c&gt;false&lt;/c&gt;.&lt;/value&gt;
+        public bool WriteTutorialAndExit { get; set; }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[21,42,21,46,1],[21,47,21,51,1],[31,40,31,44,1],[31,45,31,49,1],[37,36,37,40,1],[37,41,37,45,1],[43,40,43,44,1],[43,45,43,49,1],[50,47,50,51,1],[50,52,50,56,1],[50,61,50,79,1],[57,38,57,42,1],[57,43,57,47,1],[64,44,64,48,1],[64,49,64,53,1]]);
+    </script>
+  </body>
+</html>

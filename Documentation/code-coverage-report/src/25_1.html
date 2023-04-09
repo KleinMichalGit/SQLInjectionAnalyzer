@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\ScenarioFactory.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
+using Model;
+using Model.CSProject;
+using Model.Method;
+using Model.Rules;
+using Model.Solution;
+using Model.SyntaxTree;
+using OutputService;
+using SQLInjectionAnalyzer;
+
+namespace UnitTests
+{
+    /// &lt;summary&gt;
+    /// Common test helper. Contains common methods for creating test scenarios,
+    /// and for testing if the received results are equal.
+    /// &lt;/summary&gt;
+    public class ScenarioFactory
+    {
+        private Analyzer analyzer;
+
+        /// &lt;summary&gt;
+        /// Initializes a new instance of the &lt;see cref=&quot;ScenarioFactory&quot;/&gt;
+        /// class.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;analyzer&quot;&gt;The analyzer.&lt;/param&gt;
+        public ScenarioFactory(Analyzer analyzer)
+        {
+            this.analyzer = analyzer;
+        }
+
+        /// &lt;summary&gt;
+        /// Creates a new unit test scenario.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;rules&quot;&gt;The rules which should be used during the
+        ///     scenario.&lt;/param&gt;
+        /// &lt;param name=&quot;directoryPath&quot;&gt;The directory path to be analysed.
+        ///     &lt;/param&gt;
+        /// &lt;param name=&quot;expectedDiagnostics&quot;&gt;The expected diagnostics.&lt;/param&gt;
+        /// &lt;param name=&quot;excludeSubpaths&quot;&gt;The exclude subpaths.&lt;/param&gt;
+        public void CreateScenario(TaintPropagationRules rules, string directoryPath, Diagnostics expectedDiagnostics, List&lt;string&gt; excludeSubpaths)
+        {
+            Diagnostics diagnostics = analyzer.ScanDirectory(directoryPath, excludeSubpaths, rules, true);
+            OutputGenerator outputGenerator = new OutputGenerator(&quot;./&quot;);
+            outputGenerator.CreateConsoleOutput(diagnostics);
+            TwoDiagnosticFilesShouldBeEqual(expectedDiagnostics, diagnostics);
+        }
+
+        private void TwoDiagnosticFilesShouldBeEqual(Diagnostics expected, Diagnostics actual)
+        {
+            // times of analyses do not have to be equal, since there is no way multiple analyses of the same code would take the same time
+            // paths do not have to be equal, since they depend on the environment
+            expected.ScopeOfAnalysis.Should().Be(actual.ScopeOfAnalysis);
+            expected.NumberOfSolutions.Should().Be(actual.NumberOfSolutions);
+            expected.SolutionScanResults.Count().Should().Be(actual.SolutionScanResults.Count());
+
+            for (int i = 0; i &lt; expected.SolutionScanResults.Count(); i++)
+            {
+                TwoSolutionScanResultsShouldBeEqual(expected.SolutionScanResults[i], actual.SolutionScanResults[i]);
+            }
+        }
+
+        private void TwoSolutionScanResultsShouldBeEqual(SolutionScanResult expected, SolutionScanResult actual)
+        {
+            expected.CSProjectScanResults.Count().Should().Be(actual.CSProjectScanResults.Count());
+
+            for (int i = 0; i &lt; expected.CSProjectScanResults.Count(); i++)
+            {
+                TwoCSProjectScanResultsShouldBeEqual(expected.CSProjectScanResults[i], actual.CSProjectScanResults[i]);
+            }
+        }
+
+        private void TwoCSProjectScanResultsShouldBeEqual(CSProjectScanResult expected, CSProjectScanResult actual)
+        {
+            for (int i = 0; i &lt; expected.NamesOfAllCSFilesInsideThisCSProject.Count(); i++)
+            {
+                expected.NamesOfAllCSFilesInsideThisCSProject[i].Should().Be(actual.NamesOfAllCSFilesInsideThisCSProject[i]);
+            }
+
+            expected.NamesOfAllCSFilesInsideThisCSProject.Count().Should().Be(actual.NamesOfAllCSFilesInsideThisCSProject.Count());
+            expected.SyntaxTreeScanResults.Count().Should().Be(actual.SyntaxTreeScanResults.Count());
+
+            for (int i = 0; i &lt; expected.SyntaxTreeScanResults.Count(); i++)
+            {
+                TwoSyntaxTreeScanResultsShouldBeEqual(expected.SyntaxTreeScanResults[i], actual.SyntaxTreeScanResults[i]);
+            }
+        }
+
+        private void TwoSyntaxTreeScanResultsShouldBeEqual(SyntaxTreeScanResult expected, SyntaxTreeScanResult actual)
+        {
+            expected.NumberOfSkippedMethods.Should().Be(actual.NumberOfSkippedMethods);
+            expected.MethodScanResults.Count().Should().Be(actual.MethodScanResults.Count());
+
+            for (int i = 0; i &lt; expected.MethodScanResults.Count(); i++)
+            {
+                TwoMethodScanResultsShouldBeEqual(expected.MethodScanResults[i], actual.MethodScanResults[i]);
+            }
+        }
+
+        private void TwoMethodScanResultsShouldBeEqual(MethodScanResult expected, MethodScanResult actual)
+        {
+            expected.Sinks.Should().Be(actual.Sinks);
+            expected.Hits.Should().Be(actual.Hits);
+
+            // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing orion monorepository
+            if (expected.Hits &gt; 0)
+            {
+                expected.MethodName.Should().Be(actual.MethodName);
+                expected.MethodBody.Should().Be(actual.MethodBody);
+                expected.LineNumber.Should().Be(actual.LineNumber);
+                expected.LineCount.Should().Be(actual.LineCount);
+            }
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[28,9,28,50,1],[29,9,29,10,1],[30,13,30,38,1],[31,9,31,10,1],[43,9,43,10,1],[44,13,44,107,1],[45,13,45,73,1],[46,13,46,62,1],[47,13,47,79,1],[48,9,48,10,1],[51,9,51,10,1],[54,13,54,74,1],[55,13,55,78,1],[56,13,56,98,1],[58,18,58,27,1],[58,29,58,69,1],[58,71,58,74,1],[59,13,59,14,1],[60,17,60,117,1],[61,13,61,14,1],[62,9,62,10,1],[65,9,65,10,1],[66,13,66,100,1],[68,18,68,27,1],[68,29,68,70,1],[68,72,68,75,1],[69,13,69,14,1],[70,17,70,120,1],[71,13,71,14,1],[72,9,72,10,1],[75,9,75,10,1],[76,18,76,27,1],[76,29,76,86,1],[76,88,76,91,1],[77,13,77,14,1],[78,17,78,126,1],[79,13,79,14,1],[81,13,81,132,1],[82,13,82,102,1],[84,18,84,27,1],[84,29,84,71,1],[84,73,84,76,1],[85,13,85,14,1],[86,17,86,123,1],[87,13,87,14,1],[88,9,88,10,1],[91,9,91,10,1],[92,13,92,88,1],[93,13,93,94,1],[95,18,95,27,1],[95,29,95,67,1],[95,69,95,72,1],[96,13,96,14,1],[97,17,97,111,1],[98,13,98,14,1],[99,9,99,10,1],[102,9,102,10,1],[103,13,103,54,1],[104,13,104,52,1],[107,13,107,35,1],[108,13,108,14,1],[109,17,109,68,1],[110,17,110,68,1],[111,17,111,68,1],[112,17,112,66,1],[113,13,113,14,1],[114,9,114,10,1]]);
+    </script>
+  </body>
+</html>

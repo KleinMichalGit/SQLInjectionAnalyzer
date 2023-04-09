@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Analyzers\OneMethodCSProjAnalyzer\OneMethodCSProjAnalyzer.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
+using Model;
+using Model.CSProject;
+using Model.Method;
+using Model.Rules;
+using Model.SyntaxTree;
+
+namespace SQLInjectionAnalyzer.Analyzers.OneMethodCSProjAnalyzer
+{
+    /// &lt;summary&gt;
+    /// SQLInjectionAnalyzer &lt;c&gt;OneMethodCSProjAnalyzer&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Compiles *.csproj files, without performing interprocedural analysis.
+    /// Uses the same rules as OneMethodSyntaxTree, therefore provides the same
+    /// results. This ScopeOfAnalysis serves only to investigate how much time
+    /// is needed for compilation of all .csproj files. Able to decide trivial
+    /// conditional statements
+    /// &lt;/para&gt;
+    /// &lt;para&gt;
+    /// Contains &lt;c&gt;ScanDirectory&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    /// &lt;seealso cref=&quot;SQLInjectionAnalyzer.Analyzer&quot;/&gt;
+    public class OneMethodCSProjAnalyzer : Analyzer
+    {
+        private TaintPropagationRules taintPropagationRules;
+        private const string TargetFileType = &quot;*.csproj&quot;;
+        private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
+        private bool writeOnConsole;
+        private readonly GlobalHelper globalHelper = new GlobalHelper();
+        private readonly DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
+        
+        public override Diagnostics ScanDirectory(string directoryPath, List&lt;string&gt; excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
+        {
+            this.taintPropagationRules = taintPropagationRules;
+            this.writeOnConsole = writeOnConsole;
+
+            var diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
+            var solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
+
+            var numberOfCsProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, TargetFileType);
+            var numberOfScannedCsProjFilesSoFar = 0;
+
+            foreach (string filePath in Directory.EnumerateFiles(directoryPath, TargetFileType, SearchOption.AllDirectories))
+            {
+                solutionScanResult.NumberOfCSProjFiles++;
+
+                // skip all blacklisted .csproj files
+                if (excludeSubpaths.Any(x =&gt; filePath.Contains(x)))
+                {
+                    solutionScanResult.PathsOfSkippedCSProjects.Add(filePath);
+                }
+                else
+                {
+                    Console.WriteLine(&quot;currently scanned .csproj: &quot; + filePath);
+                    Console.WriteLine(numberOfScannedCsProjFilesSoFar + &quot; / &quot; + numberOfCsProjFilesUnderThisRepository + &quot; .csproj files scanned&quot;);
+                    ScanCsProj(filePath).Wait();
+                    solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
+                }
+
+                numberOfScannedCsProjFilesSoFar++;
+            }
+
+            Console.WriteLine(numberOfScannedCsProjFilesSoFar + &quot; / &quot; + numberOfCsProjFilesUnderThisRepository + &quot; .csproj files scanned&quot;);
+            diagnostics.SolutionScanResults.Add(solutionScanResult);
+
+            diagnostics.DiagnosticsEndTime = DateTime.Now;
+            return diagnostics;
+        }
+
+        private async Task ScanCsProj(string csprojPath)
+        {
+            csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(csprojPath);
+
+            using (var workspace = MSBuildWorkspace.Create())
+            {
+                var project = await workspace.OpenProjectAsync(csprojPath);
+
+                var compilation = await project.GetCompilationAsync();
+
+                if (compilation != null)
+                    foreach (var st in compilation.SyntaxTrees)
+                    {
+                        var syntaxTree = (CSharpSyntaxTree)st;
+                        csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
+                        var syntaxTreeScanResult = ScanSyntaxTree(syntaxTree);
+                        csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
+                    }
+            }
+            csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
+        }
+
+        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
+        {
+            var syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
+
+            foreach (var methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType&lt;MethodDeclarationSyntax&gt;())
+            {
+                if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
+
+                var methodScanResult = ScanMethod(methodSyntax);
+
+                if (methodScanResult.Hits &gt; 0)
+                {
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList;
+                    methodScanResult.MethodBody = methodSyntax.ToString();
+                    var lineSpan = methodSyntax.GetLocation().GetLineSpan();
+                    methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
+                    methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
+
+                    globalHelper.SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
+
+                    if (writeOnConsole) globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
+                }
+                syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
+            }
+            syntaxTreeScanResult.SyntaxTreeScanResultEndTime = DateTime.Now;
+            return syntaxTreeScanResult;
+        }
+
+        private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
+        {
+            var methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+
+            var invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods).ToList();
+            
+            methodScanResult.Sinks = (short)invocations.Count();
+
+            // follows data flow inside method for each sink invocation from sink invocation to source
+            foreach (var invocation in invocations)
+            {
+                RuleEvaluator.EvaluateRule(methodSyntax, invocation, methodScanResult, taintPropagationRules);
+            }
+
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            return methodScanResult;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[35,9,35,82,1],[37,9,37,73,1],[38,9,38,103,1],[41,9,41,10,1],[42,13,42,64,1],[43,13,43,50,1],[45,13,45,109,1],[46,13,46,105,1],[48,13,48,161,1],[49,13,49,53,1],[51,13,51,20,1],[51,22,51,37,1],[51,38,51,40,1],[51,41,51,125,1],[52,13,52,14,1],[53,17,53,58,1],[56,17,56,46,1],[56,46,56,66,0],[56,66,56,68,1],[57,17,57,18,0],[58,21,58,79,0],[59,17,59,18,0],[61,17,61,18,1],[62,21,62,81,1],[63,21,63,148,1],[64,21,64,49,1],[65,21,65,83,1],[66,17,66,18,1],[68,17,68,51,1],[69,13,69,14,1],[71,13,71,140,1],[72,13,72,69,1],[74,13,74,59,1],[75,13,75,32,1],[76,9,76,10,1],[79,9,79,10,1],[80,13,80,97,1],[82,20,82,61,1],[83,13,83,14,1],[84,17,84,76,1],[86,17,86,71,1],[88,17,88,41,1],[89,21,89,28,1],[89,30,89,36,0],[89,37,89,39,1],[89,40,89,63,1],[90,21,90,22,0],[91,25,91,63,0],[92,25,92,104,0],[93,25,93,79,0],[94,25,94,90,0],[95,21,95,22,0],[96,13,96,14,1],[97,13,97,72,1],[98,9,98,10,1],[101,9,101,10,0],[102,13,102,115,0],[104,13,104,20,0],[104,22,104,38,0],[104,39,104,41,0],[104,42,104,114,0],[105,13,105,14,0],[106,17,106,117,0],[106,118,106,127,0],[108,17,108,65,0],[110,17,110,47,0],[111,17,111,18,0],[112,21,112,115,0],[113,21,113,75,0],[114,21,114,77,0],[115,21,115,83,0],[116,21,116,114,0],[118,21,118,104,0],[120,21,120,40,0],[120,41,120,133,0],[121,17,121,18,0],[122,17,122,78,0],[123,13,123,14,0],[124,13,124,77,0],[125,13,125,41,0],[126,9,126,10,0],[129,9,129,10,0],[130,13,130,88,0],[132,13,132,122,0],[134,13,134,65,0],[137,13,137,20,0],[137,22,137,36,0],[137,37,137,39,0],[137,40,137,51,0],[138,13,138,14,0],[139,17,139,111,0],[140,13,140,14,0],[142,13,142,69,0],[143,13,143,37,0],[144,9,144,10,0]]);
+    </script>
+  </body>
+</html>

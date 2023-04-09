@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\ConfigFileReaderTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using ExceptionService.ExceptionType;
+using InputService;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Rules;
+
+namespace UnitTests
+{
+    /// &lt;summary&gt;
+    /// UnitTests TestClass for testing ConfigFileReader
+    /// &lt;/summary&gt;
+    [TestClass]
+    public class ConfigFileReaderTest
+    {
+        private ConfigFileReader configFileReader = new ConfigFileReader();
+
+        [TestMethod]
+        public void RulesAreValid()
+        {
+            MethodInfo methodInfo = typeof(ConfigFileReader).GetMethod(&quot;RulesAreValid&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // freshly initialised TaintPropagationRules are invalid because level = 0
+            TaintPropagationRules rules = new TaintPropagationRules();
+            bool areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
+            Assert.IsFalse(areValid);
+
+            // TaintPropagationRules where SinkMethodNames are null are invalid
+            rules = new TaintPropagationRules() { Level = 5, SourceAreas = new List&lt;SourceArea&gt;() };
+            areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
+            Assert.IsFalse(areValid);
+
+            // TaintPropagationRules where SourceAreas are null are invalid
+            rules = new TaintPropagationRules() { Level = 5, SinkMethods = new List&lt;string&gt;() };
+            areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
+            Assert.IsFalse(areValid);
+
+            //valid rules
+            rules = new TaintPropagationRules() { Level = 5, SinkMethods = new List&lt;string&gt;(), SourceAreas = new List&lt;SourceArea&gt;(), CleaningMethods = new List&lt;string&gt;() };
+            areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { rules });
+            Assert.IsTrue(areValid);
+        }
+
+        [TestMethod]
+        public void AllSourceAreasAreValid()
+        {
+            MethodInfo methodInfo = typeof(ConfigFileReader).GetMethod(&quot;AllSourceAreasAreValid&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // valid source areas
+            List&lt;SourceArea&gt; sourceAreas = new List&lt;SourceArea&gt;() { new SourceArea() { Path = &quot;./my/path/&quot;, Label = &quot;X&quot; } };
+            bool areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { sourceAreas });
+            Assert.IsTrue(areValid);
+
+            // invalid source areas
+            sourceAreas = new List&lt;SourceArea&gt;() { new SourceArea() };
+            areValid = (bool)methodInfo.Invoke(configFileReader, new object[] { sourceAreas });
+            Assert.IsFalse(areValid);
+        }
+
+        [TestMethod]
+        public void ProcessConfig()
+        {
+            TaintPropagationRules expectedRules = new TaintPropagationRules()
+            {
+                Level = 5,
+                SinkMethods = new List&lt;string&gt; {
+                    &quot;ExecuteReader&quot;,
+                    &quot;ExecuteDataSet&quot;,
+                    &quot;ExecuteDataTable&quot;,
+                    &quot;ExecuteExists&quot;,
+                    &quot;ExecuteScalar&quot;,
+                    &quot;ExecuteNonQuery&quot;
+                },
+                CleaningMethods = new List&lt;string&gt; {
+                    &quot;KeyValuePair&quot;,
+                },
+                SourceAreas = new List&lt;SourceArea&gt; {
+                    new SourceArea()
+                    {
+                        Label = &quot;X&quot;,
+                        Path = &quot;./X/Y/Z/&quot;
+                    },
+                    new SourceArea()
+                    {
+                        Label = &quot;A&quot;,
+                        Path = &quot;./A/B/C/&quot;
+                    },
+                }
+            };
+
+            // Config file is valid
+            TaintPropagationRules rules = configFileReader.ProcessConfig(&quot;../../ConfigFileExamples/ValidConfigFiles/config1.json&quot;);
+
+            Assert.IsTrue(RulesAreEqual(expectedRules, rules));
+
+            // Config file is invalid because level is missing
+            try
+            {
+                configFileReader.ProcessConfig(&quot;../../ConfigFileExamples/InvalidConfigFiles/config2.json&quot;);
+            }
+            catch (InvalidInputException e)
+            {
+                Assert.AreEqual(&quot;Taint propagation rules are invalid.&quot;, e.Message);
+            }
+
+            // Config file is invalid because list of SinkMethodNames is missing
+            try
+            {
+                configFileReader.ProcessConfig(&quot;../../ConfigFileExamples/InvalidConfigFiles/config3.json&quot;);
+            }
+            catch (InvalidInputException e)
+            {
+                Assert.AreEqual(&quot;Taint propagation rules are invalid.&quot;, e.Message);
+            }
+            // Config file is invalid because list of SourceAreas is missing
+            try
+            {
+                configFileReader.ProcessConfig(&quot;../../ConfigFileExamples/InvalidConfigFiles/config4.json&quot;);
+            }
+            catch (InvalidInputException e)
+            {
+                Assert.AreEqual(&quot;Taint propagation rules are invalid.&quot;, e.Message);
+            }
+
+            // Config file does not exist under such path - should throw IOException
+            try
+            {
+                configFileReader.ProcessConfig(&quot;../../ConfigFileExamples/InvalidConfigFiles/nonExisting.json&quot;);
+            }
+            catch (InvalidInputException e)
+            {
+                Assert.AreEqual(&quot;Can&#39;t read the config file.&quot;, e.Message);
+            }
+        }
+
+        private bool RulesAreEqual(TaintPropagationRules receivedRules, TaintPropagationRules expectedRules)
+        {
+            if (receivedRules.Level != expectedRules.Level) return false;
+            if (!Enumerable.SequenceEqual(receivedRules.SinkMethods, expectedRules.SinkMethods)) return false;
+            if (!Enumerable.SequenceEqual(receivedRules.CleaningMethods, expectedRules.CleaningMethods)) return false;
+
+            if (receivedRules.SourceAreas.Count() != expectedRules.SourceAreas.Count()) return false;
+
+            for (int i = 0; i &lt; receivedRules.SourceAreas.Count(); i++)
+            {
+                if (receivedRules.SourceAreas[i].Label != expectedRules.SourceAreas[i].Label) return false;
+                if (receivedRules.SourceAreas[i].Path != expectedRules.SourceAreas[i].Path) return false;
+            }
+
+            return true;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[17,9,17,76,1],[21,9,21,10,1],[22,13,22,137,1],[25,13,25,71,1],[26,13,26,95,1],[27,13,27,38,1],[30,13,30,101,1],[31,13,31,90,1],[32,13,32,38,1],[35,13,35,97,1],[36,13,36,90,1],[37,13,37,38,1],[40,13,40,173,1],[41,13,41,90,1],[42,13,42,37,1],[43,9,43,10,1],[47,9,47,10,1],[48,13,48,146,1],[51,13,51,125,1],[52,13,52,101,1],[53,13,53,37,1],[56,13,56,71,1],[57,13,57,96,1],[58,13,58,38,1],[59,9,59,10,1],[63,9,63,10,1],[64,13,90,15,1],[93,13,93,132,1],[95,13,95,64,1],[99,13,99,14,1],[100,17,100,108,1],[101,13,101,14,0],[102,13,102,44,1],[103,13,103,14,1],[104,17,104,84,1],[105,13,105,14,1],[109,13,109,14,1],[110,17,110,108,1],[111,13,111,14,0],[112,13,112,44,1],[113,13,113,14,1],[114,17,114,84,1],[115,13,115,14,1],[118,13,118,14,1],[119,17,119,108,1],[120,13,120,14,0],[121,13,121,44,1],[122,13,122,14,1],[123,17,123,84,1],[124,13,124,14,1],[128,13,128,14,1],[129,17,129,112,1],[130,13,130,14,0],[131,13,131,44,1],[132,13,132,14,1],[133,17,133,75,1],[134,13,134,14,1],[135,9,135,10,1],[138,9,138,10,1],[139,13,139,60,1],[139,61,139,74,0],[140,13,140,97,1],[140,98,140,111,0],[141,13,141,105,1],[141,106,141,119,0],[143,13,143,88,1],[143,89,143,102,0],[145,18,145,27,1],[145,29,145,66,1],[145,68,145,71,1],[146,13,146,14,1],[147,17,147,94,1],[147,95,147,108,0],[148,17,148,92,1],[148,93,148,106,0],[149,13,149,14,1],[151,13,151,25,1],[152,9,152,10,1]]);
+    </script>
+  </body>
+</html>

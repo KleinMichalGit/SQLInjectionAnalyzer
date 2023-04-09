@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\InputService\ConfigFileReader.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using ExceptionService.ExceptionType;
+using Model.Rules;
+using Newtonsoft.Json;
+
+namespace InputService
+{
+    /// &lt;summary&gt;
+    /// InputService &lt;c&gt;ConfigFileReader&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Reads and validates .json config files which contain
+    /// TaintPropagationRules.
+    /// &lt;/para&gt;
+    /// &lt;para&gt;
+    /// Contains &lt;c&gt;ProcessConfig&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class ConfigFileReader
+    {
+        /// &lt;summary&gt;
+        /// Rules are valid if level &gt; 0, sinkMethods, cleaningMethods, and
+        /// sourceAreas are defined in config, and all sourceAreas are valid.
+        /// &lt;/summary&gt;
+        private bool RulesAreValid(TaintPropagationRules rules)
+        {
+            return rules.Level &gt; 0 &amp;&amp; rules.SinkMethods != null &amp;&amp; rules.CleaningMethods != null &amp;&amp; rules.SourceAreas != null &amp;&amp; AllSourceAreasAreValid(rules.SourceAreas);
+        }
+
+        /// &lt;summary&gt;
+        /// Source area is valid if both path and label are defined
+        /// &lt;/summary&gt;
+        private bool AllSourceAreasAreValid(List&lt;SourceArea&gt; sourceAreas)
+        {
+            foreach (SourceArea sourceArea in sourceAreas)
+            {
+                if (sourceArea.Path == null || sourceArea.Label == null) return false;
+            }
+            return true;
+        }
+
+        /// &lt;summary&gt;
+        /// Reads the .json config on the specified path, converts it from .json
+        /// format to TaintPropagationRules format.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;pathToConfigFile&quot;&gt;The path to .json configuration file.
+        ///     &lt;/param&gt;
+        /// &lt;returns&gt;If the rules received from the valid .json are valid,
+        ///     returns the rules. Otherwise, throws InvalidInputException.
+        ///     &lt;/returns&gt;
+        /// &lt;exception cref=&quot;ExceptionService.ExceptionType.InvalidInputException&quot;&gt;
+        ///     Can&#39;t read the config file. or Taint propagation rules are
+        ///     invalid.&lt;/exception&gt;
+        public TaintPropagationRules ProcessConfig(string pathToConfigFile)
+        {
+            try
+            {
+                using (StreamReader r = new StreamReader(pathToConfigFile))
+                {
+                    string json = r.ReadToEnd();
+                    TaintPropagationRules rules = JsonConvert.DeserializeObject&lt;TaintPropagationRules&gt;(json);
+                    if (RulesAreValid(rules)) return rules;
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e.Message);
+                throw new InvalidInputException(&quot;Can&#39;t read the config file.&quot;);
+            }
+
+            throw new InvalidInputException(&quot;Taint propagation rules are invalid.&quot;);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[27,9,27,10,1],[28,13,28,172,1],[29,9,29,10,1],[35,9,35,10,1],[36,13,36,20,1],[36,22,36,43,1],[36,44,36,46,1],[36,47,36,58,1],[37,13,37,14,1],[38,17,38,73,1],[38,74,38,87,1],[39,13,39,14,1],[40,13,40,25,1],[41,9,41,10,1],[56,9,56,10,1],[58,13,58,14,1],[59,24,59,75,1],[60,17,60,18,1],[61,21,61,49,1],[62,21,62,110,1],[63,21,63,46,1],[63,47,63,60,1],[64,17,64,18,1],[65,13,65,14,1],[66,13,66,34,1],[67,13,67,14,1],[68,17,68,46,1],[69,17,69,80,1],[72,13,72,85,1],[73,9,73,10,1]]);
+    </script>
+  </body>
+</html>

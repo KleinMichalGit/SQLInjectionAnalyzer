@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\TableOfRulesTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Method;
+using SQLInjectionAnalyzer.Analyzers;
+using UnitTests.TaintPropagationRulesExamples;
+
+namespace UnitTests
+{
+    /// &lt;summary&gt;
+    /// TableOfRulesTest for testing each rule in TableOfRules.
+    /// &lt;/summary&gt;
+    [TestClass]
+    public class TableOfRulesTest
+    {
+        private TableOfRules tableOfRules = new TableOfRules();
+        private NodeFactory nodeFactory = new NodeFactory();
+        private TaintPropagationRulesCreator rules = new TaintPropagationRulesCreator();
+        private string path = &quot;..\\..\\CodeToBeAnalysed\\TableOfRules\\TableOfRulesCodeToBeAnalysed.cs&quot;;
+
+        [TestMethod]
+        public void SolveInvocationExpressionTest()
+        {
+            //A();
+            InvocationExpressionSyntax invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 0);
+            SyntaxNode[] transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
+            Assert.AreEqual(0, transition.Length);
+
+            //B(&quot;&quot;);
+            invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 1);
+            transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
+            Assert.AreEqual(1, transition.Length);
+
+            //C(&quot;&quot;, 0);
+            invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 2);
+            transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
+            Assert.AreEqual(2, transition.Length);
+
+            //D(&quot;&quot;, 0, true);
+            invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 3);
+            transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
+            Assert.AreEqual(3, transition.Length);
+
+            // set a rule to consider A() as a cleaning method
+            MethodScanResult emptyResult = new MethodScanResult();
+            invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 0);
+            Assert.IsNull(tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, emptyResult, 0, rules.GetRulesWithCleaningMethod()));
+            Assert.AreEqual(emptyResult.Evidence, &quot;OK (Cleaning method)\r\n&quot;);
+        }
+
+        [TestMethod]
+        public void SolveObjectCreationExpressionTest()
+        {
+            //new MyClass();
+            ObjectCreationExpressionSyntax objectCreationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ObjectCreationExpressionSyntax&gt;(path, 0);
+            SyntaxNode[] transition = tableOfRules.SolveObjectCreationExpression(objectCreationExpressionSyntax);
+            Assert.AreEqual(0, transition.Length);
+
+            //new MyClass(&quot;a&quot;);
+            objectCreationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ObjectCreationExpressionSyntax&gt;(path, 1);
+            transition = tableOfRules.SolveObjectCreationExpression(objectCreationExpressionSyntax);
+            Assert.AreEqual(1, transition.Length);
+
+            //new MyClass(&quot;a&quot;, 0);
+            objectCreationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ObjectCreationExpressionSyntax&gt;(path, 2);
+            transition = tableOfRules.SolveObjectCreationExpression(objectCreationExpressionSyntax);
+            Assert.AreEqual(2, transition.Length);
+        }
+
+        [TestMethod]
+        public void SolveAssignmentExpressionTest()
+        {
+            // a = new MyClass();
+            AssignmentExpressionSyntax assignmentExpressionSyntax = nodeFactory.FindSyntaxNode&lt;AssignmentExpressionSyntax&gt;(path, 0);
+            SyntaxNode[] transition = tableOfRules.SolveAssignmentExpression(assignmentExpressionSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;new MyClass()&quot;);
+
+            // b = new MyClass(&quot;a&quot;);
+            assignmentExpressionSyntax = nodeFactory.FindSyntaxNode&lt;AssignmentExpressionSyntax&gt;(path, 1);
+            transition = tableOfRules.SolveAssignmentExpression(assignmentExpressionSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;new MyClass(\&quot;a\&quot;)&quot;);
+
+            // c = new MyClass(&quot;a&quot;, 0);
+            assignmentExpressionSyntax = nodeFactory.FindSyntaxNode&lt;AssignmentExpressionSyntax&gt;(path, 2);
+            transition = tableOfRules.SolveAssignmentExpression(assignmentExpressionSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;new MyClass(\&quot;a\&quot;, 0)&quot;);
+        }
+
+        [TestMethod]
+        public void SolveVariableDeclaratorTest()
+        {
+            // MyClass a = new MyClass();
+            VariableDeclaratorSyntax variableDeclaratorSyntax = nodeFactory.FindSyntaxNode&lt;VariableDeclaratorSyntax&gt;(path, 0);
+            SyntaxNode[] transition = tableOfRules.SolveVariableDeclarator(variableDeclaratorSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;new MyClass()&quot;);
+
+            // string myString = &quot;my string&quot; + &quot; another &quot; + &quot;string&quot;;
+            variableDeclaratorSyntax = nodeFactory.FindSyntaxNode&lt;VariableDeclaratorSyntax&gt;(path, 1);
+            transition = tableOfRules.SolveVariableDeclarator(variableDeclaratorSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;\&quot;my string\&quot; + \&quot; another \&quot; + \&quot;string\&quot;&quot;);
+
+            // int i = -1;
+            variableDeclaratorSyntax = nodeFactory.FindSyntaxNode&lt;VariableDeclaratorSyntax&gt;(path, 2);
+            transition = tableOfRules.SolveVariableDeclarator(variableDeclaratorSyntax);
+            Assert.AreEqual(transition[0].ToString(), &quot;-1&quot;);
+        }
+
+        [TestMethod]
+        public void SolveConditionalExpressionTest()
+        {
+            MethodScanResult emptyResult = new MethodScanResult();
+
+            // when true
+            // myString = 1 &gt; 2 ? &quot;True&quot; : &quot;&quot;;
+            ConditionalExpressionSyntax conditionalExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ConditionalExpressionSyntax&gt;(path, 0);
+            SyntaxNode[] transition = tableOfRules.SolveConditionalExpression(conditionalExpressionSyntax, emptyResult, 0).Result;
+            Assert.AreEqual(transition[0].ToString(), &quot;\&quot;True\&quot;&quot;);
+            Assert.AreEqual(emptyResult.Evidence, &quot;successfully evaluated condition as True (only 1 block will be investigated).\r\n&quot;);
+
+            emptyResult = new MethodScanResult();
+
+            //when false
+            // myString = 1 &lt; 2 ? &quot;&quot; : &quot;False&quot;;
+            conditionalExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ConditionalExpressionSyntax&gt;(path, 1);
+            transition = tableOfRules.SolveConditionalExpression(conditionalExpressionSyntax, emptyResult, 0).Result;
+            Assert.AreEqual(transition[0].ToString(), &quot;\&quot;False\&quot;&quot;);
+            Assert.AreEqual(emptyResult.Evidence, &quot;successfully evaluated condition as False (only 1 block will be investigated).\r\n&quot;);
+
+            emptyResult = new MethodScanResult();
+
+            //when unable to decide
+            // myString = B(&quot;&quot;).Length &gt; 9 ? &quot;True&quot; : &quot;False&quot;;
+            conditionalExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ConditionalExpressionSyntax&gt;(path, 2);
+            transition = tableOfRules.SolveConditionalExpression(conditionalExpressionSyntax, emptyResult, 0).Result;
+            Assert.AreEqual(transition[0].ToString(), &quot;\&quot;True\&quot;&quot;);
+            Assert.AreEqual(transition[1].ToString(), &quot;\&quot;False\&quot;&quot;);
+            Assert.AreEqual(emptyResult.Evidence, &quot;unsuccessfully evaluated condition (both blocks will be investigated).\r\n&quot;);
+        }
+
+        [TestMethod]
+        public void SolveLiteralExpressionTest()
+        {
+            MethodScanResult emptyResult = new MethodScanResult();
+
+            tableOfRules.SolveLiteralExpression(emptyResult, 0);
+            Assert.AreEqual(emptyResult.Evidence, &quot;OK (Literal)\r\n&quot;);
+        }
+
+        [TestMethod]
+        public void SolveUnrecognizedSyntaxNode()
+        {
+            MethodScanResult emptyResult = new MethodScanResult();
+
+            // consider the following syntax node as unrecognized syntax node
+            ConditionalExpressionSyntax conditionalExpressionSyntax = nodeFactory.FindSyntaxNode&lt;ConditionalExpressionSyntax&gt;(path, 0);
+            tableOfRules.SolveUnrecognizedSyntaxNode(emptyResult, conditionalExpressionSyntax, 0);
+            Assert.AreEqual(emptyResult.Evidence, &quot;UNRECOGNIZED NODE 1 &lt; 2 ? \&quot;True\&quot; : \&quot;\&quot;\r\n&quot;);
+        }
+
+        [TestMethod]
+        public void FindOriginTest()
+        {
+            MethodScanResult emptyResult = new MethodScanResult();
+
+            // find the last declaration of argument
+            MethodDeclarationSyntax methodDeclarationSyntax = nodeFactory.FindSyntaxNode&lt;MethodDeclarationSyntax&gt;(path, 5);
+            InvocationExpressionSyntax invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 5);
+            SyntaxNode[] transition = tableOfRules.FindOrigin(methodDeclarationSyntax, invocationExpressionSyntax.ArgumentList.Arguments[0], emptyResult, new List&lt;SyntaxNode&gt;(), 0);
+            Assert.AreEqual(transition[0].ToString(), &quot;c = b&quot;);
+
+            emptyResult = new MethodScanResult();
+
+            // find the last assignment to argument
+            transition = tableOfRules.FindOrigin(methodDeclarationSyntax, invocationExpressionSyntax.ArgumentList.Arguments[1], emptyResult, new List&lt;SyntaxNode&gt;(), 0);
+            Assert.AreEqual(transition[0].ToString(), &quot;b = \&quot;new string\&quot;&quot;);
+
+            emptyResult = new MethodScanResult();
+
+            // vulnerability
+            VariableDeclaratorSyntax declarationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;VariableDeclaratorSyntax&gt;(path, 8);
+            SyntaxNode vulnerability = tableOfRules.SolveVariableDeclarator(declarationExpressionSyntax)[0];
+            Assert.IsNull(tableOfRules.FindOrigin(methodDeclarationSyntax, vulnerability, emptyResult, new List&lt;SyntaxNode&gt;(), 2));
+            Assert.AreEqual(emptyResult.Hits, 1);
+            Assert.AreEqual(emptyResult.Evidence, &quot;&gt; ^^^ BAD (Parameter)\r\n&quot;);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[17,9,17,64,1],[18,9,18,61,1],[19,9,19,89,1],[20,9,20,105,1],[24,9,24,10,1],[26,13,26,133,1],[27,13,27,170,1],[28,13,28,51,1],[31,13,31,106,1],[32,13,32,157,1],[33,13,33,51,1],[36,13,36,106,1],[37,13,37,157,1],[38,13,38,51,1],[41,13,41,106,1],[42,13,42,157,1],[43,13,43,51,1],[46,13,46,67,1],[47,13,47,106,1],[48,13,48,147,1],[49,13,49,79,1],[50,9,50,10,1],[54,9,54,10,1],[56,13,56,145,1],[57,13,57,114,1],[58,13,58,51,1],[61,13,61,114,1],[62,13,62,101,1],[63,13,63,51,1],[66,13,66,114,1],[67,13,67,101,1],[68,13,68,51,1],[69,9,69,10,1],[73,9,73,10,1],[75,13,75,133,1],[76,13,76,106,1],[77,13,77,72,1],[80,13,80,106,1],[81,13,81,93,1],[82,13,82,77,1],[85,13,85,106,1],[86,13,86,93,1],[87,13,87,80,1],[88,9,88,10,1],[92,9,92,10,1],[94,13,94,127,1],[95,13,95,102,1],[96,13,96,72,1],[99,13,99,102,1],[100,13,100,89,1],[101,13,101,101,1],[104,13,104,102,1],[105,13,105,89,1],[106,13,106,61,1],[107,9,107,10,1],[111,9,111,10,1],[112,13,112,67,1],[116,13,116,136,1],[117,13,117,131,1],[118,13,118,67,1],[119,13,119,136,1],[121,13,121,50,1],[125,13,125,108,1],[126,13,126,118,1],[127,13,127,68,1],[128,13,128,137,1],[130,13,130,50,1],[134,13,134,108,1],[135,13,135,118,1],[136,13,136,67,1],[137,13,137,68,1],[138,13,138,129,1],[139,9,139,10,1],[143,9,143,10,1],[144,13,144,67,1],[146,13,146,65,1],[147,13,147,71,1],[148,9,148,10,1],[152,9,152,10,1],[153,13,153,67,1],[156,13,156,136,1],[157,13,157,99,1],[158,13,158,100,1],[159,9,159,10,1],[163,9,163,10,1],[164,13,164,67,1],[167,13,167,124,1],[168,13,168,133,1],[169,13,169,182,1],[170,13,170,64,1],[172,13,172,50,1],[175,13,175,169,1],[176,13,176,77,1],[178,13,178,50,1],[181,13,181,130,1],[182,13,182,109,1],[183,13,183,132,1],[184,13,184,50,1],[185,13,185,80,1],[186,9,186,10,1]]);
+    </script>
+  </body>
+</html>

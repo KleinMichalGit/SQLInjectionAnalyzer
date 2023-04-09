@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Analyzers\InterproceduralCSProjAnalyzer\InterproceduralCSProjAnalyzer.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
+using Model;
+using Model.CSProject;
+using Model.Method;
+using Model.Rules;
+using Model.SyntaxTree;
+
+namespace SQLInjectionAnalyzer.Analyzers.InterproceduralCSProjAnalyzer
+{
+    /// &lt;summary&gt;
+    /// SQLInjectionAnalyzer &lt;c&gt;InterproceduralCSProjAnalyzer&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Compiles all C# project (*.csproj) files, performs n-level
+    /// interprocedural analysis (where number n is defined in config.json file)
+    /// for each project separately, able to decide trivial conditional
+    /// statements.
+    /// &lt;/para&gt;
+    /// &lt;para&gt;
+    /// Contains &lt;c&gt;ScanDirectory&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    /// &lt;seealso cref=&quot;SQLInjectionAnalyzer.Analyzer&quot;/&gt;
+    public class InterproceduralCSProjAnalyzer : Analyzer
+    {
+        private TaintPropagationRules taintPropagationRules;
+        private const string TargetFileType = &quot;*.csproj&quot;;
+        private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
+        private bool writeOnConsole;
+        private readonly GlobalHelper globalHelper = new GlobalHelper();
+        private readonly DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
+        private readonly InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
+
+        public override Diagnostics ScanDirectory(string directoryPath, List&lt;string&gt; excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
+        {
+            this.taintPropagationRules = taintPropagationRules;
+            this.writeOnConsole = writeOnConsole;
+            var diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.InterproceduralCSProj);
+
+            var solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
+
+            var numberOfCsProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, TargetFileType);
+            var numberOfScannedCsProjFilesSoFar = 0;
+
+            foreach (string filePath in Directory.EnumerateFiles(directoryPath, TargetFileType, SearchOption.AllDirectories))
+            {
+                solutionScanResult.NumberOfCSProjFiles++;
+
+                // skip all blacklisted .csproj files
+                if (excludeSubpaths.Any(x =&gt; filePath.Contains(x)))
+                {
+                    solutionScanResult.PathsOfSkippedCSProjects.Add(filePath);
+                }
+                else
+                {
+                    Console.WriteLine(&quot;currently scanned .csproj: &quot; + filePath);
+                    Console.WriteLine(numberOfScannedCsProjFilesSoFar + &quot; / &quot; + numberOfCsProjFilesUnderThisRepository + &quot; .csproj files scanned&quot;);
+                    ScanCsProj(filePath).Wait();
+                    solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
+                }
+
+                numberOfScannedCsProjFilesSoFar++;
+            }
+
+            Console.WriteLine(numberOfScannedCsProjFilesSoFar + &quot; / &quot; + numberOfCsProjFilesUnderThisRepository + &quot; .csproj files scanned&quot;);
+
+            diagnostics.SolutionScanResults.Add(solutionScanResult);
+
+            diagnostics.DiagnosticsEndTime = DateTime.Now;
+
+            return diagnostics;
+        }
+
+        private async Task ScanCsProj(string csprojPath)
+        {
+            csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(csprojPath);
+
+            using (var workspace = MSBuildWorkspace.Create())
+            {
+                var project = await workspace.OpenProjectAsync(csprojPath);
+
+                var compilation = await project.GetCompilationAsync();
+
+                if (compilation != null)
+                    foreach (var st in compilation.SyntaxTrees)
+                    {
+                        var syntaxTree = (CSharpSyntaxTree)st;
+                        csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
+
+                        SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree, compilation);
+                        csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
+                    }
+            }
+            csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
+        }
+
+        private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree, Compilation compilation)
+        {
+            var syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
+
+            foreach (var methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType&lt;MethodDeclarationSyntax&gt;())
+            {
+                if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
+
+                var methodScanResult = InterproceduralScanMethod(methodSyntax, compilation);
+
+                // these values are not set for method scans without hits, because it resulted into OutOfMemoryException when analysing monorepository
+                if (methodScanResult.Hits &gt; 0)
+                {
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList;
+                    methodScanResult.MethodBody = methodSyntax.ToString();
+                    var lineSpan = methodSyntax.GetLocation().GetLineSpan();
+                    methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
+                    methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
+
+                    if (writeOnConsole)
+                    {
+                        globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence, methodScanResult);
+                    }
+                }
+
+                if (methodScanResult.Hits == 0) // if all tainted variables are cleaned, we do not need to remember anything
+                {
+                    methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+                }
+
+                syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
+            }
+            syntaxTreeScanResult.SyntaxTreeScanResultEndTime = DateTime.Now;
+            return syntaxTreeScanResult;
+        }
+
+        private MethodScanResult InterproceduralScanMethod(MethodDeclarationSyntax methodSyntax, Compilation compilation)
+        {
+            var methodScanResult = ConductScanOfTheInitialMethod(methodSyntax);
+            var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree, ignoreAccessibility: false);
+            var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax);
+
+            var random = new Random();
+            var tree = new InterproceduralTree
+            {
+                Id = random.Next(Int32.MaxValue),
+                MethodName = methodSymbol?.ToString(),
+                Callers = new List&lt;InterproceduralTree&gt;()
+            };
+            
+            var currentLevelBlocks = new List&lt;LevelBlock&gt;() { new LevelBlock() { MethodSymbol = methodSymbol, TaintedMethodParameters = methodScanResult.TaintedMethodParameters, InterproceduralCallersTreeNodeId = tree.Id} };
+            var nextLevelBlocks = new List&lt;LevelBlock&gt;();
+            
+            // n-level BFS interprocedural analysis
+            for (var currentLevel = 2; currentLevel &lt; taintPropagationRules.Level + 1; currentLevel++)
+            { 
+                foreach (var currentSyntaxTree in compilation.SyntaxTrees)
+                {
+                    globalHelper.SolveSourceAreas(currentSyntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
+                    semanticModel = compilation.GetSemanticModel(currentSyntaxTree, ignoreAccessibility: false);
+
+                    var allMethodInvocations = interproceduralHelper.FindAllCallersOfCurrentBlock(currentSyntaxTree, currentLevelBlocks, semanticModel, methodScanResult);
+
+                    if (allMethodInvocations == null) return diagnosticsInitializer.InitialiseMethodScanResult();
+
+                    foreach (var invocation in allMethodInvocations)
+                    {
+                        var parent = interproceduralHelper.FindMethodParent(invocation.InvocationExpression.Parent);
+
+                        if (parent == null) continue;
+
+                        var id = random.Next(int.MaxValue);
+                        interproceduralHelper.AddCaller(
+                            invocation.InterproceduralCallersTreeCalleeNodeId,
+                            tree, 
+                        new InterproceduralTree
+                            {
+                                Id = id,
+                                MethodName = semanticModel.GetDeclaredSymbol(parent)?.ToString(),
+                                Callers = new List&lt;InterproceduralTree&gt;()
+                            }
+                        );
+
+                        methodScanResult.AppendEvidence(&quot;INTERPROCEDURAL LEVEL: &quot; + currentLevel + &quot; &quot; + semanticModel.GetDeclaredSymbol(parent));
+
+                        var tainted = new Tainted()
+                        {
+                            TaintedMethodParameters = new int[parent.ParameterList.Parameters.Count()],
+                            TaintedInvocationArguments = new int[invocation.InvocationExpression.ArgumentList.Arguments.Count()]
+                        };
+
+                        RuleEvaluator.EvaluateRule(parent, invocation.InvocationExpression, methodScanResult, tainted, taintPropagationRules, invocation.TaintedMethodParameters);
+
+                        if (interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(invocation.TaintedMethodParameters, tainted.TaintedInvocationArguments))
+                        {
+                            methodScanResult.AppendEvidence(&quot;ALL TAINTED VARIABLES CLEANED IN THIS BRANCH.&quot;);
+                        }
+                        else
+                        {
+                            nextLevelBlocks.Add(new LevelBlock() { TaintedMethodParameters = tainted.TaintedMethodParameters, MethodSymbol = semanticModel.GetDeclaredSymbol(parent), InterproceduralCallersTreeNodeId = id});
+                        }
+                    }
+                }
+               
+                // on current level we have at least one method with tainted parameters, but this method has 0 callers. Therefore its parameters
+                // will never be cleaned.
+                if (interproceduralHelper.CurrentLevelContainsTaintedBlocksWithoutCallers(currentLevelBlocks))
+                {
+                    methodScanResult.AppendEvidence(&quot;ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, THERE IS AT LEAST ONE METHOD WITH TAINTED PARAMETERS WITHOUT ANY CALLERS. THEREFORE, ITS PARAMETERS ARE UNCLEANABLE.&quot;);
+                    methodScanResult.InterproceduralCallersTree = tree;
+                    methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                    return methodScanResult;
+                }
+
+                currentLevelBlocks = nextLevelBlocks;
+                nextLevelBlocks = new List&lt;LevelBlock&gt;();
+
+                //all tainted parameters are cleaned
+                if (currentLevelBlocks.Any()) continue;
+                methodScanResult.AppendEvidence(&quot;ON THIS LEVEL OF INTERPROCEDURAL ANALYSIS, ALL TAINTED VARIABLES WERE CLEANED.&quot;);
+                methodScanResult.InterproceduralCallersTree = tree;
+                methodScanResult.MethodScanResultEndTime = DateTime.Now;
+                return methodScanResult;
+            }
+
+            methodScanResult.InterproceduralCallersTree = tree;
+            
+            methodScanResult.MethodScanResultEndTime = DateTime.Now;
+            
+            return methodScanResult;
+        }
+
+        private MethodScanResult ConductScanOfTheInitialMethod(MethodDeclarationSyntax methodSyntax)
+        {
+            var methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            methodScanResult.AppendEvidence(&quot;INTERPROCEDURAL LEVEL: 1 &quot;);
+
+            var invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods).ToList();
+            methodScanResult.Sinks = (short)invocations.Count();
+
+            var taintedMethod = new Tainted()
+            {
+                TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+            };
+
+            // follows data flow inside method for each sink invocation from sink invocation to source
+            foreach (var invocation in invocations)
+            {
+                var taintedInvocation = new Tainted()
+                {
+                    TaintedMethodParameters = new int[methodSyntax.ParameterList.Parameters.Count()],
+                    TaintedInvocationArguments = new int[invocation.ArgumentList.Arguments.Count()]
+                };
+
+                RuleEvaluator.EvaluateRule(methodSyntax, invocation, methodScanResult, taintedInvocation, taintPropagationRules);
+
+                for (var i = 0; i &lt; taintedMethod.TaintedMethodParameters.Length; i++)
+                {
+                    taintedMethod.TaintedMethodParameters[i] += taintedInvocation.TaintedMethodParameters[i];
+                }
+            }
+
+            methodScanResult.TaintedMethodParameters = taintedMethod.TaintedMethodParameters;
+            return methodScanResult;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[35,9,35,82,1],[37,9,37,73,1],[38,9,38,103,1],[39,9,39,100,1],[42,9,42,10,1],[43,13,43,64,1],[44,13,44,50,1],[45,13,45,115,1],[47,13,47,105,1],[49,13,49,161,1],[50,13,50,53,1],[52,13,52,20,1],[52,22,52,37,1],[52,38,52,40,1],[52,41,52,125,1],[53,13,53,14,1],[54,17,54,58,1],[57,17,57,46,1],[57,46,57,66,0],[57,66,57,68,1],[58,17,58,18,0],[59,21,59,79,0],[60,17,60,18,0],[62,17,62,18,1],[63,21,63,81,1],[64,21,64,148,1],[65,21,65,49,1],[66,21,66,83,1],[67,17,67,18,1],[69,17,69,51,1],[70,13,70,14,1],[72,13,72,140,1],[74,13,74,69,1],[76,13,76,59,1],[78,13,78,32,1],[79,9,79,10,1],[82,9,82,10,1],[83,13,83,97,1],[85,20,85,61,1],[86,13,86,14,1],[87,17,87,76,1],[89,17,89,71,1],[91,17,91,41,1],[92,21,92,28,1],[92,30,92,36,0],[92,37,92,39,1],[92,40,92,63,1],[93,21,93,22,0],[94,25,94,63,0],[95,25,95,104,0],[97,25,97,109,0],[98,25,98,90,0],[99,21,99,22,0],[100,13,100,14,1],[101,13,101,72,1],[102,9,102,10,1],[105,9,105,10,0],[106,13,106,115,0],[108,13,108,20,0],[108,22,108,38,0],[108,39,108,41,0],[108,42,108,114,0],[109,13,109,14,0],[110,17,110,117,0],[110,118,110,127,0],[112,17,112,93,0],[115,17,115,47,0],[116,17,116,18,0],[117,21,117,115,0],[118,21,118,75,0],[119,21,119,77,0],[120,21,120,83,0],[121,21,121,114,0],[123,21,123,40,0],[124,21,124,22,0],[125,25,125,135,0],[126,21,126,22,0],[127,17,127,18,0],[129,17,129,48,0],[130,17,130,18,0],[131,21,131,92,0],[132,17,132,18,0],[134,17,134,78,0],[135,13,135,14,0],[136,13,136,77,0],[137,13,137,41,0],[138,9,138,10,0],[141,9,141,10,0],[142,13,142,80,0],[143,13,143,115,0],[144,13,144,78,0],[146,13,146,39,0],[147,13,152,15,0],[154,13,154,225,0],[155,13,155,58,0],[158,18,158,38,0],[158,40,158,86,0],[158,88,158,102,0],[159,13,159,14,0],[160,17,160,24,0],[160,26,160,47,0],[160,48,160,50,0],[160,51,160,74,0],[161,17,161,18,0],[162,21,162,111,0],[163,21,163,113,0],[165,21,165,171,0],[167,21,167,54,0],[167,55,167,114,0],[169,21,169,28,0],[169,30,169,44,0],[169,45,169,47,0],[169,48,169,68,0],[170,21,170,22,0],[171,25,171,117,0],[173,25,173,44,0],[173,45,173,54,0],[175,25,175,60,0],[176,25,185,27,0],[187,25,187,147,0],[189,25,193,27,0],[195,25,195,179,0],[197,25,197,163,0],[198,25,198,26,0],[199,29,199,110,0],[200,25,200,26,0],[202,25,202,26,0],[203,29,203,223,0],[204,25,204,26,0],[205,21,205,22,0],[206,17,206,18,0],[210,17,210,111,0],[211,17,211,18,0],[212,21,212,216,0],[213,21,213,72,0],[214,21,214,77,0],[215,21,215,45,0],[218,17,218,54,0],[219,17,219,58,0],[222,17,222,46,0],[222,47,222,56,0],[223,17,223,131,0],[224,17,224,68,0],[225,17,225,73,0],[226,17,226,41,0],[229,13,229,64,0],[231,13,231,69,0],[233,13,233,37,0],[234,9,234,10,0],[237,9,237,10,0],[238,13,238,88,0],[239,13,239,74,0],[241,13,241,122,0],[242,13,242,65,0],[244,13,247,15,0],[250,13,250,20,0],[250,22,250,36,0],[250,37,250,39,0],[250,40,250,51,0],[251,13,251,14,0],[252,17,256,19,0],[258,17,258,130,0],[260,22,260,31,0],[260,33,260,81,0],[260,83,260,86,0],[261,17,261,18,0],[262,21,262,110,0],[263,17,263,18,0],[264,13,264,14,0],[266,13,266,94,0],[267,13,267,37,0],[268,9,268,10,0]]);
+    </script>
+  </body>
+</html>

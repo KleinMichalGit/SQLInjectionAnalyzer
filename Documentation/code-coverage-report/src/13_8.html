@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Analyzers\TableOfRules.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Scripting;
+using Model.Method;
+using Model.Rules;
+
+namespace SQLInjectionAnalyzer.Analyzers
+{
+    public class TableOfRules
+    {
+        public SyntaxNode[] SolveInvocationExpression(InvocationExpressionSyntax invocationNode, MethodScanResult result, int level, TaintPropagationRules taintPropagationRules)
+        {
+            if (!taintPropagationRules.CleaningMethods.Any(cleaningMethod =&gt;
+                    invocationNode.ToString().Contains(cleaningMethod)))
+                return invocationNode.ArgumentList.Arguments.ToArray();
+            result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;OK (Cleaning method)&quot;);
+            return null;
+        }
+
+        public SyntaxNode[] SolveObjectCreationExpression(ObjectCreationExpressionSyntax objectCreationNode)
+        {
+            return objectCreationNode.ArgumentList?.Arguments.ToArray();
+        }
+
+        public SyntaxNode[] SolveAssignmentExpression(AssignmentExpressionSyntax assignmentNode)
+        {
+            return new[] { assignmentNode.Right };
+        }
+
+        public SyntaxNode[] SolveVariableDeclarator(VariableDeclaratorSyntax variableDeclaratorNode)
+        {
+            var eq = variableDeclaratorNode.ChildNodes().OfType&lt;EqualsValueClauseSyntax&gt;().FirstOrDefault();
+
+            return eq?.ChildNodes().ToArray();
+        }
+
+        public SyntaxNode[] FindOrigin(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List&lt;SyntaxNode&gt; visitedNodes, int level, Tainted tainted = null)
+        {
+            string arg = currentNode.ToString();
+            int currentNodePosition = currentNode.GetLocation().GetLineSpan().StartLinePosition.Line;
+
+            if (currentNode is ArgumentSyntax)
+            {
+                if (currentNode.ChildNodes().First() is MemberAccessExpressionSyntax)
+                    arg = currentNode.ChildNodes().First().ChildNodes().OfType&lt;IdentifierNameSyntax&gt;().First().Identifier.Text;
+            }
+
+            InvocationExpressionSyntax invocation = currentNode.DescendantNodes().OfType&lt;InvocationExpressionSyntax&gt;().FirstOrDefault();
+            if (invocation != null)
+            {
+                return new SyntaxNode[] { invocation };
+            }
+
+            ConditionalExpressionSyntax conditional = currentNode.DescendantNodes().OfType&lt;ConditionalExpressionSyntax&gt;().FirstOrDefault();
+            if (conditional != null)
+            {
+                return new SyntaxNode[] { conditional };
+            }
+
+            ObjectCreationExpressionSyntax objectCreation = currentNode.DescendantNodes().OfType&lt;ObjectCreationExpressionSyntax&gt;().FirstOrDefault();
+            if (objectCreation != null)
+            {
+                return new SyntaxNode[] { objectCreation };
+            }
+
+            foreach (AssignmentExpressionSyntax assignment in rootNode.DescendantNodes().OfType&lt;AssignmentExpressionSyntax&gt;().Where(a =&gt; a.Left.ToString() == arg).Reverse())
+            {
+                if (!visitedNodes.Contains(assignment) &amp;&amp; currentNodePosition &gt; assignment.GetLocation().GetLineSpan().StartLinePosition.Line)
+                {
+                    return new SyntaxNode[] { assignment };
+                }
+            }
+
+            foreach (VariableDeclaratorSyntax dec in rootNode.DescendantNodes().OfType&lt;VariableDeclaratorSyntax&gt;().Where(d =&gt; d.Identifier.Text == arg).Reverse())
+            {
+                if (!visitedNodes.Contains(dec) &amp;&amp; currentNodePosition &gt; dec.GetLocation().GetLineSpan().StartLinePosition.Line)
+                {
+                    return new SyntaxNode[] { dec };
+                }
+            }
+
+            // only after no assignment, declaration,... was found, only after that test for presence among parameters
+            for (int i = 0; i &lt; rootNode.ParameterList.Parameters.Count(); i++)
+            {
+                if (arg != rootNode.ParameterList.Parameters[i].Identifier.Text) continue;
+                result.AppendEvidence(new string(&#39;-&#39;, (level - 2) * 2) + &quot;&gt; ^^^ BAD (Parameter)&quot;);
+                result.Hits++;
+                if (tainted != null) tainted.TaintedMethodParameters[i] += 1;
+            }
+            return null;
+        }
+
+        public async Task&lt;SyntaxNode[]&gt; SolveConditionalExpression(ConditionalExpressionSyntax currentNode, MethodScanResult result, int level)
+        {
+            try
+            {
+                bool evaluationResult = (bool)await CSharpScript.EvaluateAsync(currentNode.Condition.ToString());
+                if (evaluationResult)
+                {
+                    result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;successfully evaluated condition as True (only 1 block will be investigated).&quot;);
+                    return new SyntaxNode[1] { currentNode.WhenTrue };
+                }
+                else
+                {
+                    result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;successfully evaluated condition as False (only 1 block will be investigated).&quot;);
+                    return new SyntaxNode[1] { currentNode.WhenFalse };
+                }
+            }
+            catch (CompilationErrorException)
+            {
+                // unable to evaluate the condition, therefore both blocks of conditional expression have to be investigated
+                result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;unsuccessfully evaluated condition (both blocks will be investigated).&quot;);
+                return new SyntaxNode[2] { currentNode.WhenTrue, currentNode.WhenFalse };
+            }
+        }
+
+        public void SolveLiteralExpression(MethodScanResult result, int level)
+        {
+            result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;OK (Literal)&quot;);
+        }
+
+        public void SolveUnrecognizedSyntaxNode(MethodScanResult result, SyntaxNode currentNode, int level)
+        {
+            result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;UNRECOGNIZED NODE &quot; + currentNode.ToString());
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[17,9,17,10,1],[18,13,19,21,1],[19,21,19,71,1],[19,71,19,73,1],[20,17,20,72,1],[21,13,21,88,1],[22,13,22,25,1],[23,9,23,10,1],[26,9,26,10,1],[27,13,27,73,1],[28,9,28,10,1],[31,9,31,10,1],[32,13,32,51,1],[33,9,33,10,1],[36,9,36,10,1],[37,13,37,109,1],[39,13,39,47,1],[40,9,40,10,1],[43,9,43,10,1],[44,13,44,49,1],[45,13,45,102,1],[47,13,47,47,1],[48,13,48,14,1],[49,17,49,86,1],[50,21,50,128,1],[51,13,51,14,1],[53,13,53,137,1],[54,13,54,36,1],[55,13,55,14,0],[56,17,56,56,0],[59,13,59,140,1],[60,13,60,37,1],[61,13,61,14,1],[62,17,62,57,1],[65,13,65,149,1],[66,13,66,40,1],[67,13,67,14,1],[68,17,68,60,1],[71,13,71,20,1],[71,22,71,59,1],[71,60,71,62,1],[71,63,71,138,1],[71,138,71,162,1],[71,162,71,173,1],[72,13,72,14,1],[73,17,73,143,1],[74,17,74,18,1],[75,21,75,60,1],[77,13,77,14,1],[79,13,79,20,1],[79,22,79,50,1],[79,51,79,53,1],[79,54,79,127,1],[79,127,79,151,1],[79,151,79,162,1],[80,13,80,14,1],[81,17,81,129,1],[82,17,82,18,1],[83,21,83,53,1],[85,13,85,14,0],[88,18,88,27,1],[88,29,88,74,1],[88,76,88,79,1],[89,13,89,14,1],[90,17,90,81,1],[90,82,90,91,1],[91,17,91,99,1],[92,17,92,31,1],[93,17,93,37,1],[93,38,93,78,0],[94,13,94,14,1],[95,13,95,25,1],[96,9,96,10,1],[99,9,99,10,1],[101,13,101,14,1],[102,17,102,114,1],[103,17,103,38,1],[104,17,104,18,1],[105,21,105,153,1],[106,21,106,71,1],[109,17,109,18,1],[110,21,110,154,1],[111,21,111,72,1],[114,13,114,46,1],[115,13,115,14,1],[117,17,117,142,1],[118,17,118,90,1],[120,9,120,10,1],[123,9,123,10,1],[124,13,124,80,1],[125,9,125,10,1],[128,9,128,10,1],[129,13,129,111,1],[130,9,130,10,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\ProgramTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Rules;
+using SQLInjectionAnalyzer;
+using SQLInjectionAnalyzer.Analyzers.OneMethodCSProjAnalyzer;
+
+namespace UnitTests
+{
+    [TestClass]
+    public class ProgramTest
+    {
+        [TestMethod]
+        public void MainTest()
+        {
+            var program = typeof(Program).Assembly.EntryPoint;
+            program.Invoke(null, new object[] { new string[]{&quot;--path=../../CodeToBeAnalysed/AssignmentRules/&quot;, &quot;--scope-of-analysis=OneMethodSyntaxTree&quot;, &quot;--config=../../ConfigFileExamples/ValidConfigFiles/config2.json&quot;, &quot;--result=./&quot;, &quot;--write-console&quot;} });  
+            if (!File.Exists(&quot;./report.html&quot;))
+            {
+                Console.WriteLine(&quot;the file does not exist&quot;);
+                throw new FileNotFoundException(&quot;./report.html&quot;);
+            }
+
+            var content = File.ReadAllText(&quot;./report.html&quot;);
+            Assert.AreEqual(8871, content.Length);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[16,9,16,10,1],[17,13,17,63,1],[18,13,18,259,1],[19,13,19,47,1],[20,13,20,14,0],[21,17,21,62,0],[22,17,22,66,0],[25,13,25,61,1],[26,13,26,51,1],[27,9,27,10,1]]);
+    </script>
+  </body>
+</html>

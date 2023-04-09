@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\ExceptionService\ExceptionWriter.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+
+namespace ExceptionService
+{
+    /// &lt;summary&gt;
+    /// ExceptionService &lt;c&gt;ExceptionWriter&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Contains &lt;c&gt;WriteUsageTutorial&lt;/c&gt; method. Contains
+    /// &lt;c&gt;WriteOutputGeneratorExceptionMessage&lt;/c&gt; method. Contains
+    /// &lt;c&gt;WriteAnalysisExceptionMessage&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class ExceptionWriter
+    {
+        public readonly string Usage = &quot;Usage:\n&quot; +
+                                       &quot;\n&quot; +
+                                       &quot;--path=VALUE                 (MANDATORY) path to the folder which should be analysed\n&quot; +
+                                       &quot;--scope-of-analysis=VALUE    (MANDATORY) determines the scope of analysis\n&quot; +
+                                       &quot;--config=VALUE               (MANDATORY) path to .json config file\n&quot; +
+                                       &quot;--result=VALUE               (MANDATORY) path to the folder where diagnostic-result-files should be exported\n&quot; +
+                                       &quot;--exclude-paths=VALUE        (OPTIONAL)  comma delimited list of sub-paths to be skipped during analysis\n&quot; +
+                                       &quot;--write-console              (OPTIONAL)  write real-time diagnostic-results on console during analysis\n&quot; +
+                                       &quot;--help                                   show this usage tutorial and exit\n&quot; +
+                                       &quot;\n&quot; +
+                                       &quot;For Example:\n&quot; +
+                                       &quot;\n&quot; +
+                                       &quot;.\\SQLInjectionAnalyzer.exe --path=.\\source\\folder\\ --scope-of-analysis=InterproceduralCSProj --config=.\\config\\folder\\config.json --result=.\\result\\path\\ --exclude-paths=TEST,E2E --write-console\n&quot; +
+                                       &quot;\n&quot; +
+                                       &quot;Parameters:\n&quot; +
+                                       &quot;\n&quot; +
+                                       &quot;--path:\n&quot; +
+                                       &quot;     any valid path to the folder which should be analysed\n&quot; +
+                                       &quot;--scope-of-analysis:\n&quot; +
+                                       &quot;     OneMethodSyntaxTree           Reads C# (*.cs) files separately and investigates Syntax Trees parsed from the separate C# files,\n&quot; +
+                                       &quot;                                   without compiling .csproj files, without performing interprocedural analysis, able to decide trivial\n&quot; +
+                                       &quot;                                   conditional statements (very fast but very inaccurate).\n&quot; +
+                                       &quot;     OneMethodCSProj               Compiles *.csproj files, without performing interprocedural analysis. Uses the same rules as\n&quot; +
+                                       &quot;                                   OneMethodSyntaxTree, therefore provides the same results. This ScopeOfAnalysis\n&quot; +
+                                       &quot;                                   serves only to investigate how much time is needed for compilation of all .csproj files.\n&quot; +
+                                       &quot;                                   Able to decide trivial conditional statements.\n&quot; +
+                                       &quot;     InterproceduralCSProj         Compiles all C# project (*.csproj) files, performs n-level interprocedural analysis (where number n is defined\n&quot; +
+                                       &quot;                                   in config.json file) for each project separately, able to decide trivial conditional statements.\n&quot; +
+                                       &quot;     InterproceduralSolution       Opens all C# solution (*.sln) files, performs n-level interprocedural analysis (where number n is\n&quot; +
+                                       &quot;                                   defined in config.json file) for each solution separately, able to decide trivial conditional statements.\n&quot; +
+                                       &quot;--config:\n&quot; +
+                                       &quot;     any valid path to valid config.json (configures rules for taint variables propagation)\n&quot; +
+                                       &quot;--result:\n&quot; +
+                                       &quot;     any valid path to the folder where diagnostic-result-files should be exported\n&quot; +
+                                       &quot;--exclude-paths:\n&quot; +
+                                       &quot;     comma delimited list of sub-paths to be skipped during analysis (for example tests)\n&quot; +
+                                       &quot;--write-console:\n&quot; +
+                                       &quot;     informs about results in real-time\n&quot;;
+        
+        /// &lt;summary&gt;
+        /// Writes the usage tutorial.
+        /// &lt;/summary&gt;
+        public void WriteUsageTutorial()
+        {
+            Console.WriteLine(Usage);
+        }
+
+        /// &lt;summary&gt;
+        /// Writes the output generator exception message.
+        /// &lt;/summary&gt;
+        public void WriteOutputGeneratorExceptionMessage()
+        {
+            Console.WriteLine(&quot;Something went wrong while generating output files.&quot;);
+        }
+
+        /// &lt;summary&gt;
+        /// Writes the analysis exception message.
+        /// &lt;/summary&gt;
+        public void WriteAnalysisExceptionMessage()
+        {
+            Console.WriteLine(&quot;Something went wrong while performing analysis.&quot;);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,9,52,84,1],[58,9,58,10,1],[59,13,59,38,1],[60,9,60,10,1],[66,9,66,10,1],[67,13,67,86,1],[68,9,68,10,1],[74,9,74,10,1],[75,13,75,82,1],[76,9,76,10,1]]);
+    </script>
+  </body>
+</html>

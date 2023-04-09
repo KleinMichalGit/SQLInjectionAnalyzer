@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Analyzers\RuleEvaluator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Model.Method;
+using Model.Rules;
+
+namespace SQLInjectionAnalyzer.Analyzers
+{
+    public static class RuleEvaluator
+    {
+        private static readonly TableOfRules TableOfRules = new TableOfRules();
+       
+        public static void EvaluateRule(
+            MethodDeclarationSyntax rootNode,
+            SyntaxNode currentNode,
+            MethodScanResult result,
+            TaintPropagationRules taintPropagationRules,
+            List&lt;SyntaxNode&gt; visitedNodes = null,
+            int level = 0)
+        {
+            if (visitedNodes == null)
+            {
+                visitedNodes = new List&lt;SyntaxNode&gt;();
+            }
+            else if (visitedNodes.Contains(currentNode))
+            {
+                result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;HALT (Node already visited)&quot;);
+                return;
+            }
+
+            visitedNodes.Add(currentNode);
+            result.AppendEvidence(new string(&#39; &#39;, level * 2) + currentNode);
+            level += 1;
+
+            SyntaxNode[] nextLevelNodes = null;
+
+            switch (currentNode)
+            {
+                case InvocationExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveInvocationExpression(node, result, level, taintPropagationRules);
+                    break;
+                case ObjectCreationExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveObjectCreationExpression(node);
+                    break;
+                case AssignmentExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveAssignmentExpression(node);
+                    break;
+                case VariableDeclaratorSyntax node:
+                    nextLevelNodes = TableOfRules.SolveVariableDeclarator(node);
+                    break;
+                case ConditionalExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveConditionalExpression(node, result, level).Result;
+                    break;
+                case LiteralExpressionSyntax _:
+                    TableOfRules.SolveLiteralExpression(result, level);
+                    break;
+                case ArgumentSyntax _:
+                case IdentifierNameSyntax _:
+                    nextLevelNodes = TableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
+                    break;
+                default:
+                    TableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
+                    break;
+            }
+
+            if (nextLevelNodes == null) return;
+            foreach (var t in nextLevelNodes)
+            {
+                EvaluateRule(rootNode, t, result, taintPropagationRules, visitedNodes, level);
+            }
+        }
+        
+        public static void EvaluateRule(
+            MethodDeclarationSyntax rootNode,
+            SyntaxNode currentNode,
+            MethodScanResult result,
+            Tainted tainted,
+            TaintPropagationRules taintPropagationRules,
+            int[] taintedMethodParameters = null,
+            List&lt;SyntaxNode&gt; visitedNodes = null,
+            int level = 0)
+        {
+            if (visitedNodes == null)
+            {
+                visitedNodes = new List&lt;SyntaxNode&gt;();
+            }
+            else if (visitedNodes.Contains(currentNode))
+            {
+                result.AppendEvidence(new string(&#39; &#39;, level * 2) + &quot;HALT (Node already visited)&quot;);
+                return;
+            }
+
+            visitedNodes.Add(currentNode);
+            result.AppendEvidence(new string(&#39; &#39;, level * 2) + currentNode);
+            level += 1;
+
+            SyntaxNode[] nextLevelNodes = null;
+
+            switch (currentNode)
+            {
+                case InvocationExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveInvocationExpression(node, result, level, taintPropagationRules);
+                    break;
+                case ObjectCreationExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveObjectCreationExpression(node);
+                    break;
+                case AssignmentExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveAssignmentExpression(node);
+                    break;
+                case VariableDeclaratorSyntax node:
+                    nextLevelNodes = TableOfRules.SolveVariableDeclarator(node);
+                    break;
+                case ArgumentSyntax _:
+                case IdentifierNameSyntax _:
+                    nextLevelNodes = TableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level, tainted);
+                    break;
+                case ConditionalExpressionSyntax node:
+                    nextLevelNodes = TableOfRules.SolveConditionalExpression(node, result, level).Result;
+                    break;
+                case LiteralExpressionSyntax _:
+                    TableOfRules.SolveLiteralExpression(result, level);
+                    break;
+                default:
+                    TableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
+                    break;
+            }
+
+            if (nextLevelNodes == null) return;
+            for (var i = 0; i &lt; nextLevelNodes.Length; i++)
+            {
+                // investigate only the origin of arguments which were previously tainted as method parameters
+                if (level == 1 &amp;&amp; (taintedMethodParameters != null &amp;&amp; taintedMethodParameters[i] == 0)) continue;
+
+                var numberOfTaintedMethodParametersBefore = tainted.TaintedMethodParameters.Count(num =&gt; num != 0);
+
+                EvaluateRule(rootNode, nextLevelNodes[i], result, tainted, taintPropagationRules, null, visitedNodes, level);
+
+                // for the first invocation only
+                // for the parent&#39;s tainted method parameters only
+                // if following the data flow increased the number of tainted method parameters, it means that current argument of this invocationNode should be tainted
+                if (level == 1 &amp;&amp; (taintedMethodParameters == null || taintedMethodParameters[i] &gt; 0) &amp;&amp; numberOfTaintedMethodParametersBefore &lt; tainted.TaintedMethodParameters.Count(num =&gt; num != 0)) tainted.TaintedInvocationArguments[i] += 1;
+            }
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[12,9,12,80,1],[21,9,21,10,1],[22,13,22,38,1],[23,13,23,14,1],[24,17,24,55,1],[25,13,25,14,1],[26,18,26,57,1],[27,13,27,14,0],[28,17,28,99,0],[29,17,29,24,0],[32,13,32,43,1],[33,13,33,77,1],[34,13,34,24,1],[36,13,36,48,1],[38,13,38,33,1],[41,21,41,121,1],[42,21,42,27,1],[44,21,44,87,1],[45,21,45,27,1],[47,21,47,83,1],[48,21,48,27,1],[50,21,50,81,1],[51,21,51,27,1],[53,21,53,106,1],[54,21,54,27,1],[56,21,56,72,1],[57,21,57,27,1],[60,21,60,114,1],[61,21,61,27,1],[63,21,63,90,0],[64,21,64,27,0],[67,13,67,40,1],[67,41,67,48,1],[68,13,68,20,1],[68,22,68,27,1],[68,28,68,30,1],[68,31,68,45,1],[69,13,69,14,1],[70,17,70,95,1],[71,13,71,14,1],[72,9,72,10,1],[83,9,83,10,0],[84,13,84,38,0],[85,13,85,14,0],[86,17,86,55,0],[87,13,87,14,0],[88,18,88,57,0],[89,13,89,14,0],[90,17,90,99,0],[91,17,91,24,0],[94,13,94,43,0],[95,13,95,77,0],[96,13,96,24,0],[98,13,98,48,0],[100,13,100,33,0],[103,21,103,121,0],[104,21,104,27,0],[106,21,106,87,0],[107,21,107,27,0],[109,21,109,83,0],[110,21,110,27,0],[112,21,112,81,0],[113,21,113,27,0],[116,21,116,123,0],[117,21,117,27,0],[119,21,119,106,0],[120,21,120,27,0],[122,21,122,72,0],[123,21,123,27,0],[125,21,125,90,0],[126,21,126,27,0],[129,13,129,40,0],[129,41,129,48,0],[130,18,130,27,0],[130,29,130,54,0],[130,56,130,59,0],[131,13,131,14,0],[133,17,133,104,0],[133,105,133,114,0],[135,17,135,106,0],[135,106,135,114,0],[135,114,135,116,0],[137,17,137,126,0],[142,17,142,191,0],[142,191,142,199,0],[142,199,142,201,0],[142,202,142,245,0],[143,13,143,14,0],[144,9,144,10,0]]);
+    </script>
+  </body>
+</html>
