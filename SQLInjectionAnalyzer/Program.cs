@@ -5,7 +5,10 @@ using InputService;
 using Model;
 using Model.Rules;
 using OutputService;
+using SQLInjectionAnalyzer.Analyzers.InterproceduralCSProjAnalyzer;
 using SQLInjectionAnalyzer.Analyzers.InterproceduralSolution;
+using SQLInjectionAnalyzer.Analyzers.OneMethodCSProjAnalyzer;
+using SQLInjectionAnalyzer.Analyzers.OneMethodSyntaxTreeAnalyzer;
 
 namespace SQLInjectionAnalyzer
 {

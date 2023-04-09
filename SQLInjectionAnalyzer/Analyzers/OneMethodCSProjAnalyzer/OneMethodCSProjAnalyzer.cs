@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -11,11 +10,9 @@ using Model;
 using Model.CSProject;
 using Model.Method;
 using Model.Rules;
-using Model.Solution;
 using Model.SyntaxTree;
-using SQLInjectionAnalyzer.Analyzers;
 
-namespace SQLInjectionAnalyzer
+namespace SQLInjectionAnalyzer.Analyzers.OneMethodCSProjAnalyzer
 {
     /// <summary>
     /// SQLInjectionAnalyzer <c>OneMethodCSProjAnalyzer</c> class.
@@ -34,25 +31,24 @@ namespace SQLInjectionAnalyzer
     public class OneMethodCSProjAnalyzer : Analyzer
     {
         private TaintPropagationRules taintPropagationRules;
-        private string targetFileType = "*.csproj";
+        private const string TargetFileType = "*.csproj";
         private CSProjectScanResult csprojScanResult = new CSProjectScanResult();
-        private bool writeOnConsole = false;
-        private GlobalHelper globalHelper = new GlobalHelper();
-        private DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
-        private TableOfRules tableOfRules = new TableOfRules();
-
+        private bool writeOnConsole;
+        private readonly GlobalHelper globalHelper = new GlobalHelper();
+        private readonly DiagnosticsInitializer diagnosticsInitializer = new DiagnosticsInitializer();
+        
         public override Diagnostics ScanDirectory(string directoryPath, List<string> excludeSubpaths, TaintPropagationRules taintPropagationRules, bool writeOnConsole)
         {
             this.taintPropagationRules = taintPropagationRules;
             this.writeOnConsole = writeOnConsole;
 
-            Diagnostics diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
-            SolutionScanResult solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
+            var diagnostics = diagnosticsInitializer.InitialiseDiagnostics(ScopeOfAnalysis.OneMethodCSProj);
+            var solutionScanResult = diagnosticsInitializer.InitializeSolutionScanResult(directoryPath);
 
-            int numberOfCSProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, targetFileType);
-            int numberOfScannedCSProjFilesSoFar = 0;
+            var numberOfCsProjFilesUnderThisRepository = globalHelper.GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(directoryPath, TargetFileType);
+            var numberOfScannedCsProjFilesSoFar = 0;
 
-            foreach (string filePath in Directory.EnumerateFiles(directoryPath, targetFileType, SearchOption.AllDirectories))
+            foreach (string filePath in Directory.EnumerateFiles(directoryPath, TargetFileType, SearchOption.AllDirectories))
             {
                 solutionScanResult.NumberOfCSProjFiles++;
 
@@ -64,65 +60,64 @@ namespace SQLInjectionAnalyzer
                 else
                 {
                     Console.WriteLine("currently scanned .csproj: " + filePath);
-                    Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
-                    ScanCSProj(filePath).Wait();
+                    Console.WriteLine(numberOfScannedCsProjFilesSoFar + " / " + numberOfCsProjFilesUnderThisRepository + " .csproj files scanned");
+                    ScanCsProj(filePath).Wait();
                     solutionScanResult.CSProjectScanResults.Add(csprojScanResult);
                 }
 
-                numberOfScannedCSProjFilesSoFar++;
+                numberOfScannedCsProjFilesSoFar++;
             }
 
-            Console.WriteLine(numberOfScannedCSProjFilesSoFar + " / " + numberOfCSProjFilesUnderThisRepository + " .csproj files scanned");
+            Console.WriteLine(numberOfScannedCsProjFilesSoFar + " / " + numberOfCsProjFilesUnderThisRepository + " .csproj files scanned");
             diagnostics.SolutionScanResults.Add(solutionScanResult);
 
             diagnostics.DiagnosticsEndTime = DateTime.Now;
             return diagnostics;
         }
 
-        private async Task ScanCSProj(string csprojPath)
+        private async Task ScanCsProj(string csprojPath)
         {
             csprojScanResult = diagnosticsInitializer.InitialiseCSProjectScanResult(csprojPath);
 
-            using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
+            using (var workspace = MSBuildWorkspace.Create())
             {
-                Project project = await workspace.OpenProjectAsync(csprojPath);
+                var project = await workspace.OpenProjectAsync(csprojPath);
 
-                Compilation compilation = await project.GetCompilationAsync();
+                var compilation = await project.GetCompilationAsync();
 
-                foreach (CSharpSyntaxTree syntaxTree in compilation.SyntaxTrees)
-                {
-                    csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
-                    SyntaxTreeScanResult syntaxTreeScanResult = ScanSyntaxTree(syntaxTree);
-                    csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
-                }
+                if (compilation != null)
+                    foreach (var st in compilation.SyntaxTrees)
+                    {
+                        var syntaxTree = (CSharpSyntaxTree)st;
+                        csprojScanResult.NamesOfAllCSFilesInsideThisCSProject.Add(syntaxTree.FilePath);
+                        var syntaxTreeScanResult = ScanSyntaxTree(syntaxTree);
+                        csprojScanResult.SyntaxTreeScanResults.Add(syntaxTreeScanResult);
+                    }
             }
             csprojScanResult.CSProjectScanResultEndTime = DateTime.Now;
         }
 
         private SyntaxTreeScanResult ScanSyntaxTree(CSharpSyntaxTree syntaxTree)
         {
-            SyntaxTreeScanResult syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
+            var syntaxTreeScanResult = diagnosticsInitializer.InitialiseSyntaxTreeScanResult(syntaxTree.FilePath);
 
-            foreach (MethodDeclarationSyntax methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
+            foreach (var methodSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
                 if (!globalHelper.MethodShouldBeAnalysed(methodSyntax, syntaxTreeScanResult, taintPropagationRules)) continue;
 
-                MethodScanResult methodScanResult = ScanMethod(methodSyntax);
+                var methodScanResult = ScanMethod(methodSyntax);
 
                 if (methodScanResult.Hits > 0)
                 {
-                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList.ToString();
+                    methodScanResult.MethodName = methodSyntax.Identifier.ToString() + methodSyntax.ParameterList;
                     methodScanResult.MethodBody = methodSyntax.ToString();
-                    FileLinePositionSpan lineSpan = methodSyntax.GetLocation().GetLineSpan();
+                    var lineSpan = methodSyntax.GetLocation().GetLineSpan();
                     methodScanResult.LineNumber = lineSpan.StartLinePosition.Line;
                     methodScanResult.LineCount = lineSpan.EndLinePosition.Line - lineSpan.StartLinePosition.Line;
 
                     globalHelper.SolveSourceAreas(syntaxTree, methodScanResult, taintPropagationRules); // source areas labels for more informative result
 
-                    if (writeOnConsole)
-                    {
-                        globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
-                    }
+                    if (writeOnConsole) globalHelper.WriteEvidenceOnConsole(methodScanResult.MethodName, methodScanResult.Evidence);
                 }
                 syntaxTreeScanResult.MethodScanResults.Add(methodScanResult);
             }
@@ -132,65 +127,20 @@ namespace SQLInjectionAnalyzer
 
         private MethodScanResult ScanMethod(MethodDeclarationSyntax methodSyntax)
         {
-            MethodScanResult methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
+            var methodScanResult = diagnosticsInitializer.InitialiseMethodScanResult();
 
-            IEnumerable<InvocationExpressionSyntax> invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods);
+            var invocations = globalHelper.FindSinkInvocations(methodSyntax, taintPropagationRules.SinkMethods).ToList();
+            
             methodScanResult.Sinks = (short)invocations.Count();
 
             // follows data flow inside method for each sink invocation from sink invocation to source
             foreach (var invocation in invocations)
             {
-                EvaluateRule(methodSyntax, invocation, methodScanResult);
+                RuleEvaluator.EvaluateRule(methodSyntax, invocation, methodScanResult, taintPropagationRules);
             }
 
             methodScanResult.MethodScanResultEndTime = DateTime.Now;
             return methodScanResult;
-        }
-
-        private void EvaluateRule(MethodDeclarationSyntax rootNode, SyntaxNode currentNode, MethodScanResult result, List<SyntaxNode> visitedNodes = null, int level = 0)
-        {
-            if (visitedNodes == null)
-            {
-                visitedNodes = new List<SyntaxNode>();
-            }
-            else if (visitedNodes.Contains(currentNode))
-            {
-                result.AppendEvidence(new string(' ', level * 2) + "HALT (Node already visited)");
-                return;
-            }
-
-            visitedNodes.Add(currentNode);
-            result.AppendEvidence(new string(' ', level * 2) + currentNode.ToString());
-            level += 1;
-
-            SyntaxNode[] nextLevelNodes = null;
-
-            if (currentNode is InvocationExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveInvocationExpression((InvocationExpressionSyntax)currentNode, result, level, taintPropagationRules);
-            else if (currentNode is ObjectCreationExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveObjectCreationExpression((ObjectCreationExpressionSyntax)currentNode);
-            else if (currentNode is AssignmentExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveAssignmentExpression((AssignmentExpressionSyntax)currentNode);
-            else if (currentNode is VariableDeclaratorSyntax)
-                nextLevelNodes = tableOfRules.SolveVariableDeclarator((VariableDeclaratorSyntax)currentNode);
-            else if (currentNode is ConditionalExpressionSyntax)
-                nextLevelNodes = tableOfRules.SolveConditionalExpression((ConditionalExpressionSyntax)currentNode, result, level).Result;
-            else if (currentNode is LiteralExpressionSyntax)
-                tableOfRules.SolveLiteralExpression(result, level);
-            else if (currentNode is ArgumentSyntax)
-                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
-            else if (currentNode is IdentifierNameSyntax)
-                nextLevelNodes = tableOfRules.FindOrigin(rootNode, currentNode, result, visitedNodes, level);
-            else
-                tableOfRules.SolveUnrecognizedSyntaxNode(result, currentNode, level);
-
-            if (nextLevelNodes != null)
-            {
-                for (int i = 0; i < nextLevelNodes.Length; i++)
-                {
-                    EvaluateRule(rootNode, nextLevelNodes[i], result, visitedNodes, level);
-                }
-            }
         }
     }
 }

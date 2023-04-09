@@ -78,7 +78,7 @@ namespace OutputService
                 case ScopeOfAnalysis.InterproceduralSolution:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new OutputGeneratorException("not implemented yet");
             }
 
             Console.WriteLine("Scanned methods: " + dataExtractor.GetNumberOfScannedMethods());

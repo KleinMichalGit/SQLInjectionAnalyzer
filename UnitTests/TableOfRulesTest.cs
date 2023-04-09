@@ -15,7 +15,6 @@ namespace UnitTests
     public class TableOfRulesTest
     {
         private TableOfRules tableOfRules = new TableOfRules();
-        private TaintPropagationRulesCreator taintPropagationRulesCreator = new TaintPropagationRulesCreator();
         private NodeFactory nodeFactory = new NodeFactory();
         private TaintPropagationRulesCreator rules = new TaintPropagationRulesCreator();
         private string path = "..\\..\\CodeToBeAnalysed\\TableOfRules\\TableOfRulesCodeToBeAnalysed.cs";
@@ -25,7 +24,7 @@ namespace UnitTests
         {
             //A();
             InvocationExpressionSyntax invocationExpressionSyntax = nodeFactory.FindSyntaxNode<InvocationExpressionSyntax>(path, 0);
-            ArgumentSyntax[] transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
+            SyntaxNode[] transition = tableOfRules.SolveInvocationExpression(invocationExpressionSyntax, new MethodScanResult(), 0, rules.GetRulesWithSinkMethodNames());
             Assert.AreEqual(0, transition.Length);
 
             //B("");
@@ -55,7 +54,7 @@ namespace UnitTests
         {
             //new MyClass();
             ObjectCreationExpressionSyntax objectCreationExpressionSyntax = nodeFactory.FindSyntaxNode<ObjectCreationExpressionSyntax>(path, 0);
-            ArgumentSyntax[] transition = tableOfRules.SolveObjectCreationExpression(objectCreationExpressionSyntax);
+            SyntaxNode[] transition = tableOfRules.SolveObjectCreationExpression(objectCreationExpressionSyntax);
             Assert.AreEqual(0, transition.Length);
 
             //new MyClass("a");
@@ -74,7 +73,7 @@ namespace UnitTests
         {
             // a = new MyClass();
             AssignmentExpressionSyntax assignmentExpressionSyntax = nodeFactory.FindSyntaxNode<AssignmentExpressionSyntax>(path, 0);
-            ExpressionSyntax[] transition = tableOfRules.SolveAssignmentExpression(assignmentExpressionSyntax);
+            SyntaxNode[] transition = tableOfRules.SolveAssignmentExpression(assignmentExpressionSyntax);
             Assert.AreEqual(transition[0].ToString(), "new MyClass()");
 
             // b = new MyClass("a");
