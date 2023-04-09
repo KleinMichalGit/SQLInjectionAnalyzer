@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\InputReaderTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using ExceptionService.ExceptionType;
+using InputService;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model;
+
+namespace UnitTests
+{
+    /// &lt;summary&gt;
+    /// UnitTests TestClass for testing InputReader
+    /// &lt;/summary&gt;
+    [TestClass]
+    public class InputReaderTest
+    {
+        private InputReader inputReader = new InputReader();
+        private string[] mandatoryArgumentsExample = new string[] { &quot;--path=./a/b&quot;, &quot;--scope-of-analysis=OneMethodSyntaxTree&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot; };
+        private string[] allArgumentsPresentedInUsageManual = new string[] { &quot;--path=./a/b&quot;, &quot;--scope-of-analysis=OneMethodSyntaxTree&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot;, &quot;--exclude-paths=A,B&quot;, &quot;--write-console&quot;, &quot;--help&quot; };
+
+        [TestMethod]
+        public void InputArgumentsAreUnique()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;InputArgumentsAreUnique&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //empty array of arguments
+            string[] args = new string[] { };
+            bool isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isUnique);
+
+            //--help is unique
+            args = new string[] { &quot;--help&quot; };
+            isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isUnique);
+
+            //--help --help is not unique
+            args = new string[] { &quot;--help&quot;, &quot;--help&quot; };
+            isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(isUnique);
+
+            //when all mandatory arguments are specified it is unique
+            args = mandatoryArgumentsExample;
+            isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isUnique);
+
+            //when all mandatory arguments are specified but one of them is twice, it is not unique
+            args = new string[] { &quot;--path=./a/b&quot;, &quot;--path=./d/&quot;, &quot;--scope-of-analysis=InterproceduralCSProj&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot; };
+            isUnique = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(isUnique);
+        }
+
+        [TestMethod]
+        public void InputArgumentsAreRecognizable()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;InputArgumentsAreRecognizable&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //empty array of arguments
+            string[] args = new string[] { };
+            bool isRecognizable = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isRecognizable);
+
+            //all mandatory arguments are recognizable
+            args = mandatoryArgumentsExample;
+            isRecognizable = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isRecognizable);
+
+            //all arguments presented in usage manual are recognizable
+            args = allArgumentsPresentedInUsageManual;
+            isRecognizable = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isRecognizable);
+
+            //any other argument not presented in usage manual is not recognizable
+
+            args = new string[] { &quot;--any-other-argument=IsNotRecognizable&quot; };
+            isRecognizable = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(isRecognizable);
+        }
+
+        [TestMethod]
+        public void MandatoryArgumentsArePresent()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;MandatoryArgumentsArePresent&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //empty array of arguments (false, because neither --help nor mandatory arguments are present)
+            string[] args = new string[] { };
+            bool mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(mandatoryArgumentsArePresent);
+
+            //--help
+            args = new string[] { &quot;--help&quot; };
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(mandatoryArgumentsArePresent);
+
+            //all mandatory arguments are present
+            args = mandatoryArgumentsExample;
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(mandatoryArgumentsArePresent);
+
+            //help is mixed with another arguments
+            args = allArgumentsPresentedInUsageManual;
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(mandatoryArgumentsArePresent);
+
+            //--path is missing
+            args = new string[] { &quot;--scope-of-analysis=OneMethodSyntaxTree&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot; };
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(mandatoryArgumentsArePresent);
+
+            //--path and config are missing
+            args = new string[] { &quot;--scope-of-analysis=OneMethodSyntaxTree&quot;, &quot;--result=./x/y/z/&quot; };
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(mandatoryArgumentsArePresent);
+
+            //--path, config, and result are missing
+            args = new string[] { &quot;--scope-of-analysis=OneMethodSyntaxTree&quot; };
+            mandatoryArgumentsArePresent = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(mandatoryArgumentsArePresent);
+        }
+
+        [TestMethod]
+        public void ScopeIsDefinedCorrectly()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;ScopeIsDefinedCorrectly&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //scope is not defined at all
+            string[] args = new string[] { &quot;--help&quot; };
+            bool scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is defined as OneMethodSyntaxTree
+            args = new string[] { &quot;--scope-of-analysis=OneMethodSyntaxTree&quot; };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is defined as OneMethodCSProj
+            args = new string[] { &quot;--scope-of-analysis=OneMethodCSProj&quot; };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is defined as InterproceduralCSProj
+            args = new string[] { &quot;--scope-of-analysis=InterproceduralCSProj&quot; };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is defined as InterproceduralSolution
+            args = new string[] { &quot;--scope-of-analysis=InterproceduralSolution&quot; };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(scopeIsDefinedCorrectly);
+
+            //scope is not defined correctly
+            args = new string[] { &quot;--scope-of-analysis=IncorectlyDefinedScope&quot; };
+            scopeIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(scopeIsDefinedCorrectly);
+        }
+
+        [TestMethod]
+        public void ConfigPathIsDefinedCorrectly()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;ConfigPathIsDefinedCorrectly&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //config path is not defined at all
+            string[] args = new string[] { &quot;--help&quot; };
+            bool configPathIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(configPathIsDefinedCorrectly);
+
+            //config path ends with .json
+            args = new string[] { &quot;--config=./my/path/config.json&quot; };
+            configPathIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(configPathIsDefinedCorrectly);
+
+            //config path does not end with .json
+            args = new string[] { &quot;--config=./my/path/config.yml&quot; };
+            configPathIsDefinedCorrectly = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(configPathIsDefinedCorrectly);
+        }
+
+        [TestMethod]
+        public void ProcessExcludeSubstrings()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;ProcessExcludeSubstrings&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //empty list
+            string substrings = &quot;&quot;;
+            List&lt;string&gt; processedSubpaths = (List&lt;string&gt;)methodInfo.Invoke(inputReader, new object[] { substrings });
+            List&lt;string&gt; expected = new List&lt;string&gt;();
+            Assert.IsTrue(Enumerable.SequenceEqual(processedSubpaths, expected));
+
+            //one element in the list
+            substrings = &quot;A&quot;;
+            processedSubpaths = (List&lt;string&gt;)methodInfo.Invoke(inputReader, new object[] { substrings });
+            expected = new List&lt;string&gt; { &quot;A&quot; };
+            Assert.IsTrue(Enumerable.SequenceEqual(processedSubpaths, expected));
+
+            //two elements in the list
+            substrings = &quot;A,B&quot;;
+            processedSubpaths = (List&lt;string&gt;)methodInfo.Invoke(inputReader, new object[] { substrings });
+            expected = new List&lt;string&gt; { &quot;A&quot;, &quot;B&quot; };
+            Assert.IsTrue(Enumerable.SequenceEqual(processedSubpaths, expected));
+
+            //four elements in the list
+            substrings = &quot;A,B,C,D&quot;;
+            processedSubpaths = (List&lt;string&gt;)methodInfo.Invoke(inputReader, new object[] { substrings });
+            expected = new List&lt;string&gt; { &quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot; };
+            Assert.IsTrue(Enumerable.SequenceEqual(processedSubpaths, expected));
+        }
+
+        [TestMethod]
+        public void GetValueFromArgument()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;GetValueFromArgument&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //get value from path
+            string argument = &quot;--path=./my/path/&quot;;
+            string receivedValue = (string)methodInfo.Invoke(inputReader, new object[] { argument });
+            string expected = &quot;./my/path/&quot;;
+            Assert.AreEqual(expected, receivedValue);
+
+            //get value from exclude-paths
+            argument = &quot;--exclude-paths=A,B,C,D&quot;;
+            receivedValue = (string)methodInfo.Invoke(inputReader, new object[] { argument });
+            expected = &quot;A,B,C,D&quot;;
+            Assert.AreEqual(expected, receivedValue);
+        }
+
+        [TestMethod]
+        public void GetScopeFromArgument()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;GetScopeFromArgument&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //get OneMethodSyntaxTree Scope
+            string argument = &quot;OneMethodSyntaxTree&quot;;
+            ScopeOfAnalysis receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
+            ScopeOfAnalysis expected = ScopeOfAnalysis.OneMethodSyntaxTree;
+            Assert.AreEqual(expected, receivedValue);
+
+            //get OneMethodCSProj Scope
+            argument = &quot;OneMethodCSProj&quot;;
+            receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
+            expected = ScopeOfAnalysis.OneMethodCSProj;
+            Assert.AreEqual(expected, receivedValue);
+
+            //get InterproceduralCSProj Scope
+            argument = &quot;InterproceduralCSProj&quot;;
+            receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
+            expected = ScopeOfAnalysis.InterproceduralCSProj;
+            Assert.AreEqual(expected, receivedValue);
+
+            //get InterproceduralSolution Scope
+            argument = &quot;InterproceduralSolution&quot;;
+            receivedValue = (ScopeOfAnalysis)methodInfo.Invoke(inputReader, new object[] { argument });
+            expected = ScopeOfAnalysis.InterproceduralSolution;
+            Assert.AreEqual(expected, receivedValue);
+        }
+
+        [TestMethod]
+        public void CreateInput()
+        {
+            //creates input from valid array of arguments
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;CreateInputFromValidArguments&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //--help
+            string[] args = new string[] { &quot;--help&quot; };
+            Input input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
+            Input expected = new Input() { WriteTutorialAndExit = true };
+            Assert.IsTrue(TwoInputsAreEqual(expected, input));
+
+            //mandatory arguments
+            args = mandatoryArgumentsExample;
+            input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
+            expected = new Input()
+            {
+                SourceFolderPath = &quot;./a/b&quot;,
+                Scope = ScopeOfAnalysis.OneMethodSyntaxTree,
+                ConfigFilePath = &quot;./c/d/config.json&quot;,
+                ExportPath = &quot;./x/y/z/&quot;,
+            };
+            Assert.IsTrue(TwoInputsAreEqual(expected, input));
+
+            //all arguments except help
+            args = new string[] { &quot;--path=./a/b&quot;, &quot;--scope-of-analysis=InterproceduralCSProj&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot;, &quot;--exclude-paths=A,B&quot;, &quot;--write-console&quot; };
+            input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
+            expected = new Input()
+            {
+                SourceFolderPath = &quot;./a/b&quot;,
+                Scope = ScopeOfAnalysis.InterproceduralCSProj,
+                ConfigFilePath = &quot;./c/d/config.json&quot;,
+                ExportPath = &quot;./x/y/z/&quot;,
+                ExcludeSubpaths = new List&lt;string&gt; { &quot;A&quot;, &quot;B&quot; },
+                WriteOnConsole = true,
+            };
+            Assert.IsTrue(TwoInputsAreEqual(expected, input));
+
+            //test for unequality
+            args = new string[] { &quot;--path=./a/b&quot;, &quot;--scope-of-analysis=InterproceduralCSProj&quot;, &quot;--config=./c/d/config.json&quot;, &quot;--result=./x/y/z/&quot;, &quot;--exclude-paths=A,B&quot;, &quot;--write-console&quot; };
+            input = (Input)methodInfo.Invoke(inputReader, new object[] { args });
+            expected = new Input()
+            {
+                ExportPath = &quot;./x/y/z/&quot;,
+                ExcludeSubpaths = new List&lt;string&gt; { &quot;X&quot; },
+                WriteOnConsole = false,
+            };
+            Assert.IsFalse(TwoInputsAreEqual(expected, input));
+        }
+
+        [TestMethod]
+        public void InputArgumentsAreValid()
+        {
+            MethodInfo methodInfo = typeof(InputReader).GetMethod(&quot;InputArgumentsAreValid&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //--help is valid
+            string[] args = new string[] { &quot;--help&quot; };
+            bool isValid = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isValid);
+
+            //mandatory arguments are valid
+            args = mandatoryArgumentsExample;
+            isValid = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsTrue(isValid);
+
+            //test for invalid arguments
+            args = new string[] { &quot;--some=invalid --arguments=are --invalid&quot; };
+            isValid = (bool)methodInfo.Invoke(inputReader, new object[] { args });
+            Assert.IsFalse(isValid);
+        }
+
+        [TestMethod]
+        public void ProcessInput()
+        {
+            //mandatory arguments
+            string[] args = mandatoryArgumentsExample;
+            Input input = inputReader.ProcessInput(args);
+            Input expected = new Input()
+            {
+                SourceFolderPath = &quot;./a/b&quot;,
+                Scope = ScopeOfAnalysis.OneMethodSyntaxTree,
+                ConfigFilePath = &quot;./c/d/config.json&quot;,
+                ExportPath = &quot;./x/y/z/&quot;,
+            };
+
+            Assert.IsTrue(TwoInputsAreEqual(expected, input));
+
+            try
+            {
+                string[] invalidArgs = new string[] { &quot;--invalid=args&quot; };
+                inputReader.ProcessInput(invalidArgs);
+
+                Assert.Fail();
+            }
+            catch (InvalidInputException e)
+            {
+                Assert.AreEqual(e.Message, &quot;Input arguments are invalid.&quot;);
+            }
+        }
+
+        private bool TwoInputsAreEqual(Input receivedInput, Input expectedInput)
+        {
+            if (receivedInput.SourceFolderPath != expectedInput.SourceFolderPath) return false;
+            if (receivedInput.Scope != expectedInput.Scope) return false;
+            if (receivedInput.ConfigFilePath != expectedInput.ConfigFilePath) return false;
+            if (receivedInput.ExportPath != expectedInput.ExportPath) return false;
+            if (receivedInput.WriteOnConsole != expectedInput.WriteOnConsole) return false;
+            if (receivedInput.WriteTutorialAndExit != expectedInput.WriteTutorialAndExit) return false;
+            if (!Enumerable.SequenceEqual(receivedInput.ExcludeSubpaths, expectedInput.ExcludeSubpaths)) return false;
+
+            return true;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[17,9,17,61,1],[18,9,18,180,1],[19,9,19,241,1],[23,9,23,10,1],[24,13,24,142,1],[27,13,27,46,1],[28,13,28,89,1],[29,13,29,37,1],[32,13,32,46,1],[33,13,33,84,1],[34,13,34,37,1],[37,13,37,56,1],[38,13,38,84,1],[39,13,39,38,1],[42,13,42,46,1],[43,13,43,84,1],[44,13,44,37,1],[47,13,47,163,1],[48,13,48,84,1],[49,13,49,38,1],[50,9,50,10,1],[54,9,54,10,1],[55,13,55,148,1],[58,13,58,46,1],[59,13,59,95,1],[60,13,60,43,1],[63,13,63,46,1],[64,13,64,90,1],[65,13,65,43,1],[68,13,68,55,1],[69,13,69,90,1],[70,13,70,43,1],[74,13,74,78,1],[75,13,75,90,1],[76,13,76,44,1],[77,9,77,10,1],[81,9,81,10,1],[82,13,82,147,1],[85,13,85,46,1],[86,13,86,109,1],[87,13,87,58,1],[90,13,90,46,1],[91,13,91,104,1],[92,13,92,57,1],[95,13,95,46,1],[96,13,96,104,1],[97,13,97,57,1],[100,13,100,55,1],[101,13,101,104,1],[102,13,102,58,1],[105,13,105,130,1],[106,13,106,104,1],[107,13,107,58,1],[110,13,110,100,1],[111,13,111,104,1],[112,13,112,58,1],[115,13,115,79,1],[116,13,116,104,1],[117,13,117,58,1],[118,9,118,10,1],[122,9,122,10,1],[123,13,123,142,1],[126,13,126,55,1],[127,13,127,104,1],[128,13,128,52,1],[131,13,131,79,1],[132,13,132,99,1],[133,13,133,52,1],[136,13,136,75,1],[137,13,137,99,1],[138,13,138,52,1],[141,13,141,81,1],[142,13,142,99,1],[143,13,143,52,1],[146,13,146,83,1],[147,13,147,99,1],[148,13,148,52,1],[151,13,151,82,1],[152,13,152,99,1],[153,13,153,53,1],[154,9,154,10,1],[158,9,158,10,1],[159,13,159,147,1],[162,13,162,55,1],[163,13,163,109,1],[164,13,164,57,1],[167,13,167,70,1],[168,13,168,104,1],[169,13,169,57,1],[172,13,172,69,1],[173,13,173,104,1],[174,13,174,58,1],[175,9,175,10,1],[179,9,179,10,1],[180,13,180,143,1],[183,13,183,36,1],[184,13,184,120,1],[185,13,185,56,1],[186,13,186,82,1],[189,13,189,30,1],[190,13,190,107,1],[191,13,191,49,1],[192,13,192,82,1],[195,13,195,32,1],[196,13,196,107,1],[197,13,197,54,1],[198,13,198,82,1],[201,13,201,36,1],[202,13,202,107,1],[203,13,203,64,1],[204,13,204,82,1],[205,9,205,10,1],[209,9,209,10,1],[210,13,210,139,1],[213,13,213,51,1],[214,13,214,102,1],[215,13,215,44,1],[216,13,216,54,1],[219,13,219,50,1],[220,13,220,95,1],[221,13,221,34,1],[222,13,222,54,1],[223,9,223,10,1],[227,9,227,10,1],[228,13,228,139,1],[231,13,231,53,1],[232,13,232,120,1],[233,13,233,76,1],[234,13,234,54,1],[237,13,237,42,1],[238,13,238,104,1],[239,13,239,56,1],[240,13,240,54,1],[243,13,243,48,1],[244,13,244,104,1],[245,13,245,62,1],[246,13,246,54,1],[249,13,249,50,1],[250,13,250,104,1],[251,13,251,64,1],[252,13,252,54,1],[253,9,253,10,1],[257,9,257,10,1],[259,13,259,148,1],[262,13,262,55,1],[263,13,263,88,1],[264,13,264,74,1],[265,13,265,63,1],[268,13,268,46,1],[269,13,269,82,1],[270,13,276,15,1],[277,13,277,63,1],[280,13,280,190,1],[281,13,281,82,1],[282,13,290,15,1],[291,13,291,63,1],[294,13,294,190,1],[295,13,295,82,1],[296,13,301,15,1],[302,13,302,64,1],[303,9,303,10,1],[307,9,307,10,1],[308,13,308,141,1],[311,13,311,55,1],[312,13,312,88,1],[313,13,313,36,1],[316,13,316,46,1],[317,13,317,83,1],[318,13,318,36,1],[321,13,321,80,1],[322,13,322,83,1],[323,13,323,37,1],[324,9,324,10,1],[328,9,328,10,1],[330,13,330,55,1],[331,13,331,58,1],[332,13,338,15,1],[340,13,340,63,1],[343,13,343,14,1],[344,17,344,74,1],[345,17,345,55,1],[347,17,347,31,0],[348,13,348,14,0],[349,13,349,44,1],[350,13,350,14,1],[351,17,351,76,1],[352,13,352,14,1],[353,9,353,10,1],[356,9,356,10,1],[357,13,357,82,1],[357,83,357,96,1],[358,13,358,60,1],[358,61,358,74,0],[359,13,359,78,1],[359,79,359,92,0],[360,13,360,70,1],[360,71,360,84,0],[361,13,361,78,1],[361,79,361,92,0],[362,13,362,90,1],[362,91,362,104,0],[363,13,363,105,1],[363,106,363,119,0],[365,13,365,25,1],[366,9,366,10,1]]);
+    </script>
+  </body>
+</html>

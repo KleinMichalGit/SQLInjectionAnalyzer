@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\ExpectedDiagnostics\ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using Model;
+using Model.CSProject;
+using Model.Method;
+using Model.Solution;
+using Model.SyntaxTree;
+
+namespace UnitTests.ExpectedDiagnostics
+{
+    /// &lt;summary&gt;
+    /// common helper for creating custom expected diagnostics
+    /// &lt;see cref=&quot;Diagnostics&quot;/&gt; for OneMethodSyntaxTree scope of analysis
+    /// &lt;see cref=&quot;ScopeOfAnalysis&quot;/&gt;.
+    /// &lt;/summary&gt;
+    public class ExpectedDiagnosticsOneMethodSyntaxTreeAnalysis
+    {
+        public Diagnostics GetSimpleEmptyDiagnostics()
+        {
+            return new Diagnostics();
+        }
+
+        public Diagnostics GetSimpleDiagnosticsWithOneCSFileScaned()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() { &quot;../../CodeToBeAnalysed/OneSafeMethod/SimpleClass.cs&quot; },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetOneVulnerableMethodDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() { &quot;../../CodeToBeAnalysed/OneVulnerableMethod/SimpleClass.cs&quot; },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string args)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string args)\r\n        {\r\n            SinkMethodOne(args);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 3,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetAllArgumentsAreCleanedDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/CleaningRules/AllArgumentsAreCleaned/ArgumentsAreCleaned1.cs&quot;,
+                                    &quot;../../CodeToBeAnalysed/CleaningRules/AllArgumentsAreCleaned/ArgumentsAreCleaned2.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0
+                                            }
+                                        }
+                                    },
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetNotAllArgumentsAreCleanedDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/CleaningRules/NotAllArgumentsAreCleaned/NotAllArgumentsAreCleanedClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            const string thisIsConst = \&quot;this is const\&quot;;\r\n\r\n            SinkMethodOne(thisIsConst, arg);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 5,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetInvocationRulesDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/InvocationRules/InvocationTestClass.cs&quot;,
+                                    &quot;../../CodeToBeAnalysed/InvocationRules/InvocationTestClass2.cs&quot;,
+                                    &quot;../../CodeToBeAnalysed/InvocationRules/InvocationTestClass3.cs&quot;,
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 2,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0,
+                                            }
+                                        }
+                                    },
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 2,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0,
+                                            }
+                                        }
+                                    },
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 2,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string arg1 = CreateStringValue(arg);\r\n            string arg2 = CreateStringValue(string.Empty);\r\n\r\n            string arg3 = CreateStringValue(arg1);\r\n            string arg4 = CreateStringValue(arg2);\r\n\r\n            SinkMethodOne(arg3, arg4);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 9,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetExcludingPathsDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/ExcludingPaths/ExcludingPaths1\\ThisClassWillBeScanned.cs&quot;,
+                                    &quot;../../CodeToBeAnalysed/ExcludingPaths/ExcludingPaths2\\ThisClassWillNotBeScanned.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            const string thisIsConst = \&quot;this is const\&quot;;\r\n\r\n            SinkMethodOne(thisIsConst, arg);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 5,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetSafeAssignmentsDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/AssignmentRules/SafeAssignment/SafeAssignment1.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetVulnerableAssignmentsDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/AssignmentRules/VulnerableAssignment/VulnerableAssignment1.cs&quot;,
+                                    &quot;../../CodeToBeAnalysed/AssignmentRules/VulnerableAssignment/VulnerableAssignment2.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                    new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string vulnerableString1 = arg;\r\n            string vulnerableString2;\r\n            string vulnerableString3;\r\n            string vulnerableString4;\r\n\r\n            vulnerableString2 = vulnerableString1;\r\n            vulnerableString3 = vulnerableString2;\r\n            vulnerableString4 = vulnerableString3;\r\n\r\n            SinkMethodOne(vulnerableString4);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 12,
+                                            }
+                                        }
+                                    },
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 2,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string vulnerableString1 = arg;\r\n            string vulnerableString2;\r\n            string vulnerableString3;\r\n            string vulnerableString4;\r\n\r\n            vulnerableString2 = 1 &gt; 2 ? vulnerableString1 : arg;\r\n            vulnerableString3 = CreateString(vulnerableString2);\r\n            vulnerableString4 = vulnerableString3;\r\n\r\n            SinkMethodOne(vulnerableString4);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 12,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetSafeConditionalExpressionDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/ConditionalExpressionRules/SafeConditionalExpression\\SafeConditionalExpressionClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetVulnerableConditionalExpressionDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/ConditionalExpressionRules/VulnerableConditionalExpression\\VulnerableConditionalExpressionClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string thisIsConditionalExpression = 1 &gt; 2 ? \&quot;the universe works\&quot; : arg;\r\n\r\n            SinkMethodOne(thisIsConditionalExpression);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 5,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetSafeObjectCreationDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/CreationRules/SafeCreationRules/SafeCreationClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public Diagnostics GetVulnerableObjectCreationDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/CreationRules/VulnerableCreationRules/VulnerableCreationClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string myString = arg;\r\n            MyClass myClass = new MyClass(myString);\r\n\r\n            SinkMethodOne(myClass);\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 6,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetComplexTestDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/Complex/ComplexAnalysis1.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 2,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            string myString = arg;\r\n            int arg3;\r\n\r\n            string arg1 = CreateStringValue(1 &lt; 2 ? myString : string.Empty);\r\n            string arg2 = CreateStringValue(\&quot;\&quot;);\r\n            arg3 = 0;\r\n            arg3 = 1;\r\n\r\n            SinkMethodOne(arg1, arg2, arg3, new MyClass(string.Empty));\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 11,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetSafeFindOriginDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/FindOriginRules/SafeFindOriginRules\\SafeFindOriginClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 0
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        internal Diagnostics GetVulnerableFindOriginDiagnostics()
+        {
+            return new Diagnostics()
+            {
+                SolutionScanResults = new List&lt;SolutionScanResult&gt;()
+                {
+                    new SolutionScanResult()
+                    {
+                        CSProjectScanResults = new List&lt;CSProjectScanResult&gt;()
+                        {
+                            new CSProjectScanResult()
+                            {
+                                NamesOfAllCSFilesInsideThisCSProject = new List&lt;string&gt;() {
+                                    &quot;../../CodeToBeAnalysed/FindOriginRules/VulnerableFindOriginRules\\VulnerableFindOriginClass.cs&quot;
+                                },
+                                SyntaxTreeScanResults = new List&lt;SyntaxTreeScanResult&gt;()
+                                {
+                                     new SyntaxTreeScanResult()
+                                    {
+                                        NumberOfSkippedMethods = 1,
+                                        MethodScanResults = new List&lt;MethodScanResult&gt;()
+                                        {
+                                            new MethodScanResult()
+                                            {
+                                                Sinks = 1,
+                                                Hits = 1,
+                                                MethodName = &quot;ThisIsVulnerableMethod(string arg)&quot;,
+                                                MethodBody = &quot;public void ThisIsVulnerableMethod(string arg)\r\n        {\r\n            SinkMethodOne(arg); //find origin should look above this line. Not bellow!\r\n\r\n            arg = \&quot;my String\&quot;;\r\n        }&quot;,
+                                                LineNumber = 4,
+                                                LineCount = 5,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[18,9,18,10,1],[19,13,19,38,1],[20,9,20,10,1],[23,9,23,10,1],[24,13,46,15,1],[47,9,47,10,1],[50,9,50,10,1],[51,13,85,15,1],[86,9,86,10,1],[89,9,89,10,1],[90,13,135,15,1],[136,9,136,10,1],[139,9,139,10,1],[140,13,176,15,1],[177,9,177,10,1],[180,9,180,10,1],[181,13,243,15,1],[244,9,244,10,1],[247,9,247,10,1],[248,13,285,15,1],[286,9,286,10,1],[289,9,289,10,1],[290,13,322,15,1],[323,9,323,10,1],[326,9,326,10,1],[327,13,380,15,1],[381,9,381,10,1],[384,9,384,10,1],[385,13,417,15,1],[418,9,418,10,1],[421,9,421,10,1],[422,13,458,15,1],[459,9,459,10,1],[462,9,462,10,1],[463,13,495,15,1],[496,9,496,10,1],[499,9,499,10,1],[500,13,536,15,1],[537,9,537,10,1],[540,9,540,10,1],[541,13,577,15,1],[578,9,578,10,1],[581,9,581,10,1],[582,13,614,15,1],[615,9,615,10,1],[618,9,618,10,1],[619,13,655,15,1],[656,9,656,10,1]]);
+    </script>
+  </body>
+</html>

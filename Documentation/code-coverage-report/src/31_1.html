@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\TaintPropagationRulesExamples\TaintPropagationRulesCreator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using Model.Rules;
+
+namespace UnitTests.TaintPropagationRulesExamples
+{
+    /// &lt;summary&gt;
+    /// common unit test helper for creating custom Taint variable propagation
+    /// rules &lt;see cref=&quot;TaintPropagationRules&quot;/&gt;.
+    /// &lt;/summary&gt;
+    public class TaintPropagationRulesCreator
+    {
+        public TaintPropagationRules GetEmptyRules()
+        {
+            return new TaintPropagationRules();
+        }
+
+        public TaintPropagationRules GetRulesWithSinkMethodNames()
+        {
+            return new TaintPropagationRules()
+            {
+                Level = 5,
+                SourceAreas = new List&lt;SourceArea&gt;(),
+                SinkMethods = new List&lt;string&gt;()
+                {
+                    &quot;SinkMethodOne&quot;,
+                    &quot;SinkMethodTwo&quot;,
+                },
+                CleaningMethods = new List&lt;string&gt;()
+            };
+        }
+
+        public TaintPropagationRules GetRulesWithCleaningMethod()
+        {
+            return new TaintPropagationRules()
+            {
+                Level = 5,
+                SourceAreas = new List&lt;SourceArea&gt;(),
+                SinkMethods = new List&lt;string&gt;(),
+                CleaningMethods = new List&lt;string&gt;()
+                {
+                    &quot;A&quot;,
+                }
+            };
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[13,9,13,10,1],[14,13,14,48,1],[15,9,15,10,1],[18,9,18,10,1],[19,13,29,15,1],[30,9,30,10,1],[33,9,33,10,1],[34,13,43,15,1],[44,9,44,10,1]]);
+    </script>
+  </body>
+</html>

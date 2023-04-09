@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\OutputService\OutputGenerator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using ExceptionService.ExceptionType;
+using Model;
+using Model.Solution;
+using OutputService.RazorOutput;
+using RazorEngineCore;
+using RazorEngine = RazorEngineCore.RazorEngine;
+
+namespace OutputService
+{
+    /// &lt;summary&gt;
+    /// OutputService &lt;c&gt;OutputGenerator&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Class for generating .html and .txt output files according to Scope of
+    /// analysis.
+    /// &lt;/para&gt;
+    /// &lt;para&gt;
+    /// Contains &lt;c&gt;OutputGenerator&lt;/c&gt; constructor. Contains
+    /// &lt;c&gt;CreateOutput&lt;/c&gt; method. Contains &lt;c&gt;CreateConsoleOutput&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class OutputGenerator
+    {
+        private readonly string exportPath;
+
+        /// &lt;summary&gt;
+        /// Initializes a new instance of the &lt;see cref=&quot;OutputGenerator&quot;/&gt;
+        /// class.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;exportPath&quot;&gt;The export path where all results of the
+        ///     analysis should be created.&lt;/param&gt;
+        public OutputGenerator(string exportPath)
+        {
+            this.exportPath = exportPath;
+        }
+
+        /// &lt;summary&gt;
+        /// Creates Console, HTML, and TXT output based on the Scope of analysis
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;diagnostics&quot;&gt;The diagnostics from which the output
+        ///     should be created.&lt;/param&gt;
+        public void CreateOutput(Diagnostics diagnostics)
+        {
+            CreateConsoleOutput(diagnostics);
+            CreateHtmlOutput(diagnostics);
+            CreateTxtFileOutput(diagnostics);
+        }
+
+        /// &lt;summary&gt;
+        /// Creates the console output.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;diagnostics&quot;&gt;The diagnostics from which the output
+        ///     should be created.&lt;/param&gt;
+        public void CreateConsoleOutput(Diagnostics diagnostics)
+        {
+            DataExtractor dataExtractor = new DataExtractor(diagnostics);
+
+            Console.WriteLine(&quot;-----------------------------&quot;);
+            Console.WriteLine(&quot;Analysis start time: &quot; + diagnostics.DiagnosticsStartTime);
+            Console.WriteLine(&quot;Analysis end time: &quot; + diagnostics.DiagnosticsEndTime);
+            Console.WriteLine(&quot;Analysis total time: &quot; + diagnostics.DiagnosticsTotalTime);
+            switch (diagnostics.ScopeOfAnalysis)
+            {
+                case ScopeOfAnalysis.OneMethodSyntaxTree:
+                    Console.WriteLine(&quot;*.cs files: &quot; + dataExtractor.GetNumberOfAllCSFiles());
+                    break;
+                case ScopeOfAnalysis.OneMethodCSProj:
+                    Console.WriteLine(&quot;*.csproj files in directory: &quot; + dataExtractor.GetNumberOfAllCSProjFiles());
+                    Console.WriteLine(&quot;Scanned *.csproj files: &quot; + dataExtractor.GetNumberOfScannedCSProjFiles());
+                    Console.WriteLine(&quot;Skipped *.csproj files: &quot; + dataExtractor.GetNumberOfSkippedCSProjFiles());
+                    Console.WriteLine(&quot;All *.cs files in all scanned *.csproj files: &quot; + dataExtractor.GetNumberOfAllCSFiles());
+                    break;
+                case ScopeOfAnalysis.InterproceduralCSProj:
+                    break;
+                case ScopeOfAnalysis.InterproceduralSolution:
+                    break;
+                default:
+                    throw new OutputGeneratorException(&quot;not implemented yet&quot;);
+            }
+
+            Console.WriteLine(&quot;Scanned methods: &quot; + dataExtractor.GetNumberOfScannedMethods());
+            Console.WriteLine(&quot;Skipped methods: &quot; + dataExtractor.GetNumberOfSkippedMethods());
+            Console.WriteLine(&quot;Number of all sink invocations: &quot; + dataExtractor.GetNumberOfAllSinks());
+            Console.WriteLine(&quot;Vulnerable methods: &quot; + dataExtractor.GetNumberOfVulnerableMethods());
+            Console.WriteLine(&quot;-----------------------------&quot;);
+            Console.WriteLine(&quot;Detailed report: &quot; + exportPath);
+        }
+
+        /// &lt;summary&gt;
+        /// Creates the HTML output.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;diagnostics&quot;&gt;The diagnostics from which the output
+        ///     should be created.&lt;/param&gt;
+        /// &lt;exception cref=&quot;ExceptionHandler.ExceptionType.OutputGeneratorException&quot;&gt;
+        ///     not implemented yet&lt;/exception&gt;
+        private void CreateHtmlOutput(Diagnostics diagnostics)
+        {
+            DataExtractor dataExtractor = new DataExtractor(diagnostics);
+            string content = &quot;&quot;;
+
+            switch (diagnostics.ScopeOfAnalysis)
+            {
+                case ScopeOfAnalysis.OneMethodSyntaxTree:
+                    content = ReportOneMethodSyntaxTree.Report;
+                    break;
+
+                case ScopeOfAnalysis.OneMethodCSProj:
+                    content = ReportOneMethodCSProj.Report;
+                    break;
+
+                case ScopeOfAnalysis.InterproceduralCSProj:
+                    content = ReportInterproceduralCSProj.Report;
+                    break;
+
+                case ScopeOfAnalysis.InterproceduralSolution:
+                    content = ReportInterproceduralSolution.Report;
+                    break;
+
+                default:
+                    throw new OutputGeneratorException(&quot;not implemented yet&quot;);
+            }
+
+            IRazorEngineCompiledTemplate template = new RazorEngine().Compile(content);
+
+            string result = template.Run(new
+            {
+                Diagnostics = diagnostics,
+                NumberOfAllSolutionFiles = dataExtractor.GetNumberOfAllSolutionFiles(),
+                NumberOfScannedSolutionFiles = dataExtractor.GetNumberOfScannedSolutionFiles(),
+                NumberOfSkippedSolutionFiles = dataExtractor.GetNumberOfSkippedSolutionFiles(),
+                NumberOfAllCSProjFiles = dataExtractor.GetNumberOfAllCSProjFiles(),
+                NumberOfScannedCSProjFiles = dataExtractor.GetNumberOfScannedCSProjFiles(),
+                NumberOfSkippedCSProjFiles = dataExtractor.GetNumberOfSkippedCSProjFiles(),
+                NumberOfAllCSFiles = dataExtractor.GetNumberOfAllCSFiles(),
+                NumberOfScannedMethods = dataExtractor.GetNumberOfScannedMethods(),
+                NumberOfSkippedMethods = dataExtractor.GetNumberOfSkippedMethods(),
+                NumberOfAllSinks = dataExtractor.GetNumberOfAllSinks(),
+                NumberOfVulnerableMethods = dataExtractor.GetNumberOfVulnerableMethods(),
+                RemoteDataExtractor = dataExtractor,
+            });
+
+            File.WriteAllText(exportPath + &quot;\\report.html&quot;, result);
+        }
+
+        /// &lt;summary&gt;
+        /// Creates the text file output.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;diagnostics&quot;&gt;The diagnostics from which the output
+        ///     should be created.&lt;/param&gt;
+        private void CreateTxtFileOutput(Diagnostics diagnostics)
+        {
+            DataExtractor dataExtractor = new DataExtractor(diagnostics);
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(&quot;Diagnostics result:&quot;);
+            sb.AppendLine(&quot;-----------------------------&quot;);
+            sb.AppendLine(&quot;Analysis start time: &quot; + diagnostics.DiagnosticsStartTime);
+            sb.AppendLine(&quot;Analysis end time: &quot; + diagnostics.DiagnosticsEndTime);
+            sb.AppendLine(&quot;Analysis total time: &quot; + diagnostics.DiagnosticsTotalTime);
+            sb.AppendLine(&quot;Number of all .sln files in scanned directory: &quot; + dataExtractor.GetNumberOfAllSolutionFiles());
+            sb.AppendLine(&quot;Number of compiled .sln files: &quot; + dataExtractor.GetNumberOfScannedSolutionFiles());
+            sb.AppendLine(&quot;Number of skipped .sln files: &quot; + dataExtractor.GetNumberOfSkippedSolutionFiles());
+            sb.AppendLine(&quot;Number of all .csproj files in scanned directory: &quot; + dataExtractor.GetNumberOfAllCSProjFiles());
+            sb.AppendLine(&quot;Number of compiled .csproj files: &quot; + dataExtractor.GetNumberOfScannedCSProjFiles());
+            sb.AppendLine(&quot;Number of skipped .csproj files: &quot; + dataExtractor.GetNumberOfSkippedCSProjFiles());
+            sb.AppendLine(&quot;Number of all .cs files referred to in all compiled .csproj files: &quot; + dataExtractor.GetNumberOfAllCSFiles());
+            sb.AppendLine(&quot;Number of scanned methods: &quot; + dataExtractor.GetNumberOfScannedMethods());
+            sb.AppendLine(&quot;Number of skipped methods: &quot; + dataExtractor.GetNumberOfSkippedMethods());
+            sb.AppendLine(&quot;Number of all sink invocations: &quot; + dataExtractor.GetNumberOfAllSinks());
+            sb.AppendLine(&quot;Number of vulnerable methods: &quot; + dataExtractor.GetNumberOfVulnerableMethods());
+
+            if (dataExtractor.GetNumberOfVulnerableMethods() == 0)
+            {
+                sb.AppendLine(&quot;No vulnerabilities detected. Injection analysis passed successfully.&quot;);
+                File.WriteAllText(&quot;report.txt&quot;, sb.ToString());
+                return;
+            }
+            sb.AppendLine(&quot;List of scanned .sln files: &quot;);
+
+            foreach (SolutionScanResult solutionScanResult in diagnostics.SolutionScanResults)
+            {
+                sb.AppendLine(&quot;List of scanned .csproj files: &quot;);
+
+                foreach (var csprojectScanResult in solutionScanResult.CSProjectScanResults.Where(csprojectScanResult =&gt; dataExtractor.GetNumberOfVulnerableMethodsInCSProj(csprojectScanResult) != 0))
+                {
+                    sb.AppendLine();
+                    sb.AppendLine(&quot;-----------------------------&quot;);
+                    sb.AppendLine(&quot;path: &quot; + csprojectScanResult.Path);
+                    sb.AppendLine(&quot;.csproj scan start time: &quot; + csprojectScanResult.CSProjectScanResultStartTime);
+                    sb.AppendLine(&quot;.csproj scan end time: &quot; + csprojectScanResult.CSProjectScanResultEndTime);
+                    sb.AppendLine(&quot;.csproj scan total time: &quot; + csprojectScanResult.CSProjectScanResultTotalTime);
+                    sb.AppendLine(&quot;number of scanned files in this .csproj: &quot; + csprojectScanResult.SyntaxTreeScanResults.Count());
+
+                    sb.AppendLine();
+
+                    sb.AppendLine(&quot;List of scanned files: &quot;);
+
+                    foreach (var st in csprojectScanResult.SyntaxTreeScanResults.Where(st =&gt; dataExtractor.GetNumberOfVulnerableMethodsInFile(st) != 0))
+                    {
+                        sb.AppendLine(&quot;########################&quot;);
+                        sb.AppendLine(&quot;path: &quot; + st.Path);
+                        sb.AppendLine(&quot;file scan start time: &quot; + st.SyntaxTreeScanResultStartTime);
+                        sb.AppendLine(&quot;file scan end time: &quot; + st.SyntaxTreeScanResultEndTime);
+                        sb.AppendLine(&quot;file scan total time: &quot; + st.SyntaxTreeScanResultTotalTime);
+                        sb.AppendLine(&quot;number of scanned methods in this file: &quot; + st.MethodScanResults.Count());
+
+                        sb.AppendLine();
+
+                        sb.AppendLine(&quot;List of vulnerabilities in this file: &quot;);
+
+                        foreach (var methodScanResult in st.MethodScanResults.Where(methodScanResult =&gt; methodScanResult.Hits &gt; 0))
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine(&quot;method name: &quot; + methodScanResult.MethodName);
+                            sb.AppendLine(&quot;method implementation line number: &quot; + methodScanResult.LineNumber);
+                            sb.AppendLine(&quot;hits: &quot; + methodScanResult.Hits + &quot;, sinks: &quot; + methodScanResult.Hits);
+                            sb.AppendLine(&quot;method scan start time: &quot; + methodScanResult.MethodScanResultStartTime);
+                            sb.AppendLine(&quot;method scan end time: &quot; + methodScanResult.MethodScanResultEndTime);
+                            sb.AppendLine(&quot;method scan total time: &quot; + methodScanResult.MethodScanResultTotalTime);
+
+                            sb.AppendLine(&quot;method body: &quot;);
+                            sb.AppendLine(methodScanResult.MethodBody);
+
+                            sb.AppendLine();
+                            sb.AppendLine(&quot;evidence: &quot;);
+                            sb.AppendLine(methodScanResult.Evidence);
+                        }
+                    }
+                }
+            }
+
+            File.WriteAllText(exportPath + &quot;\\report.txt&quot;, sb.ToString());
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[35,9,35,50,1],[36,9,36,10,1],[37,13,37,42,1],[38,9,38,10,1],[46,9,46,10,1],[47,13,47,46,1],[48,13,48,43,1],[49,13,49,46,1],[50,9,50,10,1],[58,9,58,10,1],[59,13,59,74,1],[61,13,61,64,1],[62,13,62,91,1],[63,13,63,87,1],[64,13,64,91,1],[65,13,65,49,1],[68,21,68,95,1],[69,21,69,27,1],[71,21,71,116,1],[72,21,72,115,1],[73,21,73,115,1],[74,21,74,129,1],[75,21,75,27,1],[77,21,77,27,1],[79,21,79,27,1],[81,21,81,79,1],[84,13,84,96,1],[85,13,85,96,1],[86,13,86,105,1],[87,13,87,102,1],[88,13,88,64,1],[89,13,89,65,1],[90,9,90,10,1],[100,9,100,10,1],[101,13,101,74,1],[102,13,102,33,1],[104,13,104,49,1],[107,21,107,64,1],[108,21,108,27,1],[111,21,111,60,1],[112,21,112,27,1],[115,21,115,66,1],[116,21,116,27,1],[119,21,119,68,1],[120,21,120,27,1],[123,21,123,79,0],[126,13,126,88,1],[128,13,143,16,1],[145,13,145,69,1],[146,9,146,10,1],[154,9,154,10,1],[155,13,155,74,1],[156,13,156,52,1],[158,13,158,50,1],[159,13,159,60,1],[160,13,160,87,1],[161,13,161,83,1],[162,13,162,87,1],[163,13,163,124,1],[164,13,164,112,1],[165,13,165,111,1],[166,13,166,125,1],[167,13,167,113,1],[168,13,168,112,1],[169,13,169,138,1],[170,13,170,102,1],[171,13,171,102,1],[172,13,172,101,1],[173,13,173,108,1],[175,13,175,67,1],[176,13,176,14,1],[177,17,177,103,1],[178,17,178,64,1],[179,17,179,24,1],[181,13,181,59,1],[183,13,183,20,1],[183,22,183,59,1],[183,60,183,62,1],[183,63,183,94,1],[184,13,184,14,1],[185,17,185,66,1],[187,17,187,24,1],[187,26,187,49,1],[187,50,187,52,1],[187,53,187,122,1],[187,122,187,198,1],[187,198,187,199,1],[188,17,188,18,1],[189,21,189,37,1],[190,21,190,68,1],[191,21,191,72,1],[192,21,192,115,1],[193,21,193,111,1],[194,21,194,115,1],[195,21,195,132,1],[197,21,197,37,1],[199,21,199,62,1],[201,21,201,28,1],[201,30,201,36,1],[201,37,201,39,1],[201,40,201,94,1],[201,94,201,151,1],[201,151,201,152,1],[202,21,202,22,1],[203,25,203,67,1],[204,25,204,59,1],[205,25,205,100,1],[206,25,206,96,1],[207,25,207,100,1],[208,25,208,114,1],[210,25,210,41,1],[212,25,212,81,1],[214,25,214,32,1],[214,34,214,54,1],[214,55,214,57,1],[214,58,214,105,1],[214,105,214,130,1],[214,130,214,131,1],[215,25,215,26,1],[216,29,216,45,1],[217,29,217,90,1],[218,29,218,112,1],[219,29,219,115,1],[220,29,220,116,1],[221,29,221,112,1],[222,29,222,116,1],[224,29,224,60,1],[225,29,225,72,1],[227,29,227,45,1],[228,29,228,57,1],[229,29,229,70,1],[230,25,230,26,1],[231,21,231,22,1],[232,17,232,18,1],[233,13,233,14,1],[235,13,235,75,1],[236,9,236,10,1]]);
+    </script>
+  </body>
+</html>

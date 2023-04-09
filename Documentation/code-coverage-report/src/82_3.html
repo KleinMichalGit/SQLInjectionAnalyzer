@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Model\CSProject\CSProjectScanResult.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using Model.SyntaxTree;
+
+namespace Model.CSProject
+{
+    /// &lt;summary&gt;
+    /// Model.CSProject &lt;c&gt;CSProjectScanResult&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Contains all the information gained during the analysis of the specific
+    /// .csproj file.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class CSProjectScanResult
+    {
+        public DateTime CSProjectScanResultStartTime { get; set; }
+        public DateTime CSProjectScanResultEndTime { get; set; }
+        public TimeSpan CSProjectScanResultTotalTime
+        { get { return CSProjectScanResultEndTime - CSProjectScanResultStartTime; } }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the path of the analysed .csproj file.
+        /// &lt;/summary&gt;
+        public string Path { get; set; }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the list of the separate syntax tree scan results.
+        /// Every single dependency mentioned in the .csproj has its own results
+        /// stored here. The result of the analysis of C# file is stored as a
+        /// &lt;see cref=&quot;SyntaxTreeScanResult&quot;/&gt;.
+        /// &lt;/summary&gt;
+        public List&lt;SyntaxTreeScanResult&gt; SyntaxTreeScanResults { get; set; } = new List&lt;SyntaxTreeScanResult&gt;();
+
+        public List&lt;string&gt; NamesOfAllCSFilesInsideThisCSProject { get; set; } = new List&lt;string&gt;();
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[16,56,16,60,1],[16,61,16,65,1],[17,54,17,58,1],[17,59,17,63,1],[19,15,19,16,1],[19,17,19,82,1],[19,83,19,84,1],[24,30,24,34,1],[24,35,24,39,1],[32,67,32,71,1],[32,72,32,76,1],[32,81,32,113,1],[34,68,34,72,1],[34,73,34,77,1],[34,82,34,100,1]]);
+    </script>
+  </body>
+</html>

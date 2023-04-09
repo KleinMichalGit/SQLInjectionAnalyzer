@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\Model\Diagnostics.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using Model.Solution;
+
+namespace Model
+{
+    /// &lt;summary&gt;
+    /// Model &lt;c&gt;Diagnostics&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Contains all the information gained during the analysis.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class Diagnostics
+    {
+        /// &lt;summary&gt;
+        /// Gets or sets the scope of analysis used during the analysis.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The scope of analysis.&lt;/value&gt;
+        public ScopeOfAnalysis ScopeOfAnalysis { get; set; }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the diagnostics start time.
+        /// &lt;/summary&gt;
+        public DateTime DiagnosticsStartTime { get; set; }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the diagnostics end time.
+        /// &lt;/summary&gt;
+        public DateTime DiagnosticsEndTime { get; set; }
+
+        /// &lt;summary&gt;
+        /// Gets the diagnostics total time.
+        /// &lt;/summary&gt;
+        public TimeSpan DiagnosticsTotalTime
+        { get { return DiagnosticsEndTime - DiagnosticsStartTime; } }
+
+        /// &lt;summary&gt;
+        /// Gets or sets the list of separate .sln scan results. The analysis of
+        /// every single .sln file &lt;see cref=&quot;SolutionScanResult&quot;/&gt; is stored
+        /// here.
+        /// &lt;/summary&gt;
+        public List&lt;SolutionScanResult&gt; SolutionScanResults { get; set; } = new List&lt;SolutionScanResult&gt;();
+
+        /// &lt;summary&gt;
+        /// Gets or sets the paths of all skipped .sln files. For example, the
+        /// .sln file may be skipped if its file path is set to be omitted on
+        /// input.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The paths of skipped csprojects.&lt;/value&gt;
+        public List&lt;String&gt; PathsOfSkippedSolutions { get; set; } = new List&lt;String&gt;();
+
+        /// &lt;summary&gt;
+        /// Gets or sets the number of all .sln files under the analysed
+        /// directory.
+        /// &lt;/summary&gt;
+        /// &lt;value&gt;The number of all .sln files.&lt;/value&gt;
+        public int NumberOfSolutions { get; set; } = 0;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[19,50,19,54,1],[19,55,19,59,1],[24,48,24,52,1],[24,53,24,57,1],[29,46,29,50,1],[29,51,29,55,1],[35,15,35,16,1],[35,17,35,66,1],[35,67,35,68,1],[42,63,42,67,1],[42,68,42,72,1],[42,77,42,107,1],[50,55,50,59,1],[50,60,50,64,0],[50,69,50,87,1],[57,40,57,44,1],[57,45,57,49,1],[57,54,57,55,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\UnitTests\InterproceduralHelperTest.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using ExceptionService.ExceptionType;
+using InputService;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model.Method;
+using SQLInjectionAnalyzer;
+
+namespace UnitTests
+{
+    [TestClass]
+    public class InterproceduralHelperTest
+    {
+        private InterproceduralHelper interproceduralHelper = new InterproceduralHelper();
+        private NodeFactory nodeFactory = new NodeFactory();
+        private string path = &quot;..\\..\\CodeToBeAnalysed\\TableOfRules\\TableOfRulesCodeToBeAnalysed.cs&quot;;
+
+        [TestMethod]
+        public void AllTaintVariablesAreCleanedInThisBranch()
+        {
+            var result = interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(new int[]{}, new int[]{});
+            
+            Assert.AreEqual(true, result);
+            
+            result = interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(new []{1, 1}, new []{0, 0});
+            
+            Assert.AreEqual(true, result);
+            
+            result = interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(new []{1, 1}, new []{50, 140});
+            
+            Assert.AreEqual(false, result);
+            try
+            {
+                interproceduralHelper.AllTaintVariablesAreCleanedInThisBranch(new[] { 1, 1 }, new[] { 0 });
+                Assert.Fail();
+            }
+            catch (AnalysisException e)
+            {
+                Assert.AreEqual(&quot;number of tainted method parameters and invocation arguments is incorrect!&quot;, e.Message);    
+            }
+        }
+
+        [TestMethod]
+        public void FindMethodParent()
+        {
+            //A();
+            var invocationExpressionSyntax = nodeFactory.FindSyntaxNode&lt;InvocationExpressionSyntax&gt;(path, 0);
+            var parent = interproceduralHelper.FindMethodParent(invocationExpressionSyntax);
+            Assert.AreEqual(@&quot;private void E()
+        {
+            A();
+            B(&quot;&quot;&quot;&quot;);
+            C(&quot;&quot;&quot;&quot;, &quot;&quot;&quot;&quot;);
+            D(&quot;&quot;&quot;&quot;, 0, true);
+
+            string myString;
+
+            myString = 1 &lt; 2 ? &quot;&quot;True&quot;&quot; : &quot;&quot;&quot;&quot;;
+            myString = 1 &gt; 2 ? &quot;&quot;&quot;&quot; : &quot;&quot;False&quot;&quot;;
+            myString = B(&quot;&quot;&quot;&quot;).Length &gt; 9 ? &quot;&quot;True&quot;&quot; : &quot;&quot;False&quot;&quot;;
+        }&quot;, parent.ToString());
+
+            var classDeclarationSyntax = nodeFactory.FindSyntaxNode&lt;ClassDeclarationSyntax&gt;(path, 0);
+            parent = interproceduralHelper.FindMethodParent(classDeclarationSyntax);
+            Assert.IsNull(parent);
+        }
+
+        [TestMethod]
+        public void ComputeName()
+        {
+            var methodInfo = typeof(InterproceduralHelper).GetMethod(&quot;ComputeName&quot;, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //empty array of arguments
+            const string arg = &quot;my.Funny.MethodName(int arg1, string arg2)&quot;;
+            var name = (string)methodInfo.Invoke(interproceduralHelper, new object[] { arg });
+            Assert.AreEqual(&quot;MethodName&quot;, name);
+        }
+        
+        [TestMethod]
+        public void FindAllCallersOfCurrentBlock()
+        {
+            var file = File.ReadAllText(path);
+            var st = CSharpSyntaxTree.ParseText(file);
+            var compilation = CSharpCompilation.Create(&quot;MockAssemblyName&quot;)
+                .AddReferences(
+                    MetadataReference.CreateFromFile(
+                        typeof(object).Assembly.Location))
+                .AddSyntaxTrees(st);
+            var semanticModel = compilation.GetSemanticModel(st);
+
+            var value = interproceduralHelper.FindAllCallersOfCurrentBlock(st, new List&lt;LevelBlock&gt;(), semanticModel,
+                new MethodScanResult());
+            
+            
+            Assert.AreEqual(0, value.Count);
+            
+            var methodDeclarationSyntax = st.GetRoot().DescendantNodes().OfType&lt;MethodDeclarationSyntax&gt;().First();
+            
+            value = interproceduralHelper.FindAllCallersOfCurrentBlock(
+                st, 
+                new List&lt;LevelBlock&gt;()
+                {
+                    new LevelBlock()
+                    {
+                        MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
+                    }
+                }, 
+                semanticModel,
+                new MethodScanResult()
+                );
+            
+            Assert.AreEqual(1, value.Count);
+
+        }
+        
+        [TestMethod]
+        public void AddCaller()
+        {
+            var tree = new InterproceduralTree()
+            {
+                Id = 0,
+                MethodName = &quot;MyName&quot;,
+                Callers = new List&lt;InterproceduralTree&gt;()
+                {
+                    new InterproceduralTree()
+                    {
+                        Id = 1,
+                        MethodName = &quot;Inner&quot;,
+                        Callers = new List&lt;InterproceduralTree&gt;(),
+                    }
+                }
+            };
+
+            var caller = new InterproceduralTree()
+            {
+                Id = 2,
+                MethodName = &quot;IAmCaller&quot;,
+                Callers = new List&lt;InterproceduralTree&gt;()
+            };
+            
+            interproceduralHelper.AddCaller(1,tree, caller);
+
+            Assert.IsTrue(tree.Callers[0].Callers[0].Id == 2);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[20,9,20,91,1],[21,9,21,61,1],[22,9,22,105,1],[26,9,26,10,1],[27,13,27,114,1],[29,13,29,43,1],[31,13,31,112,1],[33,13,33,43,1],[35,13,35,115,1],[37,13,37,44,1],[39,13,39,14,1],[40,17,40,108,1],[41,17,41,31,0],[42,13,42,14,0],[43,13,43,40,1],[44,13,44,14,1],[45,17,45,122,1],[46,13,46,14,1],[47,9,47,10,1],[51,9,51,10,1],[53,13,53,110,1],[54,13,54,93,1],[55,13,67,32,1],[69,13,69,102,1],[70,13,70,85,1],[71,13,71,35,1],[72,9,72,10,1],[76,9,76,10,1],[77,13,77,133,1],[81,13,81,95,1],[82,13,82,49,1],[83,9,83,10,1],[87,9,87,10,1],[88,13,88,47,1],[89,13,89,55,1],[90,13,94,37,1],[95,13,95,66,1],[97,13,98,41,1],[101,13,101,45,1],[103,13,103,116,1],[105,13,116,19,1],[118,13,118,45,1],[120,9,120,10,1],[124,9,124,10,1],[125,13,138,15,1],[140,13,145,15,1],[147,13,147,61,1],[149,13,149,63,1],[150,9,150,10,1]]);
+    </script>
+  </body>
+</html>

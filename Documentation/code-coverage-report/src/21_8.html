@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Users\kleinmichal\SQLInjectionAnalyzer\SQLInjectionAnalyzer\SQLInjectionAnalyzer\GlobalHelper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Model.Method;
+using Model.Rules;
+using Model.SyntaxTree;
+
+namespace SQLInjectionAnalyzer
+{
+    /// &lt;summary&gt;
+    /// SQLInjectionAnalyzer &lt;c&gt;GlobalHelper&lt;/c&gt; class.
+    /// &lt;para&gt;
+    /// Provides global helpful methods. Its methods are used by individual
+    /// analyzers.
+    /// &lt;/para&gt;
+    /// &lt;para&gt;
+    /// Contains
+    /// &lt;c&gt;GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory&lt;/c&gt;
+    /// method. Contains &lt;c&gt;FindSinkInvocations&lt;/c&gt; method.
+    /// &lt;/para&gt;
+    /// &lt;/summary&gt;
+    public class GlobalHelper
+    {
+        /// &lt;summary&gt;
+        /// Gets the number of files fulfilling certain pattern under the
+        /// specified directory. For example returns the number of all C# files
+        /// under the specified directory.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;directoryPath&quot;&gt;The directory path.&lt;/param&gt;
+        /// &lt;param name=&quot;pattern&quot;&gt;The pattern.&lt;/param&gt;
+        public int GetNumberOfFilesFulfillingCertainPatternUnderThisDirectory(string directoryPath, string pattern)
+        {
+            int result = 0;
+            foreach (string _ in Directory.EnumerateFiles(directoryPath, pattern, SearchOption.AllDirectories)) result++;
+            return result;
+        }
+
+        /// &lt;summary&gt;
+        /// Finds the sink invocations among the descendant nodes of the
+        /// specified syntax node. For example, if method body is the root, it
+        /// finds all sink invocations in the body of the method. Invocation is
+        /// &lt;see cref=&quot;InvocationExpressionSyntax&quot;/&gt; present among the
+        /// descendant nodes of the root, which also belongs to the list of sink
+        /// methods.
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;root&quot;&gt;The root &lt;see cref=&quot;SyntaxNode&quot;/&gt;&lt;/param&gt;
+        /// &lt;param name=&quot;sinkMethodNames&quot;&gt;The sink method names.&lt;/param&gt;
+        public IEnumerable&lt;InvocationExpressionSyntax&gt; FindSinkInvocations(SyntaxNode root, List&lt;string&gt; sinkMethodNames)
+        {
+            IEnumerable&lt;InvocationExpressionSyntax&gt; invocations = root.DescendantNodes().OfType&lt;InvocationExpressionSyntax&gt;();
+
+            return invocations.Where(invocation =&gt;
+                sinkMethodNames.Any(sinkMethod =&gt; invocation.ToString().Contains(sinkMethod))
+            );
+        }
+
+        public bool MethodShouldBeAnalysed(MethodDeclarationSyntax methodSyntax, SyntaxTreeScanResult syntaxTreeScanResult, TaintPropagationRules rules, bool includePrivate = false)
+        {
+            if (!includePrivate &amp;&amp; !methodSyntax.Modifiers.Where(modifier =&gt; modifier.IsKind(SyntaxKind.PublicKeyword)).Any())
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+
+            if (!methodSyntax.ParameterList.ToString().Contains(&quot;string&quot;))
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+
+            IEnumerable&lt;InvocationExpressionSyntax&gt; invocations = FindSinkInvocations(methodSyntax, rules.SinkMethods);
+
+            if (!invocations.Any())
+            {
+                syntaxTreeScanResult.NumberOfSkippedMethods++;
+                return false;
+            }
+            return true;
+        }
+
+        public void SolveSourceAreas(SyntaxTree syntaxTree, MethodScanResult methodScanResult, TaintPropagationRules taintPropagationRules)
+        {
+            foreach (SourceArea source in taintPropagationRules.SourceAreas)
+                if (syntaxTree.FilePath.Contains(source.Path))
+                    methodScanResult.SourceAreasLabels.Add(source.Label);
+        }
+
+        public void WriteEvidenceOnConsole(string methodName, string evidence, MethodScanResult result = null)
+        {
+            Console.WriteLine(&quot;-----------------------&quot;);
+            Console.WriteLine(&quot;Vulnerable method found&quot;);
+            Console.WriteLine(&quot;Method name: &quot; + methodName);
+            if (result != null)
+            {
+                if (result.SourceAreasLabels.Count() &gt; 0)
+                {
+                    Console.WriteLine(&quot;Source areas labels: &quot; + String.Join(&quot;, &quot;, result.SourceAreasLabels));
+                }
+                Console.WriteLine(&quot;-----------------------&quot;);
+                Console.WriteLine(&quot;Interprocedural callers tree:&quot;);
+                PrintCallers(result.InterproceduralCallersTree, 0);
+                Console.WriteLine(&quot;-----------------------&quot;);
+            }
+            Console.WriteLine(&quot;Evidence:&quot;);
+            Console.WriteLine(evidence);
+            Console.WriteLine(&quot;-----------------------&quot;);
+        }
+        
+        private void PrintCallers(InterproceduralTree callersTree, int level)
+        {
+            Console.WriteLine(level + &quot; &quot; + new string(&#39; &#39;, level * 2) + callersTree.MethodName);
+            
+            foreach (var child in callersTree.Callers)
+            {
+                PrintCallers(child, level + 1);
+            }
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[36,9,36,10,1],[37,13,37,28,1],[38,13,38,20,1],[38,22,38,30,1],[38,31,38,33,1],[38,34,38,111,1],[38,113,38,122,1],[39,13,39,27,1],[40,9,40,10,1],[53,9,53,10,1],[54,13,54,127,1],[56,13,57,17,1],[57,17,57,51,1],[57,51,57,93,1],[57,93,57,94,1],[57,94,58,15,1],[59,9,59,10,1],[62,9,62,10,1],[63,13,63,78,1],[63,78,63,119,1],[63,119,63,127,1],[64,13,64,14,1],[65,17,65,63,1],[66,17,66,30,1],[69,13,69,75,1],[70,13,70,14,1],[71,17,71,63,1],[72,17,72,30,1],[75,13,75,120,1],[77,13,77,36,1],[78,13,78,14,1],[79,17,79,63,1],[80,17,80,30,1],[82,13,82,25,1],[83,9,83,10,1],[86,9,86,10,1],[87,13,87,20,1],[87,22,87,39,0],[87,40,87,42,1],[87,43,87,76,1],[88,17,88,63,0],[89,21,89,74,0],[90,9,90,10,1],[93,9,93,10,1],[94,13,94,58,1],[95,13,95,58,1],[96,13,96,61,1],[97,13,97,32,1],[98,13,98,14,0],[99,17,99,58,0],[100,17,100,18,0],[101,21,101,110,0],[102,17,102,18,0],[103,17,103,62,0],[104,17,104,68,0],[105,17,105,68,0],[106,17,106,62,0],[107,13,107,14,0],[108,13,108,44,1],[109,13,109,41,1],[110,13,110,58,1],[111,9,111,10,1],[114,9,114,10,0],[115,13,115,98,0],[117,13,117,20,0],[117,22,117,31,0],[117,32,117,34,0],[117,35,117,54,0],[118,13,118,14,0],[119,17,119,48,0],[120,13,120,14,0],[121,9,121,10,0]]);
+    </script>
+  </body>
+</html>
